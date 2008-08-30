@@ -1,0 +1,37 @@
+#
+#   Copyright (c) 2007 Thomas Sawyer, Ruby License
+#
+# TODO:
+#
+#   - Maybe add autopackage install system? If compresses pacakges are found in
+#     a certain directory they are automatically installed?
+#
+#   - What about remotes? What about version tiers when remote requiring?
+#
+#   - Library #use should be local to the give library. This way other libraries
+#     can use what they want without adding to the global require space.
+#     And hopefully this help elmininate the need to rescue for backward compatability.
+#
+# NOTE:
+#
+#   - Roll's require/load doesn't work if called from within Kernel module!!!
+
+# LICENSE:
+#
+#   Copyright (c) 2007 Thomas Sawyer, Ruby License
+#
+# TODO:
+#
+#   - Maybe add autopackage install system? If compresses pacakges are found in
+#     a certain directory they are automatically installed?
+#
+#   - What about remotes? What about version tiers when remote requiring?
+#
+#   - Library #use should be local to the give library. This way other libraries
+#     can use what they want without adding to the global require space.
+#     And hopefully this help elmininate the need to rescue for backward compatability.
+#
+# NOTE:
+#
+#   - Roll's require/load doesn't work if called from within Kernel module!!!
+
