@@ -1,0 +1,16 @@
+---
+rubyforge:
+  project  : roll
+  username : transami
+
+  release:
+    store     : pkg
+    package   : roll
+    notelog   : NOTES
+    changelog : CHANGES
+
+  publish: {}
+
+  announce:
+    message: README
+

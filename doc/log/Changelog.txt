@@ -1,0 +1,3 @@
+Change log available at:
+  http://facets.rubyforge.org/lob/changelog.xml
+

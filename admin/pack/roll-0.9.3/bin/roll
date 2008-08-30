@@ -1,0 +1,67 @@
+#! /usr/bin/ruby
+
+require 'tmpdir'
+require 'fileutils'
+require 'roll/library'
+
+# This updates the roll cache.
+# You will likely need to use sudo with this command.
+
+def roll_update
+  Library.update_cache
+  puts "Updated #{Library::CACHE_FILE}"
+end
+
+# This script builds a list of all roll-ready bin locations
+# and writes that list as an environment setting shell script.
+# On Linux a call to this to you .bashrc file. Eg.
+#
+#   if [ -f ~/.rollrc ]; then
+#       . roll
+#   fi
+#
+# Currently this only supports bash.
+#
+# TODO Is this the best way to do it, or would it be better
+# to "install" executables to an appropriate bin dir,
+# suing links (soft if possible).
+
+def roll_path
+
+  def windows
+    processor, platform, *rest = RUBY_PLATFORM.split("-")
+    /ms/ =~ platform   # better?
+  end
+
+  div = (windows ? ';' : ':')
+
+  env_path = ENV['PATH'].split(/[#{div}]/)
+
+  # Go thru each roll lib and make sure bin
+  # path in path.
+
+  binpaths = []
+
+  Library.list.each do |libname|
+    path = Library[libname].bindir
+    binpaths << path if path
+  end
+
+  #pathenv = (["$PATH"] + binpaths).join(div)
+
+  pathenv = binpaths.join(div)
+
+  #puts %{export PATH="#{pathenv}"}
+
+  puts pathenv
+end
+
+if $0 == __FILE__
+  case ARGV[0]
+  when '--path', '-p'
+    roll_path
+  else
+    roll_update
+  end
+end
+

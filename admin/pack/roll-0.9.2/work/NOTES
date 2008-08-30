@@ -1,0 +1,33 @@
+= Rolls -- Developer Notes
+
+== Package Class
+
+The package class is part of Box as well. For now it was
+deemed best to keep a copy in each project b/c Rolls
+is not intended to be installed via Gems, but Box needs
+needs that option. This makes is a difficult to handle
+dependencies if it is just in one or the other. The
+alternative is to put the Package class in it's own
+project. I'm not sure it's worth the additional effort.
+It's probably easier to just make sure Roll's and Box's
+Package class stay in sync --and who know their may be
+good reasons for them to deverge, just as long as the
+main metadata functionality stays compatible.
+
+
+
+== Register?
+
+  # Root location(s) of libraries.
+  #
+  # NOTE: This is a Rolls question.
+  #
+  # TODO This is an intersting idea. Instead of fixed locations in
+  # the file system one could register "virtual locations" which map
+  # to real locations. Worth the added flexability?
+  #++
+  #attr_accessor :register do
+  #  @register    || { name => 'lib' }
+  #end
+
+

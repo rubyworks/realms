@@ -1,0 +1,5 @@
+Roll is a library manager for Ruby. Code repositories
+can be made visible to Ruby just by setting an
+environment variable. Rolls effectively trivializes
+Ruby package management.
+
