@@ -1,3 +1,5 @@
+require 'rbconfig'
+
 module ::Config
 
   # Return the path to the data directory associated with the given
