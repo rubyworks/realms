@@ -1,5 +1,6 @@
 --- %YAML:1.0
 project  : roll
+version  : 0.9.4
 
 title    : Roll
 brief    : Ruby Object-Oriented Library Ledger

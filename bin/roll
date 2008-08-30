@@ -8,36 +8,36 @@ module Roll
 
   # This adds a location to the roll cache.
   def self.roll_update
-    list = File.read(Library::CACHE_FILE).split("\n")
+    list = File.read(Library.user_ledger_file).split("\n")
     root = find_root
     if root
       puts "#{root}"
       list = list | [root]
       save_cache(list)
-      puts "  '-> #{Library::CACHE_FILE}"
+      puts "  '-> #{Library.user_ledger_file}"
     end
   end
 
   # This removes a location from the roll cache.
   def self.roll_remove
-    list = File.read(Library::CACHE_FILE).split("\n")
+    list = File.read(Library.user_ledger_file).split("\n")
     root = find_root
     if root
       puts "#{root}"
       list.delete(root)
       save_cache(list)
-      puts "  x <- #{Library::CACHE_FILE}."
+      puts "  x <- #{Library.user_ledger_file}."
     end
   end
 
   def self.roll_list
-    list = File.read(Library::CACHE_FILE).split("\n")
+    list = File.read(Library.user_ledger_file).split("\n")
     puts list.join("\n")
   end
 
   def self.save_cache(list)
-    FileUtils.mkdir_p(File.dirname(Library::CACHE_FILE))
-    File.open(Library::CACHE_FILE, 'w') do |f|
+    FileUtils.mkdir_p(File.dirname(Library.user_ledger_file))
+    File.open(Library.user_ledger_file, 'w') do |f|
       f << list.join("\n")
     end
   end

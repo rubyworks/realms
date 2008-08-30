@@ -45,7 +45,7 @@ class Library
         lp = data[:loadpath] || data[:loadpaths] || ['lib']
 
         libpath = lp + lp.map{ |path| File.join(path, name) }
-        libpath = libpathselect{ |path| File.join(location, path).directory? }
+        libpath = libpath.select{ |path| File.directory?(File.join(location, path)) }
       end
 
       @name      = name      if name
