@@ -1,4 +1,0 @@
-#!/bin/sh
-
-rdoc -o doc/rdoc -m README -t "Ruby Roll" README lib
-

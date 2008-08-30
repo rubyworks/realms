@@ -1,9 +1,0 @@
-#!/usr/bin/env ratch
-
-# Prepare for release.
-
-main :prepare do
-  manifest :up
-  box :build
-end
-

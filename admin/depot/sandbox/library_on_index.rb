@@ -1,22 +1,38 @@
-require 'roll/package'
+require 'roll/library'
 
+if defined? ::Library
+
+  ::Library.setup
+
+else
 
 class Library
-  INDEX_FILE = "index.yaml"
+
+  STATIC_LOAD_PATH = $LOAD_PATH.dup
+
+  #INDEX_FILE = "index.yaml"
 
   # The ledger
-  @ledger = {}
-  @register = []
+  @ledger = Hash.new{ |h,k| h[k] = [] }
 
   def self.ledger
     @ledger
   end
 
-  def self.register
-    @register
+  def self.scan
+    $LOAD_PATH.each do |lpath|
+      next unless File.directory?(lpath)
+      Dir.chdir(lpath) do
+        libs = Dir.glob('*')
+        libs.each do |lib|
+          name = lib.chomp('.rb').chomp('.so')
+          ledger[name] << lpath
+        end
+      end
+    end
   end
 
-  def self.scan
+=begin
     libraries = Dir.glob('{' + $LOAD_PATH.join(',') + '}/*')
     libraries.each do |load_path|
       if File.file?(load_path)
@@ -37,6 +53,7 @@ class Library
     end
     @register.sort!{ |kv1, kv2| kv2[0] <=> kv1[0] }
   end
+=end
 
   # Inspection.
 
@@ -53,32 +70,32 @@ end
 
 module Kernel
 
+  alias_method :require0, :require
+
   def require(reference)
-    match, load_path, paths = nil, nil, nil
-    found = Library.register.each do |match, load_path, paths|
-      break true if /^#{Regexp.escape(match)}/ =~ reference
-    end
-
-    raise unless found
-
-    return Kernel.require(load_path) unless paths
-
-    local_path = reference.sub(/^#{Regexp.escape(match)}/,'')
-
-    paths = [paths].flatten
-    paths.each do |path|
-      file = File.join(load_path, path, local_path)
+puts reference
+    lib = reference.split('/').first
+    name = lib.chomp('.rb').chomp('.so')
+    if paths = Library.ledger[name]
+      hold = $LOAD_PATH
       begin
-        Kernel.require(file)
+        $LOAD_PATH.replace(paths)
+        Kernel.require(reference)
       rescue LoadError => e
-        puts e.message
+puts reference + " (error)"
+        $LOAD_PATH.replace(Library::STATIC_LOAD_PATH)
+        require0(reference)
+      ensure
+        $LOAD_PATH.replace(hold)
       end
+    else
+      require0(reference)
     end
   end
 
 end
 
-
+end
 
 
 
@@ -86,18 +103,24 @@ if __FILE__ == $0
 
 t = Time.now
 
-  Library.scan
+  #Library.scan
 
-p Time.now - t
+now = Time.now
+puts "#{now - t} secs"
 
-  #p Library.register
+#Library.ledger.each do |lib, paths|
+#  puts lib + " " + paths.join(" ")
+#end
 
   require 'cgi'
 
-  p CGI
+  require 'net/http'
+  require 'net/http'
 
-  require 'try/tryme'
+  require 'redcloth'
 
-  require 'try/tryme'
+now = Time.now
+puts "#{now - t} secs"
 
 end
+
