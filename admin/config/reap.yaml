@@ -1,5 +1,24 @@
----
+#sow: {}
 
-package:
-  formats: [zip]
+syntax: {}
+
+basicstats: {}
+
+notes: {}
+
+#testunit: {}
+
+rdoc:
+  template : jamis
+  inline   : true
+  output   : doc/rdoc
+
+ridoc:
+  output   : doc/ri
+
+zip: {}
+
+rubyforge:
+  unixname: roll
+  groupid: 1004
 
