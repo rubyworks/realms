@@ -42,11 +42,13 @@ module Roll
     end
   end
 
-  #
+  # FIXME: break on ?
   def self.find_root
     dir = Dir.pwd
     until dir == '/'
-      break File.exist?('.roll') # FIX
+      break File.exist?('VERSION')
+      break File.exist?('.config/roll.ini')
+      break File.exist?('.roll')
       dir = File.dirname(dir)
     end
     return nil if dir == '/'

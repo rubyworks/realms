@@ -105,9 +105,9 @@ metaclass Library do
       begin
         metadata = load_rollfile(location)
         versdata = load_version(location)
-        metadata.update(versdata)
+        metadata = metadata.merge(versdata)
 
-        metadata[:name] ||= metadata[:project] || metadata[:title].downcase
+        metadata[:name] ||= metadata[:project]
 
         lib = Library.new(location, metadata)
 
@@ -119,7 +119,7 @@ metaclass Library do
         @locations << location
       rescue => e
         raise e if ENV['ROLL_DEBUG'] or $DEBUG
-        warn "scan error, library omitted -- #{location}" if ENV['ROLL_WARN']
+        warn "scan error, library omitted -- #{location}" if ENV['ROLL_WARN'] or $VERBOSE
       end
     end
   end
@@ -135,8 +135,10 @@ metaclass Library do
   def load_rollfile(location)
     data = {}
 
-    rollfile = File.join(location, '.roll')
-    return {} unless File.exist?(rollfile)
+    find = File.join(location,'{.config/roll.ini,.roll}')
+    rollfile = Dir.glob(find).first  # TODO: deprecate .roll
+
+    return data unless rollfile
 
     content = File.read(rollfile)
     entries = content.split("\n")
@@ -153,7 +155,7 @@ metaclass Library do
 
   # Load and parse version stamp file.
   def load_version(location)
-    patt = File.join(location,'{,meta/}VERSION')
+    patt = File.join(location,'VERSION')
     file = Dir.glob(patt, File::FNM_CASEFOLD).first
     if file
       parse_version_stamp(File.read(file))
@@ -165,7 +167,7 @@ metaclass Library do
   #
   def parse_version_stamp(text)
     #info, *libpath = *data.split(/\s*\n\s*/)
-    name, version, status, date = text.split(/\s+/)
+    name, version, status, date = *text.split(/\s+/)
     version = VersionNumber.new(version)
     date    = Time.mktime(*date.scan(/[0-9]+/))
     #default = default || "../#{name}"
@@ -300,7 +302,7 @@ metaclass Library do
   # a bug in Ruby b/c autoload is not using the overriden
   # require.
   alias_method :require_without_roll, :require
-  #public :require_without_roll
+  public :require_without_roll
 
   # Require script.
   #
@@ -318,6 +320,8 @@ metaclass Library do
       return lib.require(path)
     end
 
+    load_error = nil
+
     # potential specified library, ie. head of path is library name
     name, *rest = file.split('/')
     path = File.join(*rest)
@@ -326,16 +330,17 @@ metaclass Library do
       begin
         return lib.require(path)
       rescue LoadError => load_error
-        raise load_error if ENV['ROLL_DEBUG']
+        #raise load_error if ENV['ROLL_DEBUG']
       end
     end
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
-    #begin
+    begin
       return require_without_roll(file)
-    #rescue LoadError => kernel_error
-    #  raise kernel_error if ENV['ROLL_DEBUG']
-    #end
+    rescue LoadError => kernel_error
+      raise load_error if load_error
+      raise kernel_error
+    end
 
     # failure
     #raise kernel_error
@@ -346,7 +351,7 @@ metaclass Library do
   #if real_file != file
 
   alias_method :load_without_roll, :load
-  #public :load_without_roll
+  public :load_without_roll
 
   # Load script.
   def load(file, wrap=false)
@@ -358,6 +363,8 @@ metaclass Library do
       return lib.load(path, wrap)
     end
 
+    load_error = nil
+
     # potential specified library, ie. head of path is library name
     name, *rest = file.split('/')
     path = File.join(*rest)
@@ -365,16 +372,17 @@ metaclass Library do
       begin
         return lib.load(path, wrap)
       rescue LoadError => load_error
-        raise load_error if ENV['ROLL_DEBUG']
+        #raise load_error if ENV['ROLL_DEBUG']
       end
     end
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
-    #begin
+    begin
       return load_without_roll(file, wrap)
-    #rescue LoadError => kernel_error
-    #  raise kernel_error if ENV['ROLL_DEBUG']
-    #end
+    rescue LoadError => kernel_error
+      raise load_error if load_error
+      raise kernel_error
+    end
 
     # failure
     #raise kernel_error
@@ -395,16 +403,17 @@ metaclass Library do
       begin
         return lib.require(file)
       rescue LoadError => load_error
-        raise load_error if ENV['ROLL_DEBUG']
+        #raise load_error if ENV['ROLL_DEBUG']
       end
     end
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
-    #begin
+    begin
       return require_without_roll(file)
-    #rescue LoadError => kernel_error
-    #  raise kernel_error if ENV['ROLL_DEBUG']
-    #end
+    rescue LoadError => kernel_error
+      raise load_error if load_error
+      raise kernel_error
+    end
   end
 
   #
@@ -417,21 +426,24 @@ metaclass Library do
       return lib.load(path, wrap)
     end
 
+    load_error = nil
+
     # try current library
     if lib = Library.last
       begin
         return lib.load(file, wrap)
       rescue LoadError => load_error
-        raise load_error if ENV['ROLL_DEBUG']
+        #raise load_error if ENV['ROLL_DEBUG']
       end
     end
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
-    #begin
+    begin
       return load_without_roll(file, wrap)
-    #rescue LoadError => kernel_error
-    #  raise kernel_error if ENV['ROLL_DEBUG']
-    #end
+    rescue LoadError => kernel_error
+      raise load_error if load_error
+      raise kernel_error
+    end
 
     # failure
     raise kernel_error

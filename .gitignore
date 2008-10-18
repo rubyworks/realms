@@ -1,3 +1,6 @@
 .installed
 .install
 .config
+doc/rdoc
+doc/ri
+log

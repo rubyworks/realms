@@ -27,24 +27,25 @@ class Library
       raise "no version -- #{location}" unless @version
       raise "no name -- #{location}" unless @name
 
-      @default ||= "#{@name}/main" # "../#{@name}"
+      @default ||= "#{@name}" # "../#{@name}"
 
       @depend = []
     end
 
     #
     def parse_identity(data)
-      name    =  data[:name]
+      name     = data[:name]    || data[:project]
       version  = data[:version]
       status   = data[:status]
       default  = data[:default]
       date     = data[:date]    || data[:released]
-
       libpath  = data[:libpath] || data[:libpaths] || []
+
       if libpath.empty?
         lp = data[:loadpath] || data[:loadpaths] || ['lib']
 
-        libpath = lp + lp.map{ |path| File.join(path, name) }
+        libpath = lp
+        libpath = libpath + lp.map{ |path| File.join(path, name) } if name
         libpath = libpath.select{ |path| File.directory?(File.join(location, path)) }
       end
 
