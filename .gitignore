@@ -1,6 +1,4 @@
-.installed
-.install
-.config
+.cache
 doc/rdoc
 doc/ri
 log

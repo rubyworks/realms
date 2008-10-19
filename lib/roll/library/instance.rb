@@ -160,9 +160,9 @@ class Library
   attr_reader :depend
 
   # Default library file. This is the default file to load if the library
-  # is required or loaded solely by it's own name. Eg. @require 'foo'@.
+  # is required or loaded solely by it's own name. Eg. +require 'foo'+.
   #
-  # If not specified it defaults to @require 'foo/../foo'@.
+  # If not specified it defaults to +require 'foo.rb'+.
   attr_reader :default
 
   # Alias for date.
@@ -273,7 +273,7 @@ class Library
     if path = require_find(file)
       Library.load_stack << self #name?
       begin
-         success = $LOAD_PATH.require(path) #Library.require_without_roll(path)
+         success = Kernel.require(path)
       ensure
         Library.load_stack.pop
       end
@@ -291,7 +291,7 @@ class Library
     if path = load_find(file)
       Library.load_stack << self #name?
       begin
-        success = Library.load_without_roll(path, wrap)
+        success = Kernel.load(path, wrap)
       ensure
         Library.load_stack.pop
       end
@@ -302,7 +302,6 @@ class Library
   end
 
   # Require find.
-
   def require_find(file)
     file = default if (file.nil? or file.empty?)
     find = File.join('{' + lib_search_path.join(',') + '}', file + "{#{Library.dlext},.rb,}")
@@ -310,7 +309,6 @@ class Library
   end
 
   # Load find.
-
   def load_find(file)
     file = default if (file.nil? or file.empty?)
     find = File.join('{' + libdirs.join(',') + '}', file)
@@ -320,114 +318,23 @@ class Library
   # Put the lib's load paths into the local lookup of the current library or
   # if at the toplevel, in the standard lookup.
   #--
-  # TODO Maybe call this 'import' instead?
+  # NOTE: I DON'T THINK THIS IS A GOOD IDEA.
   #++
-
-  def utilize
-    lastlib = Library.load_stack.last
-    if lastlib
-      lastlib.depend << self
-      #libdirs.each do |path|
-      #  lastlib.append_to_libpath(path)
-      #end
-    else
-# TODO
-      #libdirs.each do |path|
-      #  Library.load_path.unshift(path)
-      #end
-      #Library.load_path.uniq!
-    end
-    self
-  end
-
-  ####################
-  # LIBRARY METADATA #
-  ####################
-
-  PROJECT_FILE = '{meta/,}project{,info}{,.yaml,.yml}'
-
-  # Read metadata, if any exists. Metadata is purely extransous information.
-  # Therefore it is kept in a seaprate 'project' file, and only loaded
-  # if requested. The metadata will be a Reap::Project object if Reap
-  # is installed (providing more intelligent project info), otherwise it
-  # will be a simple OpenStruct object.
-  #
-  # If no metadata is found, return false. If library is ruby's core/standard
-  # then, of course, no metadata exits and it also return false.
-  #
-  # TODO: Should we handle special ruby library differently?
-
-  def metadata
-    return @metadata unless @metadata.nil?
-    @metadata = (
-      if defined?(::Reap)
-        ::Reap::Project.load(location) #
-      else
-        Kernel.require 'ostruct'
-        file = Dir.glob(File.join(location,PROJECT_FILE), File::FNM_CASEFOLD).first
-        if file
-          require 'yaml'
-          data = YAML::load(File.open(file))
-          OpenStruct.new(data)
-        else
-          false
-        end
-      end
-    )
-  end
-
-  alias_method :info, :metadata
-
-  # If method is missing delegate to metadata, if any.
-
-  def method_missing(s, *a, &b)
-    if metadata
-      metadata.send(s, *a, &b)
-    else
-      super
-    end
-  end
-
-  # Is metadata available?
-
-  def metadata?
-    metadata ? true : false
-  end
-
-
-  # TODO Does this library have a remote source?
-  #def remote?
-  #  metadata? and source and pubkey
-  #end
-  
-
-  #  def reload_project
-  #    #return @projectinfo unless @projectinfo.nil?
-  #
-  #    #return @projectinfo = {} if name == 'ruby'
-  #
-  #    #find = File.join(location, '{meta/,}{project}{.yaml,.yml,}')
-  #    #file = Dir.glob(find, File::FNM_CASEFOLD).first
-  #
-  #    return @metadata = {} unless file
-  #
-  #    @metadata = (
-  #      data = YAML::load(File.new(file))
-  #      data = data.inject({}){ |h, (k,v)| h[k.to_s.downcase] = v ; h }
-  #      data['file']    = file
-  #      data['name']    = name
-  #      data['version'] = version.to_s
-  #      data
-  #    )
+  #def utilize
+  #  lastlib = Library.load_stack.last
+  #  if lastlib
+  #    lastlib.depend << self
+  #    #libdirs.each do |path|
+  #    #  lastlib.append_to_libpath(path)
+  #    #end
+  #  else
+  #    #libdirs.each do |path|
+  #    #  Library.load_path.unshift(path)
+  #    #end
+  #    #Library.load_path.uniq!
   #  end
-
-    #def project_file
-    #  return @file unless @file.nil?
-    #  @file = (
-    #    file = Dir.glob(File.join(location,'{,meta/}project{.yaml,.yml,}'), File::FNM_CASEFOLD)[0]
-    #    File.file?(file) ? file : false
-    #  )
-    #end
+  #  self
+  #end
 
 end
 

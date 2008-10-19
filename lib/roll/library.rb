@@ -1,5 +1,5 @@
-require 'roll/config'
 require 'roll/loadpath'
+require 'roll/config'
 require 'roll/version'
 #require 'roll/sign'
 

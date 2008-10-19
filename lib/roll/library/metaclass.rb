@@ -1,11 +1,9 @@
-require 'roll/corepatch'
-
 # = Library Qua-Class
 #
-# The Library-Qua-Class serves as the library manager,
+# The Library qua-class serves as the library manager,
 # storing a ledger of available libraries.
 #
-metaclass Library do
+class << Library
 
   # We need to hold a copy of the original $LOAD_PATH
   # for specified "ruby: ..." loads.
@@ -204,13 +202,11 @@ metaclass Library do
   #     end
 
   # Return a list of library names.
-
   def list
     ledger.keys
   end
 
   # Libraries are Singleton pattern.
-
   def instance(name, constraint=nil)
     name = name.to_s
 
@@ -301,8 +297,8 @@ metaclass Library do
   # FIXME This doesn;t work for autoload. This is really
   # a bug in Ruby b/c autoload is not using the overriden
   # require.
-  alias_method :require_without_roll, :require
-  public :require_without_roll
+  #alias_method :require_without_roll, :require
+  #public :require_without_roll
 
   # Require script.
   #
@@ -336,7 +332,7 @@ metaclass Library do
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
     begin
-      return require_without_roll(file)
+      return Kernel.require(file)
     rescue LoadError => kernel_error
       raise load_error if load_error
       raise kernel_error
@@ -350,8 +346,8 @@ metaclass Library do
   #real_file = $1.strip
   #if real_file != file
 
-  alias_method :load_without_roll, :load
-  public :load_without_roll
+  #alias_method :load_without_roll, :load
+  #public :load_without_roll
 
   # Load script.
   def load(file, wrap=false)
@@ -378,7 +374,7 @@ metaclass Library do
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
     begin
-      return load_without_roll(file, wrap)
+      return Kernel.load(file, wrap)
     rescue LoadError => kernel_error
       raise load_error if load_error
       raise kernel_error
@@ -409,7 +405,7 @@ metaclass Library do
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
     begin
-      return require_without_roll(file)
+      return Kernel.require(file)
     rescue LoadError => kernel_error
       raise load_error if load_error
       raise kernel_error
@@ -439,7 +435,7 @@ metaclass Library do
 
     # traditional attempt (allows other load hacks to work, including RubyGems)
     begin
-      return load_without_roll(file, wrap)
+      return Kernel.load(file, wrap)
     rescue LoadError => kernel_error
       raise load_error if load_error
       raise kernel_error
