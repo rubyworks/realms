@@ -1,19 +1,61 @@
 = Roll
 
-Roll is a library manager for Ruby. Code repositories
-can be made visible to Ruby just by setting an
-environment variable.
+Roll is a library manager for Ruby. With Rolls developers
+can run there projects in real time --no install phase
+is required for one project to depend on another.
+
+To use Roll in this way, simply navigate to the root directory
+of a project. Make sure there is a "VERSION" file, formatted as: 
+
+  name version status (date)
+
+For example:
+
+  xdg 0.5.0 stable (2008-10-28)
+
+And then issue the command:
+
+  $ roll in
+
+And your project it READY TO ROLL!
+
+Roll can also manage SCM repositories as means of package
+distribution. For example:
+
+  roll install xdg
+
+This will look for an xdg repository on Rubyforge and install
+the current development version of the XDG library.
 
 
 == How to Install
 
-Rolls needs to be downloaded and installed manually via the setup script provided.
+=== Manual Installation
 
-  $ tar -xvzf roll-x.y.z
-  $ cd roll-x.y.z
-  $ sudo task/setup
+You will need Ruby Setup, the standalone setup.rb script, in order
+top install Roll.
 
-On Windows, this last line needs to be 'ruby task/setup'.
+See: http://setup.rubyforge.org.
+
+Once you have setup.rb, download the Roll tarball and install
+it manually as follows:
+
+  $ tar -xvzf roll-1.0.0
+  $ cd roll-1.0.0
+  $ sudo setup.rb all
+
+On Windows, this last line needs to be 'ruby setup.rb all'.
+
+=== RubyGems Installation
+
+We strongly recommend installing Rolls manually b/c
+Rolls is a peer to RubyGems. However, you can use Gems to
+install it; and this is a convenient way to try it out.
+
+  gem install roll
+
+If you like Rolls, then later you can uninstall the gem and
+install manually.
 
 
 == Copying

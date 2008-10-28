@@ -1,46 +1,14 @@
-# TITLE:
-#
-#   VersionNumber
-#
-# DESCRIPTION:
-#
-#   VersionNumber is a simplified form of a Tuple class
-#   desgined specifically for dealing with version numbers.
-#
-# AUTHOR:
-#
-#   - Thomas Sawyer (7rans)
-#
-# LICENSE:
-#
-#   Copyright (c) 2005 Thomas Sawyer
-#
-#   Ruby License
-#
-#   This module is free software. You may use, modify, and/or redistribute this
-#   software under the same terms as Ruby.
-#
-#   This program is distributed in the hope that it will be useful, but WITHOUT
-#   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-#   FOR A PARTICULAR PURPOSE.
-#
-# TODO:
-#
-#   - Maybe add Kernel method #version ?
-#
-#   - If Tuple were standard part of Ruby this probably would
-#     not be needed or at least might be simple sublcass instead.
+module Roll
 
+  # = Version
+  #
+  # VersionNumber is a simplified form of a Tuple class
+  # desgined specifically for dealing with version numbers.
+  #
+  class Version #< Tuple
 
-# = VersionNumber
-#
-# VersionNumber is a simplified form of a Tuple class
-# desgined specifically for dealing with version numbers.
-
-class VersionNumber #< Tuple
-
-  #include Enumerable
-  include Comparable
+    #include Enumerable
+    include Comparable
 
   # metaclass
   class << self
@@ -143,4 +111,7 @@ class VersionNumber #< Tuple
 
     def tuple ; @tuple ; end
 
+  end
+
 end
+

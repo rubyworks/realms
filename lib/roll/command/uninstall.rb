@@ -36,7 +36,6 @@ module Roll
       require 'roll/install'
 
       installer = Roll::Install::new(ARGV[1], options)
-
       installer.uninstall
 
       clean unless $PRETEND

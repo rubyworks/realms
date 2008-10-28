@@ -1,2 +1,2 @@
-require 'roll/library'
+require 'roll'
 

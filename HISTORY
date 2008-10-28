@@ -1,3 +1,10 @@
+== 1.0.0 / 2008-10-28
+
+* Major overhaul of underlying system.
+* Roll now utilized $LOAD_PATH in standard fashion.
+* VERSION is the new "rollrc" file.
+* All extraneous loading modes have been removed.
+* Added in SCM-based package manager.
 
 == 0.9.3 / 2007-02-10
 

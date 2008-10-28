@@ -1,2 +1,4 @@
-require 'roll/library'
+require 'roll/roll'
+
+Roll.setup
 

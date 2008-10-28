@@ -1,10 +1,11 @@
 require 'tmpdir'
 require 'fileutils'
 require 'getoptlong'
-require 'roll/library'
+require 'roll'
 
 module Roll
 
+  # = Roll Command
   #
   class Command
 
@@ -61,12 +62,18 @@ module Roll
 
     #
     def save_cache(list)
-      FileUtils.mkdir_p(File.dirname(Library.user_ledger_file))
-      File.open(Library.user_ledger_file, 'w') do |f|
+      FileUtils.mkdir_p(File.dirname(user_ledger_file))
+      File.open(user_ledger_file, 'w') do |f|
         f << list.join("\n")
       end
     end
 
+    #
+    def user_ledger_file
+      @user_ledger_file ||= File.join(XDG.home_config, 'roll/ledger.list')
+    end
+
+    #
     def help
       s = []
       s << 'usage: roll <command> [options] [arguments]'
@@ -88,6 +95,7 @@ module Roll
 
 end
 
+# Load subcommands.
 require 'roll/command/path'
 require 'roll/command/list'
 require 'roll/command/insert'
