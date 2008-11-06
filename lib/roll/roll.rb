@@ -60,11 +60,9 @@ module Roll
   def load_projects(*locations)
     locations.each do |location|
       begin
-        metadata = { :location => location } #load_rollfile(location)
-        versdata = load_version(location)
-        metadata = metadata.merge(versdata)
-
-        #metadata[:name] ||= metadata[:project]
+        metadata = load_version(location)
+        metadata[:location] = location
+        metadata[:loadpath] = load_loadpath(location)
 
         lib = Library.new(metadata)
 
@@ -89,6 +87,18 @@ module Roll
       parse_version_stamp(File.read(file))
     else
       {}
+    end
+  end
+
+  # Wish there was a way to do this without using a
+  # configuration file.
+  def load_loadpath(location)
+    file = File.join(location, 'meta', 'loadpath')
+    if File.file?(file)
+      paths = File.read(file).gsub(/\n\s*\n/m,"")
+      paths = paths.split(/\s*\n/)
+    else
+      paths = ['lib']
     end
   end
 

@@ -14,9 +14,9 @@ module Roll
     class Git < Base
 
       #
-      def initialize_defaults
-        @uri = 'git://rubyforge.org/%s.git' % [name]
-      end
+      #def initialize_defaults
+      #  @uri = 'git://rubyforge.org/%s.git' % [name]
+      #end
 
       # Install the project.
       def install

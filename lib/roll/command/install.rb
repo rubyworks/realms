@@ -8,8 +8,8 @@ module Roll
       opts = GetoptLong.new(
         [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 
-        [ '--git', '-g', GetoptLong::NO_ARGUMENT ],
-        [ '--svn', '-s', GetoptLong::NO_ARGUMENT ],
+        #[ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
+        [ '--rubyforge', '-r', GetoptLong::NO_ARGUMENT ],
 
         [ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ],
 
@@ -25,10 +25,10 @@ module Roll
         case opt
         when '--help'
           # TODO
-        when '--git'
-          options[:scm_type] = :git
-        when '--svn'
-          options[:scm_type] = :svn
+        when '--rubyforge'
+          options[:host] = :rubyforge
+        #when '--github'
+        #  options[:host] = :github
         when '--tag'
           options[:version_type] = :tag
           options[:version] = arg

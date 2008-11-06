@@ -7,30 +7,34 @@ module ::Kernel
 
   module_function :roll
 
+  alias_method :require_without_roll, :require
+
   #
   def require(fname)
     begin
-      Kernel.require(fname)
+      require_without_roll(fname)
     rescue LoadError => error
       name = fname.split(/[\\\/]/).first
       if Roll.list.include?(name)
         Roll.instance(name).activate
-        retry
+        require_without_roll(fname)
       else
         raise error
       end
     end
   end
 
+  alias_method :load_without_roll, :load
+
   #
   def load(fname, safe=nil)
     begin
-      Kernel.load(fname, safe)
+      load_without_roll(fname, safe)
     rescue LoadError => error
       name = fname.split(/[\\\/]/).first
       if Roll.list.include?(name)
         Roll.instance(name).activate
-        retry
+        load_without_roll(fname, safe)
       else
         raise error
       end

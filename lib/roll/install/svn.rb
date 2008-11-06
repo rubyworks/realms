@@ -7,9 +7,9 @@ module Roll
     # Currently this only supports Rubyforge repositories.
     class Svn < Base
 
-      def initialize_defaults
-        @uri = "svn://rubyforge.org/var/svn/%s" % [name]
-      end
+      #def initialize_defaults
+      #  @uri = "svn://rubyforge.org/var/svn/%s" % [name]
+      #end
 
       #
       def install
@@ -35,7 +35,7 @@ module Roll
       # MAYBE: Use the VERSION file to determine which
       #        folders are usable as "packages"?
       def scan
-p uri
+#p uri
         case version_type
         when :tag
           tags = `svn list #{uri}/tags/`
@@ -63,7 +63,7 @@ p uri
           # install latest (assumes 'trunk')
           url = uri + "/trunk"
         end
-p url
+#p url
         return url
       end
 

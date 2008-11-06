@@ -20,13 +20,17 @@ module Roll
     # Version type is either :tag, :branch, :revision, or :version.
     attr_accessor :version_type
 
+    # Supports rubyforge (default) and github.
+    attr_accessor :host
+
     # Type of SCM used. Presently this is needed for first install.
-    attr_accessor :scm_type
+    #attr_accessor :scm_type
 
     #
     def initialize(name, options={})
       raise "missing repository name" unless name
       @name = name.to_s
+      @host = :rubyforge
       options.each do |k, v|
         __send__("#{k}=", v) if v && respond_to?("#{k}=")
       end
@@ -53,10 +57,8 @@ module Roll
     end
 
     # Return SCM type for project.
-    #--
-    # TODO: Is there a way to figure out the scm type remotely?
-    #++
     def scm_check
+      return :git if host == :github
       if version
         return :svn if File.directory?(File.join(local, version, '.svn'))
         return :git if File.directory?(File.join(local, version, '.git'))
@@ -64,7 +66,33 @@ module Roll
         return :svn if Dir[File.join(local, '*', '.svn')].first  # TODO: Maybe just origin.
         return :git if File.directory?(File.join(origin, '.git'))
       end
-      return nil
+      # lets try to get it remotely
+      scm_check_remote
+    end
+
+    #
+    def scm_check_remote
+      begin
+        require 'open_uri'
+        open('http://rubyforge/projects/#{name}/').read =~ /svn/im ? :svn : :git
+      rescue
+        nil
+      end
+    end
+
+    #
+    def uri
+      case host
+      when :guthub
+        # TODO
+      else
+        case scm_type
+        when :git
+          'git://rubyforge.org/%s.git' % [name]
+        when :svn
+          'svn://rubyforge.org/var/svn/%s' % [name]
+        end
+      end
     end
 
     # Install project.
@@ -92,7 +120,7 @@ module Roll
     def delegate
       @delegate ||= (
         class_name = scm_type.to_s.capitalize
-        Roll::Install::const_get(class_name).new(self)
+        Roll::Install::const_get(class_name).new(self, :uri=>uri)
       )
     end
   end

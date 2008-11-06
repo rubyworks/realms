@@ -5,7 +5,7 @@ module Roll
     STORE = '/opt/rolls/'
 
     # Base class for all scm installers.
-    # These are tightly coupled to the 
+    # These are tightly coupled to the
     # Install class which delegates to them.
     #
     class Base
@@ -16,10 +16,10 @@ module Roll
       attr_accessor :uri
 
       #
-      def initialize(installer)
+      def initialize(installer, options={})
         @installer = installer
-
-        initialize_defaults
+        @uri = options[:uri] if options[:uri]
+        #initialize_defaults
       end
 
       # Project name
