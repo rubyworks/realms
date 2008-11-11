@@ -2,21 +2,15 @@ require 'roll/install/base'
 
 module Roll
 
-  class Install
+  module Install
 
+    # = Git
+    #
     # For Git there's no distinction between branches, tags
     # and revisions --they are just different labels on the
     # same thing.
     #
-    # Currently this only supports Rubyforge repositories.
-    # Github comming soon.
-    #
     class Git < Base
-
-      #
-      #def initialize_defaults
-      #  @uri = 'git://rubyforge.org/%s.git' % [name]
-      #end
 
       # Install the project.
       def install

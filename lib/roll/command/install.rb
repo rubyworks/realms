@@ -19,16 +19,17 @@ module Roll
         [ '--version',  '-v', GetoptLong::REQUIRED_ARGUMENT ]
       )
 
-      options = {}
+      host_type = nil
+      options   = {}
 
       opts.each do |opt, arg|
         case opt
         when '--help'
           # TODO
         when '--rubyforge'
-          options[:host] = :rubyforge
-        #when '--github'
-        #  options[:host] = :github
+          host_type = :rubyforge
+        when '--github'
+          host_type = :github
         when '--tag'
           options[:version_type] = :tag
           options[:version] = arg
@@ -44,17 +45,24 @@ module Roll
         end
       end
 
-      installer = Roll::Install.new(ARGV[1], options)
-
-      dir = installer.install
-
-      if $PRETEND
+      case host_type
+      when :rubyforge
+        host = Roll::Rubyforge.new(ARGV[1], options)
+      when :github
+        host = Roll::Github.new(ARGV[1], options)
       else
+        raise "unknown host"
+      end
+
+      dir = host.install
+
+      # insert installation into ledger
+      if not $PRETEND
         Dir.chdir(dir){ insert }
       end
     end
 
   end
 
-end
+end #module Roll
 

@@ -7,6 +7,9 @@ module Roll
 
   # = Roll Command
   #
+  # TODO: Support multiple ledgers.
+  # :     This is useful for working with different environments.
+  # :     For example: testing vs. development vs. production.
   class Command
 
     def start
@@ -79,11 +82,11 @@ module Roll
       s << 'usage: roll <command> [options] [arguments]'
       s << ''
       s << 'commands:'
-      s << '  in         insert project into ledger'
-      s << '  out        remove project from ledger'
-      s << '  ledger     list ledger entries'
+      s << '  in         insert current project into ledger'
+      s << '  out        remove current project from ledger'
+      s << '  ledger     list the ledger entries'
       s << '  clean      clean ledger of invalid entries'
-      s << '  path       ledger bin PATH'
+      s << '  path       output ledger bin PATH'
       s << '  install    install project'
       s << '  uninstall  uninstall project'
       s << '  update     update project'

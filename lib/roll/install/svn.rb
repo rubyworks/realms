@@ -1,11 +1,12 @@
-require 'roll/install/base'
+require 'roll/install/scm'
 
 module Roll
 
-  class Install
+  module Install
 
-    # Currently this only supports Rubyforge repositories.
-    class Svn < Base
+    # = Svn
+    #
+    class Svn < Scm
 
       #def initialize_defaults
       #  @uri = "svn://rubyforge.org/var/svn/%s" % [name]
