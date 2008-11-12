@@ -8,10 +8,10 @@ module Roll
       opts = GetoptLong.new(
         [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 
-        #[ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
+        [ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
         [ '--rubyforge', '-r', GetoptLong::NO_ARGUMENT ],
 
-        [ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ],
+        #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ],
 
         [ '--tag',      '-t', GetoptLong::REQUIRED_ARGUMENT ],
         [ '--branch',   '-b', GetoptLong::REQUIRED_ARGUMENT ],
@@ -45,21 +45,27 @@ module Roll
         end
       end
 
-      case host_type
-      when :rubyforge
-        host = Roll::Rubyforge.new(ARGV[1], options)
-      when :github
-        host = Roll::Github.new(ARGV[1], options)
-      else
-        raise "unknown host"
-      end
+      name = ARGV[1]
 
-      dir = host.install
+      installer = Installer.new(name, host_type, options)
+
+      installer.install
+
+      #case host_type
+      #when :rubyforge
+      #  host = Roll::Rubyforge.new(ARGV[1], options)
+      #when :github
+      #  host = Roll::Github.new(ARGV[1], options)
+      #else
+      #  raise "unknown host"
+      #end
+
+      #dir = host.install
 
       # insert installation into ledger
-      if not $PRETEND
-        Dir.chdir(dir){ insert }
-      end
+      #if not $PRETEND
+      #  Dir.chdir(dir){ insert }
+      #end
     end
 
   end
