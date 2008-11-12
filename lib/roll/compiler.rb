@@ -1,4 +1,4 @@
-require 'rbconfig'
+require 'roll/config'
 
 module Roll
 
@@ -10,6 +10,63 @@ module Roll
     class Error < StandardError
     end
 
+    # Compile extension.
+    def build(extension, dest_path, results)
+      case extension
+      when /extconf/ then
+        build_extconf(extension, dest_path, results)
+      when /configure/ then
+        build_configure(extension, dest_path, results)
+      when /rakefile/i, /mkrf_conf/i then
+        build_rake(extension, dest_path, results)
+      else
+        ["No builder for extension '#{extension}'"]
+        nil
+      end
+    end
+
+    #
+    def build_configure(extension, dest_path, results)
+      unless File.exist?('Makefile') then
+        cmd = "sh ./configure --prefix=#{dest_path}"
+
+        run cmd, results
+      end
+
+      make dest_path, results
+
+      results
+    end
+
+    #
+    def build_extconf(extension, dest_path, results)
+      cmd = "#{ruby} #{File.basename extension}"
+      cmd << " #{ARGV.join ' '}" unless ARGV.empty?
+
+      run cmd, results
+
+      make dest_path, results
+
+      results
+    end
+
+    #
+    def build_rake(extension, dest_path, results)
+      if File.basename(extension) =~ /mkrf_conf/i then
+        cmd = "#{ruby} #{File.basename(extension)}"
+        cmd << " #{ARGV.join " "}" unless ARGV.empty?
+        run cmd, results
+      end
+
+      cmd = ENV['rake'] || 'rake'
+      cmd += " RUBYARCHDIR=#{dest_path} RUBYLIBDIR=#{dest_path}" # ENV is frozen
+
+      run cmd, results
+
+      results
+    end
+
+    #
     def make(dest_path, results)
       unless File.exist? 'Makefile' then
         raise InstallError, "Makefile not found:\n\n#{results.join "\n"}" 
@@ -35,10 +92,12 @@ module Roll
       end
     end
 
+    #
     def redirector
       '2>&1'
     end
 
+    #
     def run(command, results)
       results << command
       results << `#{command} #{redirector}`
@@ -56,63 +115,6 @@ module Roll
         # escape string if ruby executable path contain spaces
         ruby.sub(/.*\s.*/m, '"\&"')
       )
-    end
-
-    #
-    def build(extension, directory, dest_path, results)
-      case extension
-      when /extconf/ then
-        build_extconf(extension, directory, dest_path, results)
-      when /configure/ then
-        build_configure(extension, directory, dest_path, results)
-      when /rakefile/i, /mkrf_conf/i then
-        ran_rake = true
-        build_rake(extension, directory, dest_path, results)
-      else
-        results = ["No builder for extension '#{extension}'"]
-        nil
-      end
-    end
-
-    #
-    def build_configure(extension, directory, dest_path, results)
-      unless File.exist?('Makefile') then
-        cmd = "sh ./configure --prefix=#{dest_path}"
-
-        run cmd, results
-      end
-
-      make dest_path, results
-
-      results
-    end
-
-    #
-    def build_extconf(extension, directory, dest_path, results)
-      cmd = "#{ruby} #{File.basename extension}"
-      cmd << " #{ARGV.join ' '}" unless ARGV.empty?
-
-      run cmd, results
-
-      make dest_path, results
-
-      results
-    end
-
-    #
-    def build_rake(extension, directory, dest_path, results)
-      if File.basename(extension) =~ /mkrf_conf/i then
-        cmd = "#{ruby} #{File.basename(extension)}"
-        cmd << " #{ARGV.join " "}" unless ARGV.empty?
-        run cmd, results
-      end
-
-      cmd = ENV['rake'] || 'rake'
-      cmd += " RUBYARCHDIR=#{dest_path} RUBYLIBDIR=#{dest_path}" # ENV is frozen
-
-      run cmd, results
-
-      results
     end
 
   end

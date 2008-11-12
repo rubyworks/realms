@@ -34,65 +34,58 @@ module Roll
       end
     end
 
+    # TODO: Where to get extensions?
+    def extensions
+      []
+    end
+
+    # TODO: Where to get loadd_paths?
+    def load_paths
+      ['lib']
+    end
+
     # Compile extensions. Valid types of extensions are extconf.rb
     # files, configure scripts and rakefiles or mkrf_conf files.
     #
     def compile
-      return if @spec.extensions.empty?
-      say "Building native extensions.  This could take a while..."
+      return if extensions.empty?
+      puts "Compiling native extensions.  This could take a while..."
       start_dir = Dir.pwd
-      dest_path = File.join @gem_dir, @spec.require_paths.first
-      ran_rake = false # only run rake once
+      dest_path = load_paths.first  # FIXME: Where is load_paths?
 
-      @spec.extensions.each do |extension|
-        break if ran_rake
+      compiler = Compiler.new
+
+      # Ensure there is only one entry for each extension;
+      # this should also ensure Rakefile only runs once.
+      extensions.uniq!
+
+      extensions.each do |extension|
         results = []
 
-        compiler = Compiler.new
-
-        #builder = case extension
-        #          when /extconf/ then
-        #            Compile::ExtConf
-        #          when /configure/ then
-        #            Compile::Configure
-        #          when /rakefile/i, /mkrf_conf/i then
-        #            ran_rake = true
-        #            Compile::Rake
-        #          else
-        #            results = ["No builder for extension '#{extension}'"]
-        #            nil
-        #          end
-
         begin
-          Dir.chdir(File.join(@gem_dir, File.dirname(extension)))
+          Dir.chdir(File.dirname(extension))
 
-          results = compiler.build(extension, @gem_dir, dest_path, results)
+          results = compiler.build(extension, dest_path, results)
 
-          say results.join("\n") if Gem.configuration.really_verbose
+          puts results.join("\n") if $DEBUG  #verbose?
 
-        rescue => ex
-          results = results.join "\n"
+        rescue => err
+          results = results.join("\n")
 
-          File.open('gem_make.out', 'wb') { |f| f.puts results }
+          File.open('roll_make.out', 'wb'){ |f| f.puts results }
 
-          message = <<-EOF
-ERROR: Failed to build gem native extension.
+          message = "ERROR: Failed to compile native extension." +
+                    "\n\n#{results}\n\n" +
+                    "Results logged to #{File.join(Dir.pwd, 'roll_make.out')}"
 
-#{results}
-
-Gem files will remain installed in #{@gem_dir} for inspection.
-Results logged to #{File.join(Dir.pwd, 'gem_make.out')}
-          EOF
-
-          raise ExtensionBuildError, message
+          raise Error, message
         ensure
           Dir.chdir start_dir
         end
       end
-
     end
 
-  end
+  end #class Installer
 
-end
+end #module Roll
 
