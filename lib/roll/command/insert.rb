@@ -2,14 +2,14 @@ module Roll
 
   class Command
 
-    # This adds a location to the roll ledger cache.
+    # This adds a location to the user ledger.
     def insert
-      list = File.read(Roll.user_ledger_file).split("\n")
       root = find_root
       if root
+        ledger = Roll.user_ledger
+        ledger << root
+        ledger.save
         puts "#{root}"
-        list = list | [root]
-        save_cache(list)
         puts "  '-> #{Roll.user_ledger_file}"
       end
     end

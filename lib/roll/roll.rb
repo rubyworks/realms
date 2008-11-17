@@ -1,6 +1,8 @@
 require 'roll/xdg'
+require 'roll/ledger'
 require 'roll/library'
 require 'roll/kernel'
+require 'fileutils'
 
 # = Roll
 #
@@ -47,8 +49,32 @@ module Roll
   end
 
   #
+  def system_ledger_file
+    @system_ledger_file ||= File.join(XDG.config_dirs.first, 'roll/ledger.list')
+  end
+
+  #
   def user_ledger_file
-    @user_ledger_file ||= File.join(XDG.home_config, 'roll/ledger.list')
+    @user_ledger_file ||= File.join(XDG.config_home, 'roll/ledger.list')
+  end
+
+  # TODO: Make a more robust ledger loader
+  def system_ledger
+    @system_ledger ||= Ledger.new(system_ledger_file)
+  end
+
+  #
+  #def save_system_ledger(list)
+  #  FileUtils.mkdir_p(File.dirname(system_ledger_file))
+  #  File.open(system_ledger_file, 'wb') do |f|
+  #    f << list.join("\n")
+  #  end
+  #end
+
+  # TODO: Make a more robust leger loader
+  def user_ledger
+    @user_ledger ||= Ledger.new(user_ledger_file)
+    #File.file?(user_ledger_file) ? File.read(user_ledger_file).split(/\s*\n/) : []
   end
 
   # Return a list of library names.

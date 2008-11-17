@@ -215,11 +215,11 @@ module XDG
   end
 
   # Location of working data directory.
-  def data_work
-    File.expand_path(
-      File.join(Dir.pwd, '.share')
-    )
-  end
+  #def data_work
+  #  File.expand_path(
+  #    File.join(Dir.pwd, '.local/share')
+  #  )
+  #end
 
   # Location of working cache directory.
   def cache_work

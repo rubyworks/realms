@@ -66,14 +66,14 @@ module Roll
     #
     def save_cache(list)
       FileUtils.mkdir_p(File.dirname(user_ledger_file))
-      File.open(user_ledger_file, 'w') do |f|
+      File.open(user_ledger_file, 'wb') do |f|
         f << list.join("\n")
       end
     end
 
     #
     def user_ledger_file
-      @user_ledger_file ||= File.join(XDG.home_config, 'roll/ledger.list')
+      @user_ledger_file ||= File.join(XDG.config_home, 'roll/ledger.list')
     end
 
     #
@@ -99,6 +99,7 @@ module Roll
 end
 
 # Load subcommands.
+require 'roll/command/clean'
 require 'roll/command/path'
 require 'roll/command/list'
 require 'roll/command/insert'

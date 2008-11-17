@@ -9,9 +9,9 @@ module Roll
 
     #
     def initialize(name, host_type, options)
-      @name = name
+      @name      = name
       @host_type = host_type
-      @options = options
+      @options   = options
     end
 
     # Install project.
@@ -25,13 +25,18 @@ module Roll
       else
         raise "unknown host"
       end
-
       dir = host.install
+      insert(dir) if not $PRETEND
+    end
 
-      # insert installation into ledger
-      if not $PRETEND
-        Dir.chdir(dir){ insert }
-      end
+    # insert installation into ledger
+    def insert(dir)
+      dir = File.expand_path(dir)
+      ledger = Roll.system_ledger
+      ledger << dir
+      ledger.save
+      puts "#{dir}" 
+      puts "  '-> #{Roll.system_ledger_file}"
     end
 
     # TODO: Where to get extensions?

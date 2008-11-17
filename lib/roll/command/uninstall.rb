@@ -1,8 +1,11 @@
 module Roll
 
-  class Command
+  class Command #:nodoc:
 
+    #
     def uninstall
+      require 'roll/install'
+
       opts = GetoptLong.new(
         [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 
@@ -12,12 +15,17 @@ module Roll
         [ '--version',  '-v', GetoptLong::REQUIRED_ARGUMENT ]
       )
 
-      options = {}
+      host_type = nil
+      options   = {}
 
       opts.each do |opt, arg|
         case opt
         when '--help'
           # TODO
+        #when '--rubyforge'
+        #  host_type = :rubyforge
+        #when '--github'
+        #  host_type = :github
         when '--tag'
           options[:version_type] = :tag
           options[:version] = arg
@@ -33,15 +41,16 @@ module Roll
         end
       end
 
-      require 'roll/install'
+      name = ARGV[1]
 
-      installer = Roll::Install::new(ARGV[1], options)
+      installer = Installer.new(name, host_type, options)
+
       installer.uninstall
 
       clean unless $PRETEND
     end
 
-  end
+  end #class Command
 
-end
+end #module Roll
 
