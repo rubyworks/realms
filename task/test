@@ -1,4 +1,4 @@
-#!/usr/bin/env ratch
+#!/usr/bin/env ruby
 
 # Run unit tests
 
@@ -8,18 +8,16 @@ unless live
   $LOAD_PATH.unshift(File.expand_path('lib'))
 end
 
-main :test do
-  if find = argv[0]
-    unless file?(find)
-      find = File.join(find, '**', 'test_*.rb')
-    end
-  else
-    find = 'test/**/test_*.rb'
+if find = ARGV[0]
+  unless File.file?(find)
+    find = File.join(find, '**', 'test_*.rb')
   end
+else
+  find = 'test/**/test_*.rb'
+end
 
-  Dir.glob(find).each do |file|
-    next if dir?(file)
-    load file
-  end
+Dir.glob(find).each do |file|
+  next if File.directory?(file)
+  load file
 end
 

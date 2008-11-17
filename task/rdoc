@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
-rdoc -o doc/rdoc -m README -t "Ruby Roll" README lib
+system %[rdoc -o doc/rdoc -m README -t "Ruby Roll" README lib]
 
