@@ -1,12 +1,12 @@
-require 'roll/install/host'
+require 'roll/host/base'
 
 module Roll
 
-  module Install
+  module Host
 
     # = Rubyforge
     #
-    class Rubyforge < Host
+    class Rubyforge < Base
 
       #
       def uri
@@ -23,16 +23,18 @@ module Roll
         @scm ||= (
           case scm_type
           when :git
-            Git.new(self, :uri=>uri)
+            Scm::Git.new(self, uri)
           when :svn
-            Svn.new(self, :uri=>uri)
+            Scm::Svn.new(self, uri)
+          else
+            raise "can't determine scm type"
           end
         )
       end
 
       # What is the SCM type (:git or :svn). Fallback is :git.
       def scm_type
-        @scm_type ||= (scm_check || :git)
+        @scm_type ||= scm_check
       end
 
       # Return SCM type for project.
@@ -40,9 +42,9 @@ module Roll
         if version
           return :svn if File.directory?(File.join(local, version, '.svn'))
           return :git if File.directory?(File.join(local, version, '.git'))
-        else
-          return :svn if Dir[File.join(local, '*', '.svn')].first  # TODO: Maybe just origin.
-          return :git if File.directory?(File.join(origin, '.git'))
+        #else
+        #  return :svn if Dir[File.join(local, '*', '.svn')].first  # TODO: Maybe just origin.
+        #  return :git if File.directory?(File.join(origin, '.git'))
         end
         # lets try to get it remotely
         scm_check_remote
@@ -51,16 +53,16 @@ module Roll
       # Remotely check the SCM type.
       def scm_check_remote
         begin
-          require 'open_uri'
-          open('http://rubyforge/projects/#{name}/').read =~ /svn/im ? :svn : :git
-        rescue
-          nil
+          proj = name.split(/[\\\/]/).first
+          open("http://rubyforge.org/projects/#{proj}/").read =~ /SVN/im ? :svn : :git
+        #rescue
+          #nil
         end
       end
 
     end #class Rubyforge
 
-  end #module Install
+  end #module Host
 
 end #module Roll
 

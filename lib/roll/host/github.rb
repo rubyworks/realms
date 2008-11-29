@@ -1,13 +1,14 @@
-require 'roll/install/host'
+require 'roll/host/base'
 
 module Roll
 
-  module Install
+  module Host
 
     # = Github
     #
-    # TODO: How to handle user part of repository?
-    class Github < Host
+    # TODO: How to handle username part of repository name?
+    #
+    class Github < Base
 
       def initialize(name, options={})
         super
@@ -20,10 +21,12 @@ module Roll
 
       #
       def scm
-        @scm ||= Git.new(self, :uri=>uri)
+        @scm ||= Git.new(self, uri)
       end
+
     end
 
-  end
+  end # module Host
 
-end
+end # module Roll
+

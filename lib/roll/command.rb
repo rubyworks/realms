@@ -8,12 +8,13 @@ module Roll
   # = Roll Command
   #
   # TODO: Support multiple ledgers.
-  # :     This is useful for working with different environments.
+  # :     This could be useful for working with different environments.
   # :     For example: testing vs. development vs. production.
+  #
   class Command
 
     def start
-      $PRETEND = ARGV.delete('--pretend')
+      $PRETEND = ARGV.delete('--pretend') || ARGV.delete('--dryrun')
       $VERBOSE = ARGV.delete('--verbose')
       case ARGV[0]
       when 'help', '--help', '-h'

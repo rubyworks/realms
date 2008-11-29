@@ -1,15 +1,17 @@
+require 'open-uri'
 require 'roll/version'
-require 'roll/install/svn'
-require 'roll/install/git'
+require 'roll/scm/svn'
+require 'roll/scm/git'
 
 module Roll
 
-  module Install
+  module Host
 
-    # = Host
+    # = Host Base class
     #
     # Base classes for all host classes.
-    class Host
+    #
+    class Base
 
       DEFAULT_STORE = '/opt/rolls/'
 
@@ -23,7 +25,7 @@ module Roll
       attr_accessor :version
 
       # Version type is either :tag, :branch, :revision, or :version.
-      attr_accessor :version_type
+      #attr_accessor :type
 
       #
       def initialize(name, options={})
@@ -86,7 +88,7 @@ module Roll
 
     end #class Host
 
-  end #module Install
+  end #module Host
 
 end #module Roll
 

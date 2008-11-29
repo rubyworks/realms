@@ -1,9 +1,13 @@
 module Roll
 
-  class Command
+  class Command #:nodoc:
 
+    DEFAULT_HOST = :rubyforge
+
+    # Install project.
+    #
     def install
-      require 'roll/install'
+      require 'roll/installer'
 
       opts = GetoptLong.new(
         [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
@@ -11,15 +15,16 @@ module Roll
         [ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
         [ '--rubyforge', '-r', GetoptLong::NO_ARGUMENT ],
 
-        #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ],
-
-        [ '--tag',      '-t', GetoptLong::REQUIRED_ARGUMENT ],
-        [ '--branch',   '-b', GetoptLong::REQUIRED_ARGUMENT ],
-        [ '--revision', '-r', GetoptLong::REQUIRED_ARGUMENT ],
         [ '--version',  '-v', GetoptLong::REQUIRED_ARGUMENT ]
+
+        #[ '--tag',      '-t', GetoptLong::REQUIRED_ARGUMENT ],
+        #[ '--branch',   '-b', GetoptLong::REQUIRED_ARGUMENT ],
+        #[ '--revision', '-r', GetoptLong::REQUIRED_ARGUMENT ],
+
+        #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ]
       )
 
-      host_type = nil
+      host_type = DEFAULT_HOST
       options   = {}
 
       opts.each do |opt, arg|
@@ -30,17 +35,17 @@ module Roll
           host_type = :rubyforge
         when '--github'
           host_type = :github
-        when '--tag'
-          options[:version_type] = :tag
-          options[:version] = arg
-        when '--branch'
-          options[:version_type] = :branch
-          options[:version] = arg
-        when '--revision'
-          options[:version_type] = :revision
-          options[:version] = arg
+        #when '--tag'
+        #  options[:version_type] = :tag
+        #  options[:version] = arg
+        #when '--branch'
+        #  options[:version_type] = :branch
+        #  options[:version] = arg
+        #when '--revision'
+        #  options[:version_type] = :revision
+        #  options[:version] = arg
         when '--version'
-          options[:version_type] = :version
+          #options[:version_type] = :version
           options[:version] = arg
         end
       end

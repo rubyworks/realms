@@ -1,3 +1,6 @@
+require 'roll/host/rubyforge'
+require 'roll/host/github'
+
 module Roll
 
   # = Installer
@@ -19,9 +22,9 @@ module Roll
     def install
       case host_type
       when :rubyforge
-        host = Roll::Rubyforge.new(name, options)
+        host = Roll::Host::Rubyforge.new(name, options)
       when :github
-        host = Roll::Github.new(name, options)
+        host = Roll::Host::Github.new(name, options)
       else
         raise "unknown host"
       end

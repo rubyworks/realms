@@ -9,10 +9,10 @@ module Roll
       opts = GetoptLong.new(
         [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
 
-        [ '--git', '-g', GetoptLong::NO_ARGUMENT ],
-        [ '--svn', '-s', GetoptLong::NO_ARGUMENT ],
+        [ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
+        [ '--rubyforge', '-r', GetoptLong::NO_ARGUMENT ]
 
-        [ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ]
+        #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ]
       )
 
       options = {}
@@ -21,14 +21,15 @@ module Roll
         case opt
         when '--help'
           # TODO
-        when '--git'
-          options[:scm_type] = :git
-        when '--svn'
-          options[:scm_type] = :svn
+        when '--github'
+          host_type = :github
+        when '--rubyforge'
+          host_type = :rubyforge
         end
       end
 
-      installer = Roll::Install.new(ARGV[1], options)
+      installer = Installer.new(name, host_type, options)
+
       installer.show
     end
 
