@@ -1,7 +1,7 @@
 <html>
 <head>
   <title>Ready to Roll</title>
-  <LINK REL="SHORTCUT ICON" HREF="img/ball/red_ball.jpg"/>
+  <LINK REL="SHORTCUT ICON" HREF="../assets/images/ball/red_ball.jpg"/>
   <style>
              body { font-family: sans-serif; margin: 20px; color: #222222;
                     font-size: 11pt;}
@@ -28,7 +28,7 @@
 <body>
 
 <div id="title">
-  <div style="float:right;"><img src="img/ball/red_ball.jpg" height="200px"></div>
+  <div style="float:right;"><img src="../assets/images/ball/red_ball.jpg" height="200px"></div>
   <br/>
   <span id="title">Roll</span></br>
   <span id="subtitle">&nbsp;ruby's object-oriented library ledger</span></br>
@@ -40,7 +40,7 @@
 
 <div style="border: 2px solid red; padding: 10px;">
   <b>IMPORTANT NOTICE</b><br/><br/>
-  THIS IS STILL VERY MUCH A WORK IN PROGRESS. IT IS FAR FROM COMPLETE AND DOES NOT NECESSARILY MATCH WITH THE CURRENT STATE OF DEVELOPMENT!!!
+  THIS IS STILL A WORK IN PROGRESS. IT IS NOT COMPLETE AND DOES NOT NECESSARILY MATCH WITH THE CURRENT STATE OF DEVELOPMENT!!!
 </div>
 
 <h1> Table of Contents </h1>
@@ -49,28 +49,31 @@
    <li> <a href="#ch_info">Introduction</a>
     <ol>
       <li><a href="#ch_about">   What is Roll(s)? </a></li>
-      <li><a href="#ch_feature"> Feature Highlights        </a></li>
+      <!-- <li><a href="#ch_feature"> Feature Highlights        </a></li> -->
       <li><a href="#ch_install"> How to Install            </a></li>
+      <li><a href="#ch_status">  Development Status        </a></li>
       <li><a href="#ch_who">     Who Developed This?       </a></li>
 
     </ol>
    </li>
    <li> <a href="#ch_user">Rolling for End Users</a>
     <ol>
-      <li><a href="#ch_quick">   Quick Rollout             </a></li>
-      <li><a href="#ch_class">   The Library Class         </a></li>
-      <li><a href="#ch_other">   Related Locations         </a></li>
-      <li><a href="#ch_meta">    Library Metadata          </a></li>
+      <li><a href="#ch_cmd">     The Roll Command          </a></li>
+      <li><a href="#ch_in">      Roll In and Out           </a></li>
+      <li><a href="#ch_inst">    Roll Installs             </a></li>
     </ol>
    </li>
    <li> <a href="#ch_dev">Rolling for Developers</a>
     <ol>
       <!-- <li><a href="#ch_libver">   Library Versioning     </a></li> -->
       <li><a href="#ch_layout">  Versioned Layout          </a></li>
-      <li><a href="#ch_roll">    The .roll File            </a></li>
+      <li><a href="#ch_roll">    Metadata File             </a></li>
       <li><a href="#ch_scope">   Load Scope                </a></li>
-      <li><a href="#ch_index">   The index.rb File         </a></li>
+      <!-- <li><a href="#ch_index">   The index.rb File         </a></li> -->
       <li><a href="#ch_run">     Live Development          </a></li>
+      <li><a href="#ch_class">   The Library Class         </a></li>
+      <li><a href="#ch_other">   Related Locations         </a></li>
+      <li><a href="#ch_meta">    Library Metadata          </a></li>
     </ol>
    </li>
    <li> <a href="#ch_choose">It's How We Roll</a>
@@ -89,58 +92,65 @@
 <h2 id="ch_about"> What is Roll(s)? </h2>
 
 <p><span class="red">Roll</span> (or <span class="red">Rolls</span>)
-is a flexible light-weight object-oriented library ledger
-system for the Ruby programming language. In other words, a library,
+is a library manger. This is similiar to a package manager, but with
+the key distinction that it circumvents any need for a *package*.
+In other words, programs can be installed directly from their scm 
+repositories.</p>
+
+<p>This is especailly useful to Ruby developers. Rolls makes life easier
+because it effectively nullifies any installation process. If you are
+working on a project, just 'roll in' the working directory, and any 
+changes will be live. There is no need to go through a re-install
+process. This can also mitigate the need to handle dependent vendor
+repositories per project.</p>
+
+<p>More techincally, <span class="red">Rolls</span> is a flexible
+and light-weight, object-oriented library ledgering system
+for the Ruby programming language. In other words, a library,
 which is essentially a location in a file system, can be instantiated
 as an object, then used to provide useful meta-information about library,
 in addition to providing the usual #require and #load to load the
 files belonging to the library.</p>
 
-<p>The system consists of three main scripts, <code>library.rb</code>,
-<code>package.rb</code> and <code>version.rb</code> and a
-few of simple conventions for taking advantage of Roll's benefits.</p>
-
-<p>That's a very techincal view of Rolls. For the end-user/end-prgrammer
-Rolls makes life easier because it laregly nullifies the installation
-process. If you are working on a project, for instance, and changes
-will be live. There is no need to go throught an re-install process.
-If you are installing a Ruby package Rolls makes it as easy as unpacking
-a copy of a repository into the standard location.</p>
-
-<p>A releated question, is what isn't Rolls? Rolls is not a <i>package manager</i>.
+<p>A releated question is, what isn't Rolls? Rolls is not a <i>package manager</i>.
 Unlike RubyGems, Rolls simply manages libraries. It does not care how they got
 to the system. As long as Rolls knows were to look, and the package conforms to
 some simple conventions, then Rolls will serve the files up.</p>
 
+<!--
 <h2 id="ch_feature"> Feature Highlights </h2>
 
   <ul>
   <li>Object-oriented library interface</li>
   <li>Promotion of good standard conventions</li>
   <li>Flexible support for versioning</li>
+  <li>Not tied to a particular package/distribution system</li>
+
+  NOT CURRENTLY
   <li>Ensure against file name clashes</li>
   <li>Greater project organization independence</li>
-  <!--
   <li>Safely allows relative, instead of absolute, requiring</li>
   <li>Supports "private" library sub-directories</li>
-   -->
-  <li>Not tied to a particular package/distribution system</li>
+
   </ul>
+-->
 
-<h2 id="ch_install">How to Install</h2>
+<h2 id="ch_install">How to Install Rolls</h2>
 
-<p>Installation is straight-forward. Download the package file,
+<p>Roll is best installed directly to your systems site-ruby location.
+To do this you will need Ruby Setup (see http://setup.rubyforge.org).
+Installation is straight-forward. Download the package file,
 decompress it, 'cd' into the uncompressed directory and run
-<code>task/setup</code>.</p>
+<code>sudo setup.rb</code>.</p>
 
 <pre>
   % wget http://rubyforge.org/frs/download.php/11057/roll-x.y.z.tar.gz
   % tar -xvvjf roll-x.y.z
   % cd roll-x.y.z
-  % sudo task/setup <i>(</i>ruby task/setup <i>for Windows users)</i>
+  % sudo setup.rb
 </pre>
 
-<p>Once Roll is intalled you can start using it by adding <code>-roll</code> to your
+<p>Once Rolls is intalled you can start using it by adding <code>-roll</code> to your
 <code>RUBYOPT</code> environment variable.</p>
 
 <pre>
@@ -166,47 +176,282 @@ of a possible setup.</p>
   # cat ~/.rubyrc
   export RUBYFORGE_USERNAME="yourname"
   export RUBYOPT="-roll -rubygems"
-  export ROLL_PATH="/path/to/your/ruby/repos"
   export PATH="$PATH:$(roll --path)"
 </pre>
-
-<p>Notice in our example, ROLL_PATH. This points to the location of the Ruby projects
-your working on.</p>
 
 <p class="important">NOTE: Roll does not yet support executables on Windows.
 It's being worked on, but library support should work fine.</p>
 
 
-<h2>Status</h2>
+<h2 id="ch_status">Status</h2>
 
 <p>Rolls has actually gone through a number of re-writes to test various possible
 implementations and refine it's functionality. At this point it is fairly stable,
-though some parts of the API may yet change and a few consideration's still need
-to be finalized, such as Windows exe support and the efficiency of scanning process.
-We don't recommend using it in producation environments quite yet, but it is
-certainly more than aequate and useful in developement environments.</p>
+though some minor parts of the API may yet change. As a developer's tool it is
+close to rock solid (I have been using for well over a year). The install command
+is much more recent, however, and still needs testing and refinement.</p>
 
 
 <h2 id="ch_who"> Who Developed This? </h2>
 
-<p>The roll.rb script was written by Trans with support from Peter Vanbroekhoven.</p>
+<p>Roll was written by Thomas Sawyer with support from Peter Vanbroekhoven.</p>
 
+
+
+<h1 id="ch_user"> Rolling for the User </h1>
+
+<h2 id="ch_cmd">The Roll Command</h2>
+
+<p>Rolls provides a command line tool called, obvious enough, <code>roll</code>.</p>
+
+<pre>
+  $ roll --help
+  usage: roll <command> [options] [arguments]
+
+  commands:
+    in/insert   insert current project into ledger
+    out/remove  remove current project from ledger
+    ledger      list the ledger entries
+    clean       clean ledger of invalid entries
+    path        output ledger bin PATH
+    install     install a project
+    uninstall   uninstall a project
+    update      update a project
+    versions    list project versions
+    help        provide help information
+</pre>
+
+<p>Your can use help to get more information on each of these commands.</p>
+
+<h2 id="ch_in">Roll In and Out</h2>
+
+<p>As a developer the first handful of commands will be of most use.
+
+</p>For instance, lets say you are working on a project like ... You
+have cloned the git repository.
+
+<pre>
+  $ roll in
+</pre>
+
+<p>This will add the current project's location to your library ledger (stored in
+~/$XDG_CONFIG_HOME/roll/ledger.list).</p>
+
+<h2 id="ch_inst">Roll Installs</h2>
+
+<p>As a general user, Rolls can be used to install software in such a way
+as to alleviate the project maintatiner from the chore of creating special
+install packages.</p>
+
+<pre><code class="sh">
+  $ roll install foo
+</code></pre> 
+
+<p>By default, projects are looked for at rubyforge.org. One can specify that
+they are looked for at github instead with the '-g' option.</p>
+
+<p>If no version is given, the latest tagged version will be installed.
+You can install a specific version using the <code>--version</code> option.</p>
+
+
+
+<h1 id="ch_dev"> Rolling for Developers </h1>
+
+<h2 id="ch_layout"> Versioned Layout </h2>
+
+<p>Roll supports library versioning simply by working with the
+typical repository layout, whether using Subversion, Darcs, Git or some
+other versioning system, Rolls doesn't much care, as long as you
+follow some basic conventions and provide the necessary metadata.
+The metadata file means there is no need for special installation
+repositories, procedures or supporting programs.</p>
+
+<p>Your directory layout should generally follow the conventions set
+by Minero Aoki's <code>setup.rb</code>. Roll simply adds a couple
+additional details.</p> 
+
+<p>Here's an example of a typical subversion project layout.</p>
+
+<pre>
+    fruitapp/
+      tags/
+        1.0.0/
+          VERSION
+          bin/
+            ...
+          lib/
+            fruitapp/
+              index.rb
+              ...
+      trunk/
+        VERSION
+        bin/
+          ...
+        lib/
+          fruitapp/
+            index.rb
+            ...
+</pre>
+
+<p>Notice there is 1.0.0 tagged version and a new verison currently being worked on. The above layout
+is your typcial subversoin repository. Another workable layout, whether you use Subversion or not is:</p>
+
+<pre>
+    fruitapp/
+      1.0.0/
+        VERSION
+        bin/
+          ...
+        lib/
+          fruitapp/
+            index.rb
+            ...
+      current/
+        VERSION
+        bin/
+          ...
+        lib/
+          fruitapp/
+            index.rb
+            ...
+</pre>
+
+<p>This demonstrates how Rolls can work with a variety of layouts.</p>
+
+<p>At this point you may be wondering how renaming the lib directory with a
+changing version is even possible --how will the internal require statements
+find their files? It's actually quite simple. Rolls keeps a map of available
+libraries and their versions. When a library is first referenced it is
+instatiated with a particluar version. From then on requests against that
+libary are routed to that library object where the correct path is used.</p>
+
+<!--
+<h2 id="ch_index"> The <code>index.rb</code> File </h2>
+
+<p>You may be wondering what the </code>index.rb</code> file given in
+the last exmaple. When a library is instantiated Rolls looks to see if
+there is an index.rb file accosiated with it. If there is, it requires it.
+index.rb is an optional file that can be used to automatically provide 
+meta-information particular to the library and it's version, or to
+automatically perform any setup that may be required upon instantiation
+of the library.</p>
+
+<p>The typical <code>index.rb</code> file will provided meta-information
+about the library. The simplist way to provide this is via the
+#index method.</p>
+
+<pre>
+    library('fruitapp').index do
+      date  '2005-10-10'
+      title 'Fruit Demo Applicaiton for Rolls'
+    end
+</pre>
+
+<p>This is the same as the less convenient form.</p>
+
+<pre>
+    require 'roll/library.rb'
+    library('fruitapp').date  '2005-10-10'
+    library('fruitapp').title 'Fruit Demo Applicaiton for Rolls'
+</pre>
+
+<p>Or using <code>#open</code>.</p>
+
+<pre>
+    require 'roll/library.rb'
+    library('fruitapp').open do |lib|
+      lib.date  '2005-10-10'
+      lib.title 'Fruit Demo Applicaiton for Rolls'
+    end
+</pre>
+
+<p>The index file is loaded via #require just like any other file, so you can
+run whatever code neccessary for the initialization of a library. In this
+sense, the index.rb file is a library's version of a callback method.</p>
+-->
+
+<h2 id="ch_scope"> Load Scope </h2>
+
+<p>One of the most important settings in the .roll file is the the load scope,
+known as the <code>libpath</code>. By default the load scope of a library is
+it's lib/ directory. But you can diversify the load scope if you wish.
+
+<p>Let us consider an example. Assume the following <code>lib/</code> layout:</p>
+
+<pre>
+    fruitapp/
+      fruit/
+        apple.rb
+      basket/
+        wicker.rb
+</pre>
+
+<p>By providing the library with a scope detailing which sub-directories
+are to be accessible via the directory name, the internal directories are
+automatically exposed to one another.
+
+<pre>
+  libpath:
+    - lib
+    - lib/fruit
+    - lib/basket
+</pre>
+
+<!--
+<pre>
+  library('fruitapp').scope( '.', 'fruit', 'basket' )
+</pre>
+-->
+
+<p>So given the above, when requiring against the library, the system will search
+all three internal paths instead of just the main lib/ path. The file
+<code>apple.rb</code> can contain <code>require 'fruitapp/wicker.rb'</code>
+and it will find the file in the <code>basket/</code> directory.</p>
+
+<!--
+<p>As mentioned in the features, Rolls provides internal library files access to
+the library files around them without specifying absolute path names (i.e. relative
+to the standard $LOAD_PATH). This is useful because it allows one the freedom
+to reversion directories or rename subdirectories without needing to update every
+require reference in one's scripts.</p>
+
+<p>Albeit rare, you should keep in mind that a conflict can arise if your
+library contains a file within it's local scope that has the same name as
+an external library or a built-in Ruby standard library file.
+This will only effect a library trying to access both files.
+When this occurs the local library file will take precedence. There are
+two way to circumvent this. Firstly, you can specifically specify the 
+library if it is another rolled library.</p>
+
+<pre>
+  library('alib').require 'afile.rb'
+</pre>
+
+Or you can use the specialized '::' marker to access standard ruby.</p>
+
+<pre>
+  require '::ostruct.rb'
+</pre>
+
+<span class="note">(NOTE <i>Presently <code>Library['ruby']</code> is NOT viable, but
+it will be supported in the future.</i>)</span>
+-->
 
 <!-- USING -->
 
-<h1 id="ch_user"> Rolling for End User </h1>
+<h1 id="ch_user"> Using Rolled Libraries </h1>
 
-<h2 id="ch_quick"> The Quick Rollout </h2>
+<h2 id="ch_quick"> Require and Load </h2>
 
 <p>Using a rolled Ruby library isn't much different than using a non-rolled
 one. For instance the demo app incuded in the Rolls distribution can
-be tested (after installing it) from irb just by typing:</p>
+be tested (after rolling it in) from irb just by typing:</p>
 
 <pre>
     require 'fruitapp:tryme'
 </pre>
 
-<p>The roll system will see that 'fruitapp' is a "rolled" library and automatically
+<p>The roll system will see that 'fruitapp' is a rolled library and automatically
 instantiate it, selecting the most recent version, then proceed to require <code>tryme.rb</code>.</p>
 
 <p>For backward compatability, it is also possible to do:</p>
@@ -218,8 +463,8 @@ instantiate it, selecting the most recent version, then proceed to require <code
 <p>In this case though, Rolls will first try to load the file using Ruby's normal require mechinsim, failing that
 Rolls has to figure out that <code>fruitapp</code> is a rolled library. While fairly marginal, this does increae
 load times. Efficiency increases approx. 2-3 times by explicitly telling Rolls that <code>fruitapp</code>
-is a rolled library using the ':'. Howerver, the trade-off is that your library/applcation will require the
-the use Rolls to function. Through-out this overview we will usually use the ':' to keep things clear. <i>Just
+is a rolled library using the ':'. However, the trade-off is that your library/applcation will require the
+the use Rolls to function. Through-out this guide we will usually use the ':' to keep things clear. <i>Just
 remember that you can use '/' in it's place</i>.</p>
 
 <p>Rather then have Rolls automatically select the latest verison of a library you can manually <i>activate</i>
@@ -236,9 +481,6 @@ The <code>#library</code> method does more than simply select a version.
 In fact, the verison parameter is optional --when no version constraint is given
 the most recent available version is selected. The <code>#library</code> method
 also returns returns a <i>Library</i> object.</p>
-
-<p>Ah, but now we're starting to go beyond the "Quick" of things.
-That's pretty much all you <i>have</i> to know to use a rolled library.</p>
 
 
 <h2 id="ch_class"> The Library Class </h2>
@@ -390,23 +632,57 @@ information can be queried. For instance:</p>
 
 
 
-<!-- DEVELOPING -->
+<!-- CHOOSING -->
 
-<h1 id="ch_dev"> Rolling for Developers </h1>
+<h1 id="ch_choose"> It's How We Roll </h1>
 
-<h2 id="ch_layout"> Versioned Layout </h2>
 
-<p>Roll supports library versioning simply by working with you
-typical repository layout, whether using Subversion, Darcs, Git or some
-other versioning system, Rolls doesn't much care, as long as you
-follow some basic conventions and provide a .roll metadata file.
-The metadata file mean there is no need for special installation
-repositories, procedures or supporting programs.</p>
+<h2 id="ch_maint"> Benefits to Package Maintainers </h2>
 
-<p>Your directory layout should generally follow the conventions set
-by Minero Aoki's <code>setup.rb</code>. Roll simply adds a couple
-additional details. Here's an example of a typical structured versioned
-project repository layout.</p>
+<p>Because Rolls in package system agnostic, it is advantageous to the package maintainers
+of operating systems. It is straight forward to repackage you libraries in their
+favored packaging system.</p>
+
+<!--
+<h2 id="ch_gems"> Rolling past Gems </h2>
+
+<p> This overview of Rolls makes no mention of the library it will inevitably be compared.
+If you hadn't already realized, that library is RubyGems. No doubt Gems is great tool
+and a lot of great work has been put into it. Rolls will work right along side Gems with out
+complaint. Nonetheless Gems has some shortcomings which were the very motivation for the
+creation of Rolls. Namely, that Gems is over reaching. Specifically, the fact that Gems
+combines a package management system and a versioning system into an inseparable unit presents
+unwarranted limitations. It would be understandable if there was no alternative, but
+as Rolls demonstrates there is a very viable recourse.</p>
+
+
+<h2 id="ch_concl"> Are You Ready to Roll? </h2>
+
+<p>Do you want the advantages of Rolls? Given that Roll is light-weight,
+robust and will work alongside Gems, thus allowing smooth transition,
+adding a dependency to RubyRoll is a relatively easy choice.</p>
+-->
+
+<p>Whe you are ready to roll, we've created this spiffy graphic you can
+use to let other know you offer a rolls compatible distribution.</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<img src="../assets/images/ready.png"/></p>
+
+</div>
+
+
+<hr>
+
+<div id="footnotes">
+Footnotes:<br/>
+[1] <a href="http://www.newsforge.com/article.pl?sid=05/06/08/136214&from=rss">Decline and fall of the version number</a>
+</div>
+
+<div id="copy">Copyright (c) 2005 Thomas Sawyer, all rights reserved.</div>
+
+</html>
+
+
 
 <!--
 <p>To support versioning and to encourage clean divisions between projects,
@@ -436,68 +712,6 @@ This represents the version, and as such it need not be a date
 <p>For clarity here's the above as it translates into a project's directory
 layout.</p>
 -->
-
-<pre>
-    fruitapp/
-      tags/
-        1.0.0/
-          fruitapp-1.0.0.roll
-          bin/
-            ...
-          lib/
-            fruitapp/
-              index.rb
-              ...
-      trunk/
-        fruitapp-1.0.1.roll
-        bin/
-          ...
-        lib/
-          fruitapp/
-            index.rb
-            ...
-</pre>
-
-<p>Notice there is 1.0.0 tagged version, a 1.0.1 verison currently being worked on. The above layout
-is your typcial subversoin repository. Another good layout structure, whether you use SUbversion or not is:</p>
-
-<pre>
-    fruitapp/
-      1.0.0/
-        fruitapp-1.0.0.roll
-        bin/
-          ...
-        lib/
-          fruitapp/
-            index.rb
-            ...
-      current/
-        fruitapp-1.0.1.roll
-        bin/
-          ...
-        lib/
-          fruitapp/
-            index.rb
-            ...
-</pre>
-
-
-
-<p>This demonstrates how Rolls can work with a variety of layouts. Rolls can also handle subprojects.
-In fact Rolls can handle any layout up to three direcotory tiers below the ROLL_PATH location.</p>
-
-<p>At this point you may be wondering how renaming the lib directory with a
-changing version is even possible --how will the internal require statements
-find their files? It's actually quite simple. When Rolls is required the
-first thing it does is search the ROLL_PATH locations for .roll files and makes
-a map of available libraries and their versions. Then when a library is
-first referenced it is instatiated with a particluar version. From then on
-requests against that libary are routed to that library object where the
-correct path is used.</p>
-
-<p>Rolls also works without versioning and the two can even be intrrmixed.
-If two files with the same name exist in the versioned tier and the
-non-versioed tier, the versioned file will take precedence.</p>
 
 <!--
 <h2 id="ch_local"> A Note or Two on Version Numbers </h2>
@@ -533,99 +747,6 @@ has a natural way of forcing one to comply to the meaning, which is nice.
 </p>
 -->
 
-<!--
-<h2 id="ch_index"> The <code>index.rb</code> File </h2>
-
-<p>You may be wondering what the </code>index.rb</code> file given in
-the last exmaple. When a library is instantiated Rolls looks to see if
-there is an index.rb file accosiated with it. If there is, it requires it.
-index.rb is an optional file that can be used to automatically provide 
-meta-information particular to the library and it's version, or to
-automatically perform any setup that may be required upon instantiation
-of the library.</p>
-
-<p>The typical <code>index.rb</code> file will provided meta-information
-about the library. The simplist way to provide this is via the
-#index method.</p>
-
-<pre>
-    library('fruitapp').index do
-      date  '2005-10-10'
-      title 'Fruit Demo Applicaiton for Rolls'
-    end
-</pre>
-
-<p>This is the same as the less convenient form.</p>
-
-<pre>
-    require 'roll/library.rb'
-    library('fruitapp').date  '2005-10-10'
-    library('fruitapp').title 'Fruit Demo Applicaiton for Rolls'
-</pre>
-
-<p>Or using <code>#open</code>.</p>
-
-<pre>
-    require 'roll/library.rb'
-    library('fruitapp').open do |lib|
-      lib.date  '2005-10-10'
-      lib.title 'Fruit Demo Applicaiton for Rolls'
-    end
-</pre>
-
-<p>The index file is loaded via #require just like any other file, so you can
-run whatever code neccessary for the initialization of a library. In this
-sense, the index.rb file is a library's version of a callback method.</p>
--->
-
-<h2 id="ch_scope"> Load Scope </h2>
-
-<p>One of the most important settings in the .roll file is the
-the load scope, known as lib_path or load_path. By default the load scope
-of a library is it's lib/ directory. But you can diversify
-the load scope if you wish.
-
-<p>Let us consider an example. Assume the following <code>lib/</code> layout:</p>
-
-<pre>
-    fruitapp/
-      fruit/
-        apple.rb
-      basket/
-        wicker.rb
-</pre>
-
-<p>By providing the library with a scope detailing which sub-directories
-are to be accessible via the directory name, the internal directories are
-automatically exposed to one another.
-
-
-<pre>
-  lib_path:
-    - lib
-    - lib/fruit
-    - lib/basket
-</pre>
-
-<!--
-<pre>
-  library('fruitapp').scope( '.', 'fruit', 'basket' )
-</pre>
--->
-
-<p>So given the above, when requiring against the library, the system will search
-all three internal paths instead of just the main lib/ path. The file
-<code>apple.rb</code> can contain <code>require 'fruitapp/wicker.rb'</code>
-and it will find the file in the <code>basket/</code> directory.</p>
-
-<!--
-<p>As mentioned in the features, Rolls provides internal library files access to
-the library files around them without specifying absolute path names (i.e. relative
-to the standard $LOAD_PATH). This is useful because it allows one the freedom
-to reversion directories or rename subdirectories without needing to update every
-require reference in one's scripts.</p>
--->
-
 
 <!--
 <p>is also made true by this. But lets say you do not wish for the
@@ -644,31 +765,10 @@ root directory (unless they specify the library's specific namespace, of course)
 One can invert the coverage of the scope, having main contain less directories
 and scope containing more. In this way the roll system provides semi-private
 library directories.</p>
-
-<p>Albeit rare, you should keep in mind that a conflict can arise if your
-library contains a file within it's local scope that has the same name as
-an external library or a built-in Ruby standard library file.
-This will only effect a library trying to access both files.
-When this occurs the local library file will take precedence. There are
-two way to circumvent this. Firstly, you can specifically specify the 
-library if it is another rolled library.</p>
-
-<pre>
-  library('alib').require 'afile.rb'
-</pre>
-
-Or you can use the specialized '::' marker to access standard ruby.</p>
-
-<pre>
-  require '::ostruct.rb'
-</pre>
-
-<span class="note">(NOTE <i>Presently <code>Library['ruby']</code> is NOT viable, but
-it will be supported in the future.</i>)</span>
 -->
 
 <!--
-Turning off ive dev?
+Turning off live dev?
 
 <h2 id="ch_run"> Live Development </h2>
 
@@ -680,52 +780,3 @@ list (like $LOAD_PATH but specific to Rolls). So it is easy to test
 code directly from the development location, without any need to install.</p>
 -->
 
-<!-- CHOOSING -->
-
-<h1 id="ch_choose"> It's How We Roll </h1>
-
-
-<h2 id="ch_maint"> Benefits to Package Maintainers </h2>
-
-<p>Because Rolls in package system agnostic, it is advantageous to the package maintainers
-of operating systems. It is straight forward to repackage you libraries in their
-favored packaging system.</p>
-
-<!--
-<h2 id="ch_gems"> Rolling past Gems </h2>
-
-<p> This overview of Rolls makes no mention of the library it will inevitably be compared.
-If you hadn't already realized, that library is RubyGems. No doubt Gems is great tool
-and a lot of great work has been put into it. Rolls will work right along side Gems with out
-complaint. Nonetheless Gems has some shortcomings which were the very motivation for the
-creation of Rolls. Namely, that Gems is over reaching. Specifically, the fact that Gems
-combines a package management system and a versioning system into an inseparable unit presents
-unwarranted limitations. It would be understandable if there was no alternative, but
-as Rolls demonstrates there is a very viable recourse.</p>
-
-
-<h2 id="ch_concl"> Are You Ready to Roll? </h2>
-
-<p>Do you want the advantages of Rolls? Given that Roll is light-weight,
-robust and will work alongside Gems, thus allowing smooth transition,
-adding a dependency to RubyRoll is a relatively easy choice.</p>
--->
-
-<p>Whe you are ready to roll, we've created this spiffy graphic you can
-use to let other know you offer a rolls compatible distribution.</p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;<img src="img/ready.png"/></p>
-
-</div>
-
-
-<hr>
-
-<div id="footnotes">
-Footnotes:<br/>
-[1] <a href="http://www.newsforge.com/article.pl?sid=05/06/08/136214&from=rss">Decline and fall of the version number</a>
-</div>
-
-<div id="copy">Copyright (c) 2005 Thomas Sawyer, all rights reserved.</div>
-
-</html>
