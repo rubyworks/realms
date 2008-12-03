@@ -1,6 +1,6 @@
 module Roll
 
-  class Command
+  class Command #:nodoc:
 
     # This removes a location from the roll cache.
     #
@@ -8,11 +8,11 @@ module Roll
     def remove
       root = find_root
       if root
-        ledger = Roll.user_ledger
+        ledger = Library.user_ledger
         ledger.delete(root)
         ledger.save
         puts "#{root}"
-        puts "  x <- #{Roll.user_ledger_file}"
+        puts "  x <- #{Library.user_ledger_file}"
       end
     end
 

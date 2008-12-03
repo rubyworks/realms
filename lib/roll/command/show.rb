@@ -4,14 +4,12 @@ module Roll
 
     # Show project versions (branches/tags).
     def show
-      require 'roll/install'
+      require 'roll/package'
 
       opts = GetoptLong.new(
-        [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
-
+        [ '--help',      '-h', GetoptLong::NO_ARGUMENT ],
         [ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
         [ '--rubyforge', '-r', GetoptLong::NO_ARGUMENT ]
-
         #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ]
       )
 
@@ -22,13 +20,13 @@ module Roll
         when '--help'
           # TODO
         when '--github'
-          host_type = :github
+          options[:host] = :github
         when '--rubyforge'
-          host_type = :rubyforge
+          options[:host] = :rubyforge
         end
       end
 
-      installer = Installer.new(name, host_type, options)
+      installer = Package.new(name, options)
 
       installer.show
     end
