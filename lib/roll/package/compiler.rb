@@ -1,10 +1,12 @@
 require 'roll/config'
 
-module Roll
+module Roll     #:nodoc:
+module Package  #:nodoc:
 
   # = Compiler
   #
   class Compiler
+
     include RbConfig
 
     class Error < StandardError
@@ -117,7 +119,8 @@ module Roll
       )
     end
 
-  end
+  end #class Compiler
 
-end
+end #module Package
+end #module Roll
 

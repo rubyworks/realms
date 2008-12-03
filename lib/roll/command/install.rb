@@ -1,4 +1,4 @@
-module Roll
+module Roll #:nodoc:
 
   class Command #:nodoc:
 
@@ -7,7 +7,7 @@ module Roll
     # Install project.
     #
     def install
-      require 'roll/installer'
+      require 'roll/package/installer'
 
       opts = GetoptLong.new(
         [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
@@ -52,7 +52,7 @@ module Roll
 
       name = ARGV[1]
 
-      installer = Installer.new(name, host_type, options)
+      installer = Package::Installer.new(name, host_type, options)
 
       installer.install
 

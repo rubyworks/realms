@@ -1,7 +1,8 @@
-require 'roll/host/rubyforge'
-require 'roll/host/github'
+require 'roll/package/host/rubyforge'
+require 'roll/package/host/github'
 
-module Roll
+module Roll     #:nodoc:
+module Package  #:nodoc:
 
   # = Installer
   #
@@ -95,5 +96,6 @@ module Roll
 
   end #class Installer
 
+end #module Package
 end #module Roll
 
