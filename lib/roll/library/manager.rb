@@ -268,6 +268,15 @@ module Roll
             end
           end
 
+          # try Ruby core/standandard library
+          # actually just traditional require
+          # (allowing other load hacks to work, including RubyGems)
+          begin
+            return Kernel.require(file)
+          rescue LoadError => kernel_error
+            raise kernel_error if ENV['ROLL_DEBUG']
+          end
+
           # try current library
           if lib = load_stack.last
             begin
@@ -276,15 +285,8 @@ module Roll
               raise load_error if ENV['ROLL_DEBUG']
             end
           end
-          # try Ruby core/standandard library
-          # actually just traditional require
-          # (allowing other load hacks to work, including RubyGems)
-          begin
-            return Kernel.require(file)
-          rescue LoadError => kernel_error
-            raise load_error if load_error
-            raise kernel_error
-          end
+
+          raise kernel_error # failure
         end
       end
 
@@ -297,8 +299,6 @@ module Roll
           raise LoadError, "no library found -- #{file}" unless lib
           lib.load(path, wrap)
         else
-          load_error = nil
-
           # potentialy specified library,
           # ie. head of path is library name
           name, *rest = file.split(/[\\\/]/)
@@ -312,6 +312,15 @@ module Roll
             end
           end
 
+          # try Ruby core/standard library
+          # actually just traditional load
+          # (allowing other load hacks to work, including RubyGems)
+          begin
+            return Kernel.load(file, wrap)
+          rescue LoadError => kernel_error
+            raise kernel_error if ENV['ROLL_DEBUG']
+          end
+
           # try current library
           if lib = load_stack.last
             begin
@@ -320,18 +329,9 @@ module Roll
               raise load_error if ENV['ROLL_DEBUG']
             end
           end
-
-          # try Ruby core/standard library
-          # actually just traditional load
-          # (allowing other load hacks to work, including RubyGems)
-          begin
-            return Kernel.load(file, wrap)
-          rescue LoadError => kernel_error
-            load_error ||= kernel_error
-          end
         end
-        # failure
-        raise kernel_error
+
+        raise kernel_error # failure
       end
 
 =begin
