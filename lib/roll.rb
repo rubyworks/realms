@@ -1,4 +1,2 @@
-require 'roll/roll'
-
-Roll.setup
+require 'roll/kernel'
 

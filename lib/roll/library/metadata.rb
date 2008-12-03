@@ -2,40 +2,6 @@ module Roll
 
   class Library
 
-    # Read metadata, if any exists. Metadata is purely extransous information.
-    # The metadata will be a Reap::Metadata object if Reap is installed 
-    # (providing more intelligent defaults), otherwise it  will be a  OpenStruct-like
-    # object.
-    #
-    # TODO: Should we handle special ruby library differently?
-    #
-    def metadata
-      @metadata ||= (
-        if defined?(::Reap)
-          ::Reap::Metadata.new(location)
-        else
-          Metadata.new(location)
-        end
-      )
-    end
-
-    # DEPRECATE
-    alias_method :info, :metadata
-
-    # Is metadata available?
-    def metadata?
-      metadata.metadata?
-    end
-
-    # If method is missing delegate to metadata, if any.
-    def method_missing(s, *a, &b)
-      if metadata
-        metadata.send(s, *a, &b)
-      else
-        super
-      end
-    end
-
     # = Metadata
     #
     # This is essentially the same class as used by Reap
@@ -43,31 +9,35 @@ module Roll
     # up as an "openstruct" instead.
     #
     class Metadata
+
       instance_methods.each{ |s| private s unless s.to_s =~ /^(__|instance_|object_|class)/ }
 
       METAFILE = 'meta{,data}{.yaml,.yml}'
 
-      ### Project's root directory.
+      # Project's root directory.
       attr :rootdir
 
-      ### Metadata directory.
+      # Metadata directory.
       attr :metadir
 
-      ### YAML based metadata file.
+      # YAML based metadata file.
       attr :metafile
 
-      ### The metadata hash.
+      # The metadata hash.
       attr :metadata
 
-      ### Version stamp.
+      # Version stamp.     
       #attr :version_stamp
 
-      ### New Metadata object.
+      # New Metadata object.
+      #
       def initialize(rootdir)
         @rootdir = rootdir
         metadata_reload
       end
 
+      #
+      #
       def metadata_reload
         #initialize_defaults
 
@@ -92,14 +62,16 @@ module Roll
       end
 
       #
+      #
       def metadata?
         @metadir || @metafile
       end
 
       #
+      #
       def method_missing(s, *a, &b)
         raise ArgumentError if block_given?
-        case s.to_s
+        case s = s.to_s
         when /=$/
           raise ArgumentError if a.size > 1
           @metadata[s.chomp('=')] = a[0]
@@ -111,9 +83,20 @@ module Roll
         end
       end
 
-    end
+      #class << self
+      #  alias_method :_new, new
+      #  def new
+      #    if defined?(::Reap)
+      #      ::Reap::Metadata.new(location)
+      #    else
+      #      Metadata._new(location)
+      #    end
+      #  end
+      #end
 
-  end
+    end #class Metadata
 
-end
+  end #class Library
+
+end #module Roll
 
