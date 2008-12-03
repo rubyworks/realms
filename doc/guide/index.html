@@ -7,41 +7,48 @@
                     font-size: 11pt;}
                hr { margin: 0 auto; width: 710px; }
                li { font-size: 1em; }
+             li a { color: #f66; font-weight: bold; }
                 p { font-size: 1em; line-height: 1.2em; }
                h1 { margin-top: 50px; }
                h2 { margin-top: 40px; }
-             code { color: red; font-size: 0.9em; }
-              pre { color: red; font-size: 0.9em; }
-        div#title { margin: 0 auto; width: 700px; text-align: left; margin-bottom: 30px; }
-    div#container { margin: 0 auto; width: 700px; text-align: justify; margin-bottom: 30px; }
-       span#title { color: red; font-family: monospace; font-size: 96px;
+             code { color: blue; font-size: 0.9em; }
+              pre { color: red; font-size: 0.9em; padding: 10px; }
+          #header { margin: 0 auto; width: 700px; text-align: left; margin-bottom: 30px; }
+       #container { margin: 0 auto; width: 700px; text-align: justify; margin-bottom: 30px; }
+           #title { color: red; font-size: 96px;
                     letter-spacing: 10pt; font-weight: bold; }
-    span#subtitle { color: black; font-size: 10pt; padding-left: 0px; font-weight: bold; }
-         span#rev { background: red; color: white; }
-    div#footnotes { margin: 0 auto; width: 700px; font-size: 0.8em; }
-         div#copy { margin: 0 auto; width: 700px; font-size: 0.8em; margin-top: 30px; }
-         span.red { color: red; }
-       span.small { font-size: 10pt; }
-       span.note  { font-size: 1em; font-style: italic; }
+        #subtitle { color: black; font-size: 10pt; padding-left: 0px; font-weight: bold; }
+             #rev { background: red; color: white; }
+       #footnotes { margin: 0 auto; width: 700px; font-size: 0.8em; }
+            #copy { margin: 0 auto; width: 700px; font-size: 0.8em; margin-top: 10px; }
+             .red { color: red; }
+           .small { font-size: 10pt; }
+           .note  { font-size: 1em; font-style: italic; }
   </style>
-</head>
-<body>
 
-<div id="title">
+  <script type="text/javascript" src="http://tigerops.org/assets/systems/shjs/sh_main.js"></script>
+  <script type="text/javascript" src="http://tigerops.org/assets/systems/shjs/lang/sh_ruby.js"></script>
+  <script type="text/javascript" src="http://tigerops.org/assets/systems/shjs/lang/sh_sh.js"></script>
+  <script type="text/javascript" src="http://tigerops.org/assets/systems/shjs/lang/sh_xml.js"></script>
+  <script type="text/javascript" src="http://tigerops.org/assets/systems/shjs/lang/sh_html.js"></script>
+  <link type="text/css" rel="stylesheet" href="http://tigerops.org/assets/systems/shjs/css/sh_berries-light.css">
+
+</head>
+<body onload="sh_highlightDocument();">
+
+<div style="border: 2px solid red; margin: 0 auto; padding: 5px; margin-bottom: 20px; width: 800px;">
+  <b>IMPORTANT NOTICE</b>
+  THIS IS STILL A WORK IN PROGRESS. IT IS NOT COMPLETE AND DOES NOT NECESSARILY MATCH WITH THE CURRENT STATE OF DEVELOPMENT!!!
+</div>
+
+<div id="header">
   <div style="float:right;"><img src="../assets/images/ball/red_ball.jpg" height="200px"></div>
   <br/>
   <span id="title">Roll</span></br>
-  <span id="subtitle">&nbsp;ruby's object-oriented library ledger</span></br>
+  <span id="subtitle">&nbsp;ruby object-oriented library ledger</span></br>
 </div>
 
 <div id="container">
-
-<br/><br/>
-
-<div style="border: 2px solid red; padding: 10px;">
-  <b>IMPORTANT NOTICE</b><br/><br/>
-  THIS IS STILL A WORK IN PROGRESS. IT IS NOT COMPLETE AND DOES NOT NECESSARILY MATCH WITH THE CURRENT STATE OF DEVELOPMENT!!!
-</div>
 
 <h1> Table of Contents </h1>
 
@@ -52,18 +59,18 @@
       <!-- <li><a href="#ch_feature"> Feature Highlights        </a></li> -->
       <li><a href="#ch_install"> How to Install            </a></li>
       <li><a href="#ch_status">  Development Status        </a></li>
-      <li><a href="#ch_who">     Who Developed This?       </a></li>
+      <!-- <li><a href="#ch_who">     Who Developed This?       </a></li> -->
 
     </ol>
    </li>
-   <li> <a href="#ch_user">Rolling for End Users</a>
+   <li> <a href="#ch_cmd">The Roll Command</a>
     <ol>
-      <li><a href="#ch_cmd">     The Roll Command          </a></li>
+      <li><a href="#ch_help">    Roll Command Help         </a></li>
       <li><a href="#ch_in">      Roll In and Out           </a></li>
       <li><a href="#ch_inst">    Roll Installs             </a></li>
     </ol>
    </li>
-   <li> <a href="#ch_dev">Rolling for Developers</a>
+   <li> <a href="#ch_use">Using Rolled Libraries</a>
     <ol>
       <!-- <li><a href="#ch_libver">   Library Versioning     </a></li> -->
       <li><a href="#ch_layout">  Versioned Layout          </a></li>
@@ -78,14 +85,12 @@
    </li>
    <li> <a href="#ch_choose">It's How We Roll</a>
     <ol>
-      <li><a href="#ch_maint">   Benefits to Package Maintainers  </a></li>
-      <!-- <li><a href="#ch_gems">    Rolling past Gems                </a></li> -->
-      <li><a href="#ch_concl">   Are You Ready to Roll?           </a></li>
+      <li><a href="#ch_maint">   Benefits to Developers    </a></li>
+      <!-- <li><a href="#ch_gems">    Rolling past Gems     </a></li> -->
+      <li><a href="#ch_concl">   Are You Ready to Roll?    </a></li>
     </ol>
    </li>
   </ol>
-
-<br/>
 
 <h1 id="ch_info"> Introduction </h1>
 
@@ -93,7 +98,7 @@
 
 <p><span class="red">Roll</span> (or <span class="red">Rolls</span>)
 is a library manger. This is similiar to a package manager, but with
-the key distinction that it circumvents any need for a *package*.
+the key distinction that it circumvents any need for a <i>package</i>.
 In other words, programs can be installed directly from their scm 
 repositories.</p>
 
@@ -104,11 +109,10 @@ changes will be live. There is no need to go through a re-install
 process. This can also mitigate the need to handle dependent vendor
 repositories per project.</p>
 
-<p>More techincally, <span class="red">Rolls</span> is a flexible
-and light-weight, object-oriented library ledgering system
-for the Ruby programming language. In other words, a library,
-which is essentially a location in a file system, can be instantiated
-as an object, then used to provide useful meta-information about library,
+<p>Under the hood, <span class="red">Rolls</span> is an object-oriented
+library ledgering system. In other words, a library, which is essentially
+a location in a file system, can be instantiated as an object,
+then used to provide useful meta-information about library,
 in addition to providing the usual #require and #load to load the
 files belonging to the library.</p>
 
@@ -138,52 +142,51 @@ some simple conventions, then Rolls will serve the files up.</p>
 <h2 id="ch_install">How to Install Rolls</h2>
 
 <p>Roll is best installed directly to your systems site-ruby location.
-To do this you will need Ruby Setup (see http://setup.rubyforge.org).
-Installation is straight-forward. Download the package file,
+To do this you will need <a href="http://setup.rubyforge.org">Ruby Setup</a>.
+With Ruby Setup, installation is straight-forward. Download the package file,
 decompress it, 'cd' into the uncompressed directory and run
 <code>sudo setup.rb</code>.</p>
 
-<pre>
-  % wget http://rubyforge.org/frs/download.php/11057/roll-x.y.z.tar.gz
-  % tar -xvvjf roll-x.y.z
-  % cd roll-x.y.z
-  % sudo setup.rb
+<pre class="sh_sh">
+  $ wget http://rubyforge.org/frs/download.php/11057/roll-x.y.z.tar.gz
+  $ tar -xvzf roll-x.y.z
+  $ cd roll-x.y.z
+  $ sudo setup.rb
 </pre>
 
 <p>Once Rolls is intalled you can start using it by adding <code>-roll</code> to your
 <code>RUBYOPT</code> environment variable.</p>
 
-<pre>
-  % export RUBYOPT="-roll"
+<pre class="sh_sh">
+  $ export RUBYOPT="-roll"
 </pre>
 
 <p>You may want to add this to the master profile or to your own
 .bashrc file so it starts automatically in the future.</p>
 
-<p>Lastly, to get bin/ support, you will need add a small script to .bashrc or
-the equivalent to your particular shell start-up code. Here is an example
-of a possible setup.</p>
+<p>Lastly, to get binary executable support, you will need add a small script
+to .bashrc or the equivalent to your particular shell start-up code.
+Here is an example of a possible setup.</p>
 
-<pre>
+<pre class="sh_sh">
   # At the end of ~/.bashrc
-
   if [ -f ~/.rubyrc ]; then
     . ~/.rubyrc
   fi
 </pre>
 
-<pre>
+<pre class="sh_sh">
   # cat ~/.rubyrc
   export RUBYFORGE_USERNAME="yourname"
   export RUBYOPT="-roll -rubygems"
-  export PATH="$PATH:$(roll --path)"
+  export PATH="$PATH:$(roll path)"
 </pre>
 
 <p class="important">NOTE: Roll does not yet support executables on Windows.
 It's being worked on, but library support should work fine.</p>
 
 
-<h2 id="ch_status">Status</h2>
+<h2 id="ch_status">Development Status</h2>
 
 <p>Rolls has actually gone through a number of re-writes to test various possible
 implementations and refine it's functionality. At this point it is fairly stable,
@@ -191,20 +194,22 @@ though some minor parts of the API may yet change. As a developer's tool it is
 close to rock solid (I have been using for well over a year). The install command
 is much more recent, however, and still needs testing and refinement.</p>
 
-
+<!--
 <h2 id="ch_who"> Who Developed This? </h2>
 
 <p>Roll was written by Thomas Sawyer with support from Peter Vanbroekhoven.</p>
+-->
 
 
+<!-- COMMAND -->
 
-<h1 id="ch_user"> Rolling for the User </h1>
+<h1 id="ch_cmd">The Roll Command</h1>
 
-<h2 id="ch_cmd">The Roll Command</h2>
+<h2 id="ch_help">The Roll Command Help</h2>
 
 <p>Rolls provides a command line tool called, obvious enough, <code>roll</code>.</p>
 
-<pre>
+<pre class="sh_sh">
   $ roll --help
   usage: roll <command> [options] [arguments]
 
@@ -221,21 +226,42 @@ is much more recent, however, and still needs testing and refinement.</p>
     help        provide help information
 </pre>
 
-<p>Your can use help to get more information on each of these commands.</p>
+<p>You can use help to get more information on each of these commands.</p>
 
 <h2 id="ch_in">Roll In and Out</h2>
 
 <p>As a developer the first handful of commands will be of most use.
+For instance, lets say you are working on a project that uses
+<a href="http://facets.rubyforge.org">Ruby Facets</a> and you want to have
+the project close at hand. So you have cloned the git repository.
 
-</p>For instance, lets say you are working on a project like ... You
-have cloned the git repository.
+<pre class="sh_sh">
+  $ git clone git://rubyforge.org/facets.git facets
+</pre>
 
-<pre>
+<p>All you need to do to bring it online is to cd into project,
+ensure it has a VERSION file and the roll the library in. Facets
+has a VERSION file so all you'd need to do is:</p>
+
+<pre class="sh_sh">
+  $ cd facets
   $ roll in
 </pre>
 
-<p>This will add the current project's location to your library ledger (stored in
-~/$XDG_CONFIG_HOME/roll/ledger.list).</p>
+<p>This will add the current project's location to your library ledger
+(stored in <code>~/$XDG_CONFIG_HOME/roll/ledger.list</code>).</p>
+
+<p>The only caveat to this is that you need to make sure the project has
+a VERSION file in the format of (using Facets as an example):</p>
+
+<pre class="sh_sh">
+  $ cat VERSION
+  facets 2.5.1 stable (2008-11-30)
+</pre>
+
+<p>If it does not, simply create one. You don't need to check it into the
+repository.</p>
+
 
 <h2 id="ch_inst">Roll Installs</h2>
 
@@ -243,9 +269,9 @@ have cloned the git repository.
 as to alleviate the project maintatiner from the chore of creating special
 install packages.</p>
 
-<pre><code class="sh">
+<pre class="sh_sh">
   $ roll install foo
-</code></pre> 
+</pre>
 
 <p>By default, projects are looked for at rubyforge.org. One can specify that
 they are looked for at github instead with the '-g' option.</p>
@@ -254,8 +280,199 @@ they are looked for at github instead with the '-g' option.</p>
 You can install a specific version using the <code>--version</code> option.</p>
 
 
+<!-- USING -->
 
-<h1 id="ch_dev"> Rolling for Developers </h1>
+<h1 id="ch_use"> Using Rolled Libraries </h1>
+
+<h2 id="ch_quick"> Require and Load </h2>
+
+<p>Using a rolled Ruby library isn't much different than using a non-rolled
+one. For instance the demo app incuded in the Rolls distribution can
+be tested (after rolling it in) from irb just by typing:</p>
+
+<pre class="sh_ruby">
+    require 'fruitapp:tryme'
+</pre>
+
+<p>The roll system will see that 'fruitapp' is a rolled library and automatically
+instantiate it, selecting the most recent version, then proceed to require <code>tryme.rb</code>.</p>
+
+<p>For backward compatability, it is also possible to do:</p>
+
+<pre class="sh_ruby">
+    require 'fruitapp/tryme'
+</pre>
+
+<p>In this case though, Rolls will first try to load the file using Ruby's normal require mechinsim, failing that
+Rolls has to figure out that <code>fruitapp</code> is a rolled library. While fairly marginal, this does increae
+load times. Efficiency increases approx. 2-3 times by explicitly telling Rolls that <code>fruitapp</code>
+is a rolled library using the ':'. However, the trade-off is that your library/applcation will require the
+the use Rolls to function. Through-out this guide we will usually use the ':' to keep things clear. <i>Just
+remember that you can use '/' in it's place</i>.</p>
+
+<p>Rather then have Rolls automatically select the latest verison of a library you can manually <i>activate</i>
+a specific version via a version constraint. This is most easily achieved with the provided
+<code>#library</code> Kernel method.</p>
+
+<pre class="sh_ruby">
+    library 'fruitapp', '= 1.0'
+    require 'fruitapp:tryme'
+</pre>
+
+<p>So in this example, specifically version 1.0 of fruitapp will be used.
+The <code>#library</code> method does more than simply select a version.
+In fact, the verison parameter is optional --when no version constraint is given
+the most recent available version is selected. The <code>#library</code> method
+also returns returns a <i>Library</i> object.</p>
+
+
+<h2 id="ch_class"> The Library Class </h2>
+
+<p>When you use the Kernel method, <code>#library</code>, you're actually just using a shortcut for
+instantiating a new Library object. You can do the same thing using <code>Library.instance</code>
+or <code>Library.open</code> methods.</p>
+
+<pre class="sh_ruby">
+    Library.instance('fruitapp')   #=> #&lt;Library fruitapp/1.0.1&gt;
+    Library.open('fruitapp')       #=> #&lt;Library fruitapp/1.0.1&gt;
+</pre>
+
+<p>The <code>#instance</code> and <code>#open</code> methods require the library name as the
+first parameter <!-- , which is also the name of the library's directory within the file system.-->.
+The name is then used as the ledger key to track the library. The difference between
+<code>#instance</code> and <code>#open</code> is that <code>#open</code>
+will raise an error if the library is not found and can also take a block which yields on the
+library. In addition, there is a shorter alias for <code>#instance</code> provided as <code>#[]</code>.
+Like <code>#instance</code>, it too will not raise an error if the the library is not found,
+but will simply return <code>nil</code>.</p>
+
+<pre class="sh_ruby">
+    Library['fruitapp']  #=> #&lt;Library fruitapp/1.0.1&gt;
+    Library['notthere']  #=> nil
+</pre>
+
+<p>Library is <i>multiton</i>, which means only one instance exists per name.
+Calling <code>#library</code>, <code>Library.instance</code>, <code>Library.open</code> or
+<code>Library.[]</code> repeatedly using the same name will return the very same
+Library object.</p>
+
+<p>When selecting a version, the constraint is a simple string starting with an
+operator, like <code>=</code> or <code>&gt;=</code>, followed by the string
+representaion of a version number. For instance,</p>
+
+<pre class="sh_ruby">
+    Library.instance('fruitapp', '~> 1.0')     #=> #&lt;Library fruitapp/0.9&gt;
+    Library.instance('fruitapp', '== 2.0')     #=> #&lt;Library fruitapp/2.0&gt;
+</pre>
+
+<p>Once a version is selected the version can not be changed.
+A Library::VersionConflict will be raised if one attempts to do so.</p>
+
+<p><i>NOTE: This restriction has put in place to prevent conflicts which
+can arise when libraries extend core functionality. Certainly it would be
+nice if multiple-versions could work harmoniously, but this not even 
+remotely possible until such time as Ruby supports selector namespaces.
+In the future though we may be able to reduce the restrinction to just
+the use of #require and #load.</i></p>
+
+<!-- However, Roll will not raise and error should
+you have special need to do exactly that (although it may raise a warning).
+Once selected, the Library class will delegate calls to the current
+version. If you attempt to use a library without first selecting a
+version, the latest version will be atomically selected.-->
+
+<p>Now, with a library in hand, the most useful method provided is #require.</p>
+
+<pre class="sh_ruby">
+    library('fruitapp').require 'tryme'
+</pre>
+
+<p>As you can see this is pure OOP. You could store the reference to
+the library for later access, even pass it around as an argument.</p>
+
+<pre>
+    fruitlib = Library.open('fruitapp', '=1.0')
+    fruitlib.require 'tryme'
+</pre>
+
+
+<h2 id="ch_other"> Related Locations </h2>
+
+<p><b><i>NOTE: This section is not wholey correct.</i></b></p>
+
+<p>To facilitate access to file locations pertaining to
+a library, Rolls provides some convenient methods.
+Normally this information is accessed by using rbconfig.rb and
+building a path based on information in the Config::CONFIG hash.
+For instance, <code>Config:CONFIG['datadir']</code>
+on a Debian system points to /usr/share. With Roll you can look up
+the data dir specific to the current library via the <code>#datadir</code> 
+method, and likewise for the other directories. Here's a example rundown
+with resolutions for a Debian system.</p>
+
+<!--
+<pre>
+  # library directory
+  library('fruitapp').libdir           #=> [ "/usr/local/lib/site_ruby/1.8/fruitapp/1.0.0/" ]
+-->
+
+<pre class="sh_ruby">
+  # configuration dir
+  library('fruitapp').confdir          #=> "/etc/fruitapp/"
+
+  # versioned data dir
+  library('fruitapp').datadir          #=> "/usr/share/fruitapp/1.0.0/"
+
+  # ensure non-versioned data dir
+  library('fruitapp').datadir(true)    #=> "/usr/share/fruitapp/"
+</pre>
+
+<p>Another way to access these locations is via Ruby's own Config module. Eg.
+Config.datadir('fruitapp'). This provides a wholly general interface
+to this information, irregardless of the system providing it, whether it be
+Rolls, Gems or some other system.</p>
+
+<p>With Rolls, a project's <code>bin/</code> directory is not versioned, unlike
+the <code>lib/</code> directory. It doesn need to be because a simple
+convention makes it possible to version executable files: In so far as an executable
+is to be versioned (and it's generally a good idea to do so) one should wrap the logic
+in a file under the versioned <code>lib/</code> directry, then simply requiring or
+load the lib file into the executable file. It's a simple enough practice and doing
+it in this manner means that no specialized action is required of any packaging
+or distribution system. Here is a good example of such a file.</p>
+
+<pre class="sh_ruby">
+    #!/usr/bin/env ruby
+    version = "> 0"
+    if ARGV.size > 0 && ARGV[0][0]==95 && ARGV[0][-1]==95
+      if Library::Version.correct?(ARGV[0][1..-2])
+        version = ARGV[0][1..-2]
+        ARGV.shift
+      end
+    end
+    library 'camping', version
+    load 'camping'
+</pre>
+
+<h2 id="ch_meta"> Library Metadata </h2>
+
+<p>Additional meta-information may also be accessed via the
+<code>Library</code> interface. This is optional information
+that may or may not be provided by the project developers.</p>
+
+<p>To tell if any metadata has been provided, query the 
+library with the <code>#metadata?</code> call. If true, then
+other information will be availabe. For instance:</p>
+
+<pre class="sh_ruby">
+  library('fruitapp').title     #=> "Fruit Basket Application"
+  library('fruitapp').summary   #=> "Example application to demonstrate roll.rb."
+  library('fruitapp').author    #=> "Trans"
+</pre>
+
+<p>The field names are arbitrary and are dervied from individual files of
+a project's <code>meta/</code> directory, or from a <code>META.yml</code> file.</p>
+
 
 <h2 id="ch_layout"> Versioned Layout </h2>
 
@@ -270,9 +487,9 @@ repositories, procedures or supporting programs.</p>
 by Minero Aoki's <code>setup.rb</code>. Roll simply adds a couple
 additional details.</p> 
 
-<p>Here's an example of a typical subversion project layout.</p>
+<p>Here's an example of a typical Subversion project layout.</p>
 
-<pre>
+<pre class="sh_sh">
     fruitapp/
       tags/
         1.0.0/
@@ -294,9 +511,9 @@ additional details.</p>
 </pre>
 
 <p>Notice there is 1.0.0 tagged version and a new verison currently being worked on. The above layout
-is your typcial subversoin repository. Another workable layout, whether you use Subversion or not is:</p>
+is your typcial subversoin repository. Another viable layout is:</p>
 
-<pre>
+<pre class="sh_sh">
     fruitapp/
       1.0.0/
         VERSION
@@ -316,7 +533,10 @@ is your typcial subversoin repository. Another workable layout, whether you use 
             ...
 </pre>
 
-<p>This demonstrates how Rolls can work with a variety of layouts.</p>
+<p>This demonstrates the two varieties of Subversion layout that Rolls can comprehend.
+Other SCM's that use directories for tagging with have the same layout. Git, and any
+SCM that tracks tags internally, on the other hand, will of course not have these
+additonal layer of subdirectories.</p>
 
 <p>At this point you may be wondering how renaming the lib directory with a
 changing version is even possible --how will the internal require statements
@@ -324,6 +544,12 @@ find their files? It's actually quite simple. Rolls keeps a map of available
 libraries and their versions. When a library is first referenced it is
 instatiated with a particluar version. From then on requests against that
 libary are routed to that library object where the correct path is used.</p>
+
+<p><img src="../assets/images/important.png" align="left" style="margin-right: 10px;">
+It important to keep the VERSION file up to date. The version number in the 
+VERSION file must correspond to the tag name for <code>roll install</code> to
+work correctly. This is becuase the install command uses the tag name to 
+locate versions, but Roll's <code>require</code> method uses the VERSION file.</p>
 
 <!--
 <h2 id="ch_index"> The <code>index.rb</code> File </h2>
@@ -370,15 +596,15 @@ run whatever code neccessary for the initialization of a library. In this
 sense, the index.rb file is a library's version of a callback method.</p>
 -->
 
-<h2 id="ch_scope"> Load Scope </h2>
+<h2 id="ch_scope"> Load Path </h2>
 
-<p>One of the most important settings in the .roll file is the the load scope,
-known as the <code>libpath</code>. By default the load scope of a library is
-it's lib/ directory. But you can diversify the load scope if you wish.
+<p>One of the most important settings in the .roll file is the the load path,
+By default the load scope of a library is it's lib/ directory. But you can 
+vary the load path if need be.
 
 <p>Let us consider an example. Assume the following <code>lib/</code> layout:</p>
 
-<pre>
+<pre class="sh_sh">
     fruitapp/
       fruit/
         apple.rb
@@ -390,8 +616,8 @@ it's lib/ directory. But you can diversify the load scope if you wish.
 are to be accessible via the directory name, the internal directories are
 automatically exposed to one another.
 
-<pre>
-  libpath:
+<pre class="sh_ruby">
+  loadpath:
     - lib
     - lib/fruit
     - lib/basket
@@ -408,7 +634,10 @@ all three internal paths instead of just the main lib/ path. The file
 <code>apple.rb</code> can contain <code>require 'fruitapp/wicker.rb'</code>
 and it will find the file in the <code>basket/</code> directory.</p>
 
+
 <!--
+<h2>Relative Loading</h2>
+
 <p>As mentioned in the features, Rolls provides internal library files access to
 the library files around them without specifying absolute path names (i.e. relative
 to the standard $LOAD_PATH). This is useful because it allows one the freedom
@@ -437,211 +666,16 @@ Or you can use the specialized '::' marker to access standard ruby.</p>
 it will be supported in the future.</i>)</span>
 -->
 
-<!-- USING -->
-
-<h1 id="ch_user"> Using Rolled Libraries </h1>
-
-<h2 id="ch_quick"> Require and Load </h2>
-
-<p>Using a rolled Ruby library isn't much different than using a non-rolled
-one. For instance the demo app incuded in the Rolls distribution can
-be tested (after rolling it in) from irb just by typing:</p>
-
-<pre>
-    require 'fruitapp:tryme'
-</pre>
-
-<p>The roll system will see that 'fruitapp' is a rolled library and automatically
-instantiate it, selecting the most recent version, then proceed to require <code>tryme.rb</code>.</p>
-
-<p>For backward compatability, it is also possible to do:</p>
-
-<pre>
-    require 'fruitapp/tryme'
-</pre>
-
-<p>In this case though, Rolls will first try to load the file using Ruby's normal require mechinsim, failing that
-Rolls has to figure out that <code>fruitapp</code> is a rolled library. While fairly marginal, this does increae
-load times. Efficiency increases approx. 2-3 times by explicitly telling Rolls that <code>fruitapp</code>
-is a rolled library using the ':'. However, the trade-off is that your library/applcation will require the
-the use Rolls to function. Through-out this guide we will usually use the ':' to keep things clear. <i>Just
-remember that you can use '/' in it's place</i>.</p>
-
-<p>Rather then have Rolls automatically select the latest verison of a library you can manually <i>activate</i>
-a specific version via a version constraint. This is most easily achieved with the provided
-<code>#library</code> Kernel method.</p>
-
-<pre>
-    library 'fruitapp', '= 1.0'
-    require 'fruitapp:tryme'
-</pre>
-
-<p>So in this example, specifically version 1.0 of fruitapp will be used.
-The <code>#library</code> method does more than simply select a version.
-In fact, the verison parameter is optional --when no version constraint is given
-the most recent available version is selected. The <code>#library</code> method
-also returns returns a <i>Library</i> object.</p>
-
-
-<h2 id="ch_class"> The Library Class </h2>
-
-<p>When you use the Kernel method, <code>#library</code>, you're actually just using a shortcut for
-instantiating a new Library object. You can do the same thing using <code>Library.instance</code>
-or <code>Library.open</code> methods.</p>
-
-<pre>
-    Library.instance('fruitapp')   #=> #&lt;Library fruitapp/1.0.1&gt;
-    Library.open('fruitapp')       #=> #&lt;Library fruitapp/1.0.1&gt;
-</pre>
-
-<p>The <code>#instance</code> and <code>#open</code> methods require the library name as the
-first parameter <!-- , which is also the name of the library's directory within the file system.-->.
-The name is then used as the ledger key to track the library. The difference between
-<code>#instance</code> and <code>#open</code> is that <code>#open</code>
-will raise an error if the library is not found and can also take a block which yields on the
-library. In addition, there is a shorter alias for <code>#instance</code> provided as <code>#[]</code>.
-Like <code>#instance</code>, it too will not raise an error if the the library is not found,
-but will simply return <code>nil</code>.</p>
-
-<pre>
-    Library['fruitapp']  #=> #&lt;Library fruitapp/1.0.1&gt;
-    Library['notthere']  #=> nil
-</pre>
-
-<p>Library is <i>multiton</i>, which means only one instance exists per name.
-Calling <code>#library</code>, <code>Library.instance</code>, <code>Library.open</code> or
-<code>Library.[]</code> repeatedly using the same name will return the very same
-Library object.</p>
-
-<p>When selecting a version, the constraint is a simple string starting with an
-operator, like <code>=</code> or <code>&gt;=</code>, followed by the string
-representaion of a version number. For instance,</p>
-
-<pre>
-    Library.instance('fruitapp', '~> 1.0')     #=> #&lt;Library fruitapp/0.9&gt;
-    Library.instance('fruitapp', '== 2.0')     #=> #&lt;Library fruitapp/2.0&gt;
-</pre>
-
-<p>Once a version is selected the version can not be changed.
-A Library::VersionConflict will be raised if one attempts to do so.</p>
-
-<p><i>NOTE: This restriction has put in place to prevent conflicts which
-can arise when libraries extend core functionality. Certainly it would be
-nice if multiple-versions could work harmoniously, but this not even 
-remotely possible until such time as Ruby supports selector namespaces.
-In the future though we may be able to reduce the restrinction to just
-the use of #require and #load.</i></p>
-
-<!-- However, Roll will not raise and error should
-you have special need to do exactly that (although it may raise a warning).
-Once selected, the Library class will delegate calls to the current
-version. If you attempt to use a library without first selecting a
-version, the latest version will be atomically selected.-->
-
-<p>Now, with a library in hand, the most useful method provided is #require.</p>
-
-<pre>
-    library('fruitapp').require 'tryme'
-</pre>
-
-<p>As you can see this is pure OOP. You could store the reference to
-the library for later access, even pass it around as an argument.</p>
-
-<pre>
-    fruitlib = Library.open('fruitapp', '=1.0')
-    fruitlib.require 'tryme'
-</pre>
-
-
-<h2 id="ch_other"> Related Locations </h2>
-
-<p><b><i>NOTE: This section is not wholey correct.</i></b></p>
-
-<p>To facilitate access to file locations pertaining to
-a library, Rolls provides some convenient methods.
-Normally this information is accessed by using rbconfig.rb and
-building a path based on information in the Config::CONFIG hash.
-For instance, <code>Config:CONFIG['datadir']</code>
-on a Debian system points to /usr/share. With Roll you can look up
-the data dir specific to the current library via the <code>#datadir</code> 
-method, and likewise for the other directories. Here's a example rundown
-with resolutions for a Debian system.</p>
-
-<!--
-<pre>
-  # library directory
-  library('fruitapp').libdir           #=> [ "/usr/local/lib/site_ruby/1.8/fruitapp/1.0.0/" ]
--->
-
-<pre>
-  # configuration dir
-  library('fruitapp').confdir          #=> "/etc/fruitapp/"
-
-  # versioned data dir
-  library('fruitapp').datadir          #=> "/usr/share/fruitapp/1.0.0/"
-
-  # ensure non-versioned data dir
-  library('fruitapp').datadir(true)    #=> "/usr/share/fruitapp/"
-</pre>
-
-<p>Another way to access these locations is via Ruby's own Config module. Eg.
-Config.datadir('fruitapp'). This provides a wholly general interface
-to this information, irregardless of the system providing it, whether it be
-Rolls, Gems or some other system.</p>
-
-<p>With Rolls, a project's <code>bin/</code> directory is not versioned, unlike
-the <code>lib/</code> directory. It doesn need to be because a simple
-convention makes it possible to version executable files: In so far as an executable
-is to be versioned (and it's generally a good idea to do so) one should wrap the logic
-in a file under the versioned <code>lib/</code> directry, then simply requiring or
-load the lib file into the executable file. It's a simple enough practice and doing
-it in this manner means that no specialized action is required of any packaging
-or distribution system. Here is a good example of such a file.</p>
-
-<pre>
-    #!/usr/bin/env ruby
-    version = "> 0"
-    if ARGV.size > 0 && ARGV[0][0]==95 && ARGV[0][-1]==95
-      if Library::Version.correct?(ARGV[0][1..-2])
-        version = ARGV[0][1..-2]
-        ARGV.shift
-      end
-    end
-    library 'camping', version
-    load 'camping'
-</pre>
-
-<h2 id="ch_meta"> Library Metadata </h2>
-
-<p>Additional meta-information may also be provided via a library's
-specification file which is accessible via the <code>Library</code>
-interface. This is optional information that may or may not be
-provided by the project developers.</p>
-
-<p>To tell if any meta-information has been provided, query the 
-library with the <code>#metainfo?</code> call. If so then other
-information can be queried. For instance:</p>
-
-<pre>
-  library('fruitapp').title        #=> "Fruit Basket Application"
-  library('fruitapp').description  #=> "Example application to demonstrate roll.rb."
-  library('fruitapp').author       #=> "Trans"
-</pre>
-
-<p>Additional fields will be added in the future as prove suitable.</p>
-
-
 
 <!-- CHOOSING -->
 
 <h1 id="ch_choose"> It's How We Roll </h1>
 
 
-<h2 id="ch_maint"> Benefits to Package Maintainers </h2>
+<h2 id="ch_maint"> Benefits to Developers </h2>
 
-<p>Because Rolls in package system agnostic, it is advantageous to the package maintainers
-of operating systems. It is straight forward to repackage you libraries in their
-favored packaging system.</p>
+<p>Because Rolls in package agnostic, it largely removes the burden of
+distribution.</p>
 
 <!--
 <h2 id="ch_gems"> Rolling past Gems </h2>
@@ -654,16 +688,17 @@ creation of Rolls. Namely, that Gems is over reaching. Specifically, the fact th
 combines a package management system and a versioning system into an inseparable unit presents
 unwarranted limitations. It would be understandable if there was no alternative, but
 as Rolls demonstrates there is a very viable recourse.</p>
-
+-->
 
 <h2 id="ch_concl"> Are You Ready to Roll? </h2>
 
+<!--
 <p>Do you want the advantages of Rolls? Given that Roll is light-weight,
 robust and will work alongside Gems, thus allowing smooth transition,
 adding a dependency to RubyRoll is a relatively easy choice.</p>
 -->
 
-<p>Whe you are ready to roll, we've created this spiffy graphic you can
+<p>When you are ready to roll, we've created this spiffy graphic you can
 use to let other know you offer a rolls compatible distribution.</p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;<img src="../assets/images/ready.png"/></p>
@@ -673,12 +708,14 @@ use to let other know you offer a rolls compatible distribution.</p>
 
 <hr>
 
+<!--
 <div id="footnotes">
 Footnotes:<br/>
 [1] <a href="http://www.newsforge.com/article.pl?sid=05/06/08/136214&from=rss">Decline and fall of the version number</a>
 </div>
+-->
 
-<div id="copy">Copyright (c) 2005 Thomas Sawyer, all rights reserved.</div>
+<div id="copy">Copyright (c) 2005,2008 TigerOps & Thomas Sawyer, all rights reserved.</div>
 
 </html>
 

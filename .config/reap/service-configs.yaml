@@ -1,24 +1,29 @@
 #sow: {}
 
-syntax: {}
+basicstats:
+  service: BasicStats
 
-basicstats: {}
-
-notes: {}
-
-#testunit: {}
+notes:
+  service: Notes
 
 rdoc:
+  service  : RDoc
   template : jamis
   inline   : true
   output   : doc/rdoc
 
 ridoc:
+  service  : RiDoc
   output   : doc/ri
 
-zip: {}
+#testunit:
+#  service : TestUnit
+
+zip:
+  service  : Zip
 
 rubyforge:
-  unixname: roll
-  groupid: 1004
+  service  : RubyForge
+  unixname : roll
+  groupid  : 1004
 
