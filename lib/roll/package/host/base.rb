@@ -3,8 +3,8 @@ require 'roll/version'
 require 'roll/package/scm/svn'
 require 'roll/package/scm/git'
 
-module Roll #:nodoc:
-module Package #:nodoc:
+module Roll    #:nodoc:
+class  Package #:nodoc:
 module Host
 
   # = Host Base class
@@ -12,8 +12,6 @@ module Host
   # Base classes for all host classes.
   #
   class Base
-
-    DEFAULT_STORE = '/opt/rolls/'
 
     # Project name
     attr_accessor :name
@@ -23,6 +21,9 @@ module Host
 
     # Version
     attr_accessor :version
+
+    # Store
+    attr_accessor :store
 
     # Version type is either :tag, :branch, :revision, or :version.
     #attr_accessor :type
@@ -38,17 +39,12 @@ module Host
 
     #
     def store
-      @store ||= DEFAULT_STORE
+      @store ||= Package::DEFAULT_STORE
     end
 
-    #
+    # DEPRECATE ?
     def local
       @local ||= File.join(store, name)
-    end
-
-    #
-    def origin
-      @origin ||= File.join(local, '0')
     end
 
     #

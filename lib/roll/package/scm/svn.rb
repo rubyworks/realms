@@ -1,7 +1,7 @@
 require 'roll/package/scm/base'
 
 module Roll     #:nodoc:
-module Package  #:nodoc:
+class  Package  #:nodoc:
 module Scm      #:nodoc:
 
   # = Svn

@@ -1,7 +1,7 @@
 require 'roll/package/host/base'
 
 module Roll     #:nodoc:
-module Package  #:nodoc:
+class  Package  #:nodoc:
 module Host     #:nodoc:
 
   # = Rubyforge
@@ -23,9 +23,9 @@ module Host     #:nodoc:
       @scm ||= (
         case scm_type
         when :git
-          Scm::Git.new(self, uri)
+          Scm::Git.new(name, :version=>version, :uri=>uri, :store=>store)
         when :svn
-          Scm::Svn.new(self, uri)
+          Scm::Svn.new(name, :version=>version, :uri=>uri, :store=>store)
         else
           raise "can't determine scm type"
         end

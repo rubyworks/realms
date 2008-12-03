@@ -7,20 +7,16 @@ module Roll #:nodoc:
     # Install project.
     #
     def install
-      require 'roll/package/installer'
+      require 'roll/package'
 
       opts = GetoptLong.new(
-        [ '--help', '-h', GetoptLong::NO_ARGUMENT ],
-
+        [ '--help',      '-h', GetoptLong::NO_ARGUMENT ],
         [ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
         [ '--rubyforge', '-r', GetoptLong::NO_ARGUMENT ],
-
-        [ '--version',  '-v', GetoptLong::REQUIRED_ARGUMENT ]
-
+        [ '--version',   '-v', GetoptLong::REQUIRED_ARGUMENT ]
         #[ '--tag',      '-t', GetoptLong::REQUIRED_ARGUMENT ],
         #[ '--branch',   '-b', GetoptLong::REQUIRED_ARGUMENT ],
         #[ '--revision', '-r', GetoptLong::REQUIRED_ARGUMENT ],
-
         #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ]
       )
 
@@ -31,10 +27,13 @@ module Roll #:nodoc:
         case opt
         when '--help'
           # TODO
+        when '--version'
+          #options[:type]   = :version
+          options[:version] = arg
         when '--rubyforge'
-          host_type = :rubyforge
+          options[:host] = :rubyforge
         when '--github'
-          host_type = :github
+          options[:host] = :github
         #when '--tag'
         #  options[:version_type] = :tag
         #  options[:version] = arg
@@ -44,15 +43,12 @@ module Roll #:nodoc:
         #when '--revision'
         #  options[:version_type] = :revision
         #  options[:version] = arg
-        when '--version'
-          #options[:version_type] = :version
-          options[:version] = arg
         end
       end
 
       name = ARGV[1]
 
-      installer = Package::Installer.new(name, host_type, options)
+      installer = Package.new(name, options)
 
       installer.install
 

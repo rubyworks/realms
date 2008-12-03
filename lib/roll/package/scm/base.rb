@@ -1,8 +1,6 @@
 module Roll     #:nodoc:
-module Package  #:nodoc:
+class  Package  #:nodoc:
 module Scm
-
-  STORE = '/opt/rolls/'
 
   # = Scm Base class
   #
@@ -10,43 +8,33 @@ module Scm
   #
   class Base
 
-    # Host
-    attr :host
+    # Project name.
+    attr :name
+
+    # Local repository store location.
+    attr :store
 
     # Repository URI
     attr :uri
 
     #
-    def initialize(host, uri, options={})
-      @host = host
-      @uri  = uri
+    def initialize(name, ioc={})
+      @name = name
 
-      @version = host.version
-
-      #options[:uri] if options[:uri]
-    end
-
-    # Project name.
-    def name
-      host.name
+      @version = ioc[:version]
+      @store   = ioc[:store]
+      @uri     = ioc[:uri]
     end
 
     # Version.
     #
     def version
-      #@version ||= versions.max
       @version ||= versions.max{ |a,b| natcmp(a, b, true) }
     end
 
     # Version type is either :tag, :branch, :revision, or :version.
     #def type
-    #  host.type
     #end
-
-    # TODO: Make configurable ?
-    def store
-      host.store
-    end
 
     # Location to install project.
     def destination
@@ -54,10 +42,10 @@ module Scm
     end
 
     # Origin is the install location of the current development
-    # repository (eg. the "trunk" or "master").
+    # repository, should it be needed (eg. the "trunk" or "master").
     #
     def origin
-      host.origin
+      @origin ||= File.join(store, name, '0')
     end
 
     #

@@ -1,7 +1,7 @@
 require 'roll/package/host/base'
 
 module Roll     #:nodoc:
-module Package  #:nodoc:
+class  Package  #:nodoc:
 module Host     #:nodoc:
 
   # = Github
@@ -21,7 +21,7 @@ module Host     #:nodoc:
 
     #
     def scm
-      @scm ||= Git.new(self, uri)
+      @scm ||= Git.new(name, :version=>version, :uri=>uri, :store=>store)
     end
 
   end
