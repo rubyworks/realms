@@ -24,7 +24,7 @@ module Roll
     attr :uri
 
     #
-    def initialize(name, options)
+    def initialize(name, ioc)
       @name      = name
 
       @version   = ioc[:version]
@@ -35,19 +35,20 @@ module Roll
 
     #
     def store
-      @store ||= DEFAULT_STORE
+      @store ||= STORE
     end
 
-    #
+    # TODO: Could use environment variable or config to set default host.
     def host
       @host ||= (
         case host_type
         when :rubyforge
-          host = Roll::Host::Rubyforge.new(name, host_options)
+          Host::Rubyforge.new(name, host_options)
         when :github
-          host = Roll::Host::Github.new(name, host_options)
+          Host::Github.new(name, host_options)
         else
-          raise "unknown host"
+          puts "Unspecified host. Assuming RubyForge."
+          Host::Rubyforge.new(name, host_options)
         end
       )
     end
@@ -120,11 +121,11 @@ module Roll
     # insert installation into ledger
     def insert(dir)
       dir = File.expand_path(dir)
-      ledger = Roll.system_ledger
+      ledger = Library.system_ledger
       ledger << dir
       ledger.save
       puts "#{dir}" 
-      puts "  '-> #{Roll.system_ledger_file}"
+      puts "  '-> #{Library.system_ledger_file}"
     end
 
     # TODO: Where to get extensions?

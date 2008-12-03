@@ -24,8 +24,8 @@ module Scm      #:nodoc:
       else
         puts "Installing #{name}..."
         clone # checkout master
+        system "git clone -l #{origin} #{destination}"
         if $PRETEND
-          system "git clone -l #{origin} #{destination}"
           puts   "cd #{destination}"
           system "git checkout #{map[version]}"
         else
@@ -92,7 +92,13 @@ module Scm      #:nodoc:
   private
 
     def clone
-      system "git clone #{uri} #{origin}"
+      if File.exist?(origin)
+        Dir.chdir(origin) do
+          system "git pull -t origin"  ##{uri}"
+        end
+      else
+        system "git clone #{uri} #{origin}"
+      end
     end
 
     #

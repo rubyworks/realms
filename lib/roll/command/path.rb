@@ -24,8 +24,8 @@ module Roll
       # Go thru each roll lib and make sure bin
       # path in path.
       binpaths = []
-      Roll.list.each do |libname|
-        path = Roll[libname].bindir
+      Roll::Library.list.each do |libname|
+        path = Roll::Library[libname].bindir
         binpaths << path if path
       end
 
