@@ -2,7 +2,7 @@ require 'roll/config'
 require 'roll/version'
 
 require 'roll/library/metadata'
-require 'roll/library/manager'
+require 'roll/library/management'
 
 #require 'roll/sign'
 #require 'roll/library/kernel'
@@ -13,35 +13,7 @@ module Roll
   #
   class Library
 
-    # Metaclass
-
-    class << self
-
-      def manager
-        @manager ||= Manager.new
-      end
-
-      def require(path)
-        manager.require(path)
-      end
-
-      def load(path, wrap=nil)
-        manager.load(path, wrap)
-      end
-
-      def instance(name) ; manager.instance(name) ; end
-      def [](name)       ; manager[name]          ; end
-      def open(name)     ; manager.open(name)     ; end
-
-      #
-      def method_missing(s, *a, &b)
-        if manager.respond_to?(s)
-          manager.__send__(s, *a, &b)
-        else
-          super
-        end
-      end
-    end
+    extend Management
 
     # Location of library in the filesystem.
     attr_reader :location

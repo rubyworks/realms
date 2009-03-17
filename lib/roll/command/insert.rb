@@ -6,11 +6,11 @@ module Roll
     def insert
       root = find_root
       if root
-        ledger = Roll.user_ledger
+        ledger = Library.user_ledger
         ledger << root
         ledger.save
         puts "#{root}"
-        puts "  '-> #{Roll.user_ledger_file}"
+        puts "  '-> #{Library.user_ledger_file}"
       end
     end
 

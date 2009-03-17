@@ -424,7 +424,7 @@ module Roll
         return lib, path, must
       end
 
-    end #class Manager
+    end #module Management
 
   end #class Library
 
