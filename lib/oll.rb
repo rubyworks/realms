@@ -1,2 +1,3 @@
-require 'roll'
+require 'roll/kernel'
+Roll::Library.setup
 

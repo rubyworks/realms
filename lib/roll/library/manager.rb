@@ -7,6 +7,8 @@ module Roll
   # Copy the original $LOAD_PATH, for use by specified "ruby: ..." loads.
   #$RUBY_PATH = $LOAD_PATH.dup
 
+  # TODO: Ledger loader (ie. Ledger.new) could be more robust?
+
   class Library
 
     # VersionError is raised when a requested version cannot be found.
@@ -18,22 +20,13 @@ module Roll
     class VersionConflict < ::LoadError  # :nodoc:
     end
 
-    # = Library Manager
-    # This is not instantiated by end-users, in fact normally it is singleton.
-    # Rather it is accessded via delegation though the Library Metaclass.
-    class Manager
-
-      #
-      attr :ledger
-
-      #
-      attr :locations
+    # = Library Management
+    #
+    module Management
 
       # Setup library system.
       #
-      def initialize
-        @ledger    = {}
-        @locations = []
+      def setup
         # Add Ruby's core and standard libraries to the ledger.
         #@ledger['ruby'] = Library.new(
         #  Library.rubylibdir,
@@ -41,32 +34,34 @@ module Roll
         #  :version=>RUBY_VERSION,
         #  :libpath=>Library.ruby_path
         #)
-        ledger_files.each do |file|
-          locs = File.read(file).split(/\s*\n/)
-          locations.concat(locs)
-        end
-        load_projects(*locations)
+        load_locations
+        load_projects
       end
 
       #
-      def ledger_files
-        @ledger_files ||= XDG.config_select('roll/ledger.list')
-      end
-
-      # TODO: config or share is the proper directory?
-      def system_ledger_file
-        @system_ledger_file ||= File.join(XDG.config_dirs.first, 'roll/ledger.list')
+      def ledger
+        @ledger ||= {}
       end
 
       #
-      def user_ledger_file
-        @user_ledger_file ||= File.join(XDG.config_home, 'roll/ledger.list')
+      def locations
+        @location ||= []
       end
 
-      # TODO: Make a more robust ledger loader
-      def system_ledger
-        @system_ledger ||= Ledger.new(system_ledger_file)
-      end
+      #
+      def ledger_files       ; @ledger_files       ||= XDG.config_select('roll/ledger.list')                ; end
+
+      # TODO: Is config or share the proper directory?
+      def system_ledger_file ; @system_ledger_file ||= File.join(XDG.config_dirs.first, 'roll/ledger.list') ; end
+
+      #
+      def user_ledger_file   ; @user_ledger_file   ||= File.join(XDG.config_home, 'roll/ledger.list')       ; end
+
+      #
+      def system_ledger      ; @system_ledger      ||= Ledger.new(system_ledger_file)                       ; end
+
+      #
+      def user_ledger        ; @user_ledger        ||= Ledger.new(user_ledger_file)                         ; end
 
       #
       #def save_system_ledger(list)
@@ -76,19 +71,21 @@ module Roll
       #  end
       #end
 
-      # TODO: Make a more robust ledger loader
-      def user_ledger
-        @user_ledger ||= Ledger.new(user_ledger_file)
-        #File.file?(user_ledger_file) ? File.read(user_ledger_file).split(/\s*\n/) : []
-      end
-
       # Return a list of library names.
       def list
         ledger.keys
       end
 
-      # TODO: load_path
-      def load_projects(*locations)
+      #
+      def load_locations
+        ledger_files.each do |file|
+          locs = File.read(file).split(/\s*\n/)
+          locations.concat(locs)
+        end
+      end
+
+      # TODO: load_path?
+      def load_projects
         locations.each do |location|
           begin
             metadata = load_version(location)
@@ -100,10 +97,10 @@ module Roll
 
             name = lib.name.downcase
 
-            @ledger[name] ||= []
-            @ledger[name] << lib
+            ledger[name] ||= []
+            ledger[name] << lib
 
-            @locations << location
+            #@locations << location
           rescue => e
             raise e if ENV['ROLL_DEBUG'] or $DEBUG
             warn "scan error, library omitted -- #{location}" if ENV['ROLL_WARN'] or $VERBOSE
@@ -254,42 +251,39 @@ module Roll
           raise LoadError, "no library found -- #{file}" unless lib
           lib.require(path)
         else
+          # try Ruby core/standard library
+          # actually just traditional require
+          # (allowing other load hacks to work, including RubyGems)
+          begin
+            return Kernel.require(file)
+          rescue LoadError => load_error
+          end
+
           # potential specified library
           # ie. head of path is library name
           name, *rest = file.split(/[\\\/]/)
           path = File.join(*rest)
           path = nil if path.empty?
-
           if lib = instance(name)
             begin
               return lib.require(path)
-            rescue LoadError => load_error
-              raise load_error if ENV['ROLL_DEBUG']
+            rescue LoadError
             end
-          end
-
-          # try Ruby core/standandard library
-          # actually just traditional require
-          # (allowing other load hacks to work, including RubyGems)
-          begin
-            return Kernel.require(file)
-          rescue LoadError => kernel_error
-            raise kernel_error if ENV['ROLL_DEBUG']
           end
 
           # try current library
           if lib = load_stack.last
             begin
               return lib.require(file)
-            rescue LoadError => load_error
-              raise load_error if ENV['ROLL_DEBUG']
+            rescue LoadError
             end
           end
 
-          raise kernel_error # failure
+          raise load_error
         end
       end
 
+      # Load
       #
       def load(file, wrap=false)
         # specific library
@@ -299,6 +293,14 @@ module Roll
           raise LoadError, "no library found -- #{file}" unless lib
           lib.load(path, wrap)
         else
+          # try Ruby core/standard library
+          # actually just traditional load
+          # (allowing other load hacks to work, including RubyGems)
+          begin
+            return Kernel.load(file, wrap)
+          rescue LoadError
+          end
+
           # potentialy specified library,
           # ie. head of path is library name
           name, *rest = file.split(/[\\\/]/)
@@ -308,30 +310,19 @@ module Roll
             begin
               return lib.load(path, wrap)
             rescue LoadError => load_error
-              raise load_error if ENV['ROLL_DEBUG']
             end
-          end
-
-          # try Ruby core/standard library
-          # actually just traditional load
-          # (allowing other load hacks to work, including RubyGems)
-          begin
-            return Kernel.load(file, wrap)
-          rescue LoadError => kernel_error
-            raise kernel_error if ENV['ROLL_DEBUG']
           end
 
           # try current library
           if lib = load_stack.last
             begin
               return lib.load(file, wrap)
-            rescue LoadError => load_error
-              raise load_error if ENV['ROLL_DEBUG']
+            rescue LoadError
             end
           end
         end
 
-        raise kernel_error # failure
+        raise load_error
       end
 
 =begin
