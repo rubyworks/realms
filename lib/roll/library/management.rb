@@ -110,12 +110,29 @@ module Roll
 
       # Load and parse version stamp file.
       def load_version(location)
-        patt = File.join(location,'VERSION')
-        file = Dir.glob(patt, File::FNM_CASEFOLD).first
-        if file
-          parse_version_stamp(File.read(file))
+        dir = Dir.glob(File.join(location, '{meta,.meta}'))
+        m = {}
+        m[:name]    = read_metadata_entry(dir, 'name') || read_metadata_entry(dir, 'package')
+        m[:version] = read_metadata_entry(dir, 'version')
+        m[:status]  = read_metadata_entry(dir, 'status')
+        m[:date]    = read_metadata_entry(dir, 'date') || read_metadata_entry(dir, 'release')
+        return m
+        #patt = File.join(location,'VERSION')
+        #file = Dir.glob(patt, File::FNM_CASEFOLD).first
+        #if file
+        #  parse_version_stamp(File.read(file))
+        #else
+        #  {}
+        #end
+      end
+
+      #
+      def read_metadata_entry(dir, name)
+        file = File.join(dir,name)
+        if File.file?(file)
+          File.read(file).strip
         else
-          {}
+          nil
         end
       end
 
@@ -132,14 +149,14 @@ module Roll
       end
 
       # Parse version stamp into it's various parts.
-      def parse_version_stamp(text)
-        #info, *libpath = *data.split(/\s*\n\s*/)
-        name, version, status, date = *text.split(/\s+/)
-        version = Version.new(version)
-        date    = Time.mktime(*date.scan(/[0-9]+/))
-        #default = default || "../#{name}"
-        return {:name => name, :version => version, :status => status, :date => date}
-      end
+      #def parse_version_stamp(text)
+      #  #info, *libpath = *data.split(/\s*\n\s*/)
+      #  name, version, status, date = *text.split(/\s+/)
+      #  version = Version.new(version)
+      #  date    = Time.mktime(*date.scan(/[0-9]+/))
+      #  #default = default || "../#{name}"
+      #  return {:name => name, :version => version, :status => status, :date => date}
+      #end
 
       # Get an instance of a library by name. Libraries are singleton, so once loaded
       # the same object is always returned.
@@ -261,21 +278,20 @@ module Roll
 
           # potential specified library
           # ie. head of path is library name
+          # TODO: don't do this, ask the library if file exists, then load if it does.
           name, *rest = file.split(/[\\\/]/)
           path = File.join(*rest)
           path = nil if path.empty?
           if lib = instance(name)
-            begin
+            if lib.require_find(path)
               return lib.require(path)
-            rescue LoadError
             end
           end
 
           # try current library
           if lib = load_stack.last
-            begin
+            if lib.require_find(file)
               return lib.require(file)
-            rescue LoadError
             end
           end
 
@@ -298,7 +314,7 @@ module Roll
           # (allowing other load hacks to work, including RubyGems)
           begin
             return Kernel.load(file, wrap)
-          rescue LoadError
+          rescue LoadError => load_error
           end
 
           # potentialy specified library,
@@ -307,17 +323,15 @@ module Roll
           path = File.join(*rest)
           path = nil if path.empty?
           if lib = instance(name)
-            begin
+            if lib.load_find(path)
               return lib.load(path, wrap)
-            rescue LoadError => load_error
             end
           end
 
           # try current library
           if lib = load_stack.last
-            begin
+            if lib.load_find(file)
               return lib.load(file, wrap)
-            rescue LoadError
             end
           end
         end

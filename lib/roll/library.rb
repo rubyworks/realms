@@ -64,9 +64,9 @@ module Roll
     # New Library.
     def initialize(metadata)
       location = metadata[:location]
-      name     = metadata[:name]
+      name     = metadata[:name] || metadata[:package]
       version  = metadata[:version]
-      date     = metadata[:date]
+      date     = metadata[:date] || metadata[:release]
       status   = metadata[:status]
       loadpath = metadata[:loadpath]
 

@@ -56,8 +56,8 @@ module Roll
     def find_root
       dir = Dir.pwd
       until dir == '/'
-        break File.exist?('VERSION')
-        break File.exist?('.config/roll.ini')
+        break File.directory?('meta')
+        break File.directory?('.meta')
         dir = File.dirname(dir)
       end
       return nil if dir == '/'

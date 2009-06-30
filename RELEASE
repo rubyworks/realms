@@ -2,25 +2,13 @@ Rolls is a Library Manager. It provides an improved require and
 load system, supports versioning and metadata, and can rid
 developers of the need to install packages.
 
-This version changes the roll file (one last time!) to
-.roll. The format of this file has changed. It is now a
-quasi-ini or quasi-yaml file. Eg.
+The .roll file is no longer used. Instead Rolls is now
+using a VERSION file combined with meta/ entries for
+loadpath and dependencies (ie. requires).
 
-  name = facets
-  version = 2.3.0
-  status = stable
-  date = 2008-02-03
-  libpath = lib/core/facets;lib/more/facets
+Rolls is maturing nicely. Almost all necessary functionality is
+now in place. There is only one major issue left due to Ruby's
+implementation of autoload.
 
-If a VERSION file is in the repo then the three middle
-values will be extracted from that. Given the libpath
-default is usually correct (ie. lib/#{name}), often all
-this file needs to contain in the name field.
+Still considering how we could add plugin support.
 
-Rolls is maturing nicely. Finished adding module_require support
-(does not work on C extensions btw --up to matz to add that).
-Almost all necessary functionality is now in place. There is only
-one major bug left due to Ruby's implementation of autoload. And
-one major question --"plugin" support. Beyond that the focus
-will be on refining the code over the next few releases.
- 
