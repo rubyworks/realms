@@ -19,22 +19,22 @@ module Roll
     attr_reader :location
 
     # Name of library.
-    attr_reader :name
+    #attr_reader :name
 
     # Version of library. This is a Version object.
-    attr_reader :version
+    #attr_reader :version
 
     # Release date.
-    attr_reader :date
+    #attr_reader :date
 
     # Alias for date.
-    alias_method :released, :date
+    #alias_method :released, :date
 
     # Status of project.
-    attr_reader :status
+    #attr_reader :status
 
     # Libraries load paths.
-    attr_reader :load_path
+    #attr_reader :load_path
 
 
   # Paths to look for files. This is not the same as the traditional
@@ -51,44 +51,75 @@ module Roll
   # if a file is not found in the main libpath.
   #attr_reader :depend
 
-    # Default library file. This is the default file to load if the library
-    # is required or loaded solely by it's own name. Eg. +require 'foo'+.
-    # If not specified it default is then name of the library (eg. 'foo').
-    attr_reader :default
-
 
     # Library dependencies. These are libraries that will be searched
     # if a file is not found in the main libpath.
     #attr_reader :requires
 
     # New Library.
-    def initialize(metadata)
-      location = metadata[:location]
-      name     = metadata[:name] || metadata[:package]
-      version  = metadata[:version]
-      date     = metadata[:date] || metadata[:release]
-      status   = metadata[:status]
-      loadpath = metadata[:loadpath]
+    def initialize(location)
+      @location = location
 
-      @default  = metadata[:default] || name
+      #@name     = metadata.name
+      #@version  = metadata.version
+      #@date     = metadata.date
+      #@status   = metadata.status
+      #@loadpath = metadata.loadpath
+
+      #@default  = metadata[:default] || name
 
       raise "no name -- #{location}"    unless name
       raise "no version -- #{location}" unless version
 
-      @location = location
-      @name     = name
+      #@location = location
+      #@name     = name
 
-      if version
-        @version = (Version===version) ? version : Version.new(version)
-      end
+      #if version
+      #  @version = (Version===version) ? version : Version.new(version)
+      #end
 
-      if date
-        @date = (Time===date) ? date : Time.mktime(*date.scan(/[0-9]+/))
-      end
+      #if date
+      #  @date = (Time===date) ? date : Time.mktime(*date.scan(/[0-9]+/))
+      #end
 
-      @status  = status
+      #@status  = status
 
-      @load_path = loadpath || ['lib']
+      #@load_path = loadpath || ['lib']
+    end
+
+    # Package name.
+    def name
+      metadata.name
+    end
+
+    # Version of library. This is a Version object.
+    def version
+      metadata.version
+    end
+
+    # 
+    def status
+      metadata.status
+    end
+
+    # Release date.
+    def date
+      metadata.date
+    end
+
+    # Alias for date.
+    alias_method :released, :date
+
+    #
+    def load_path
+      metadata.loadpath || ['lib']
+    end
+
+    # Default library file. This is the default file to load if the library
+    # is required or loaded solely by it's own name. Eg. +require 'foo'+.
+    # If not specified it default is then name of the library (eg. 'foo').
+    def default
+      metadata.default || name
     end
 
     # Inspection.
@@ -263,6 +294,7 @@ module Roll
 
     # If method is missing delegate to metadata, if any.
     def method_missing(s, *a, &b)
+p s
       if metadata
         metadata.send(s, *a, &b)
       else

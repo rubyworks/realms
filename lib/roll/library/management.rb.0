@@ -11,9 +11,16 @@ module Roll
 
   class Library
 
+    # VersionError is raised when a requested version cannot be found.
+    class VersionError < ::RangeError  # :nodoc:
+    end
+
+    # VersionConflict is raised when selecting another version
+    # of a library when a previous version has already been selected.
+    class VersionConflict < ::LoadError  # :nodoc:
+    end
+
     # = Library Management
-    #
-    # The Management module extends Library.
     #
     module Management
 
@@ -42,29 +49,19 @@ module Roll
       end
 
       #
-      def ledger_files
-        @ledger_files ||= XDG.config_select('roll/ledger.list')
-      end
+      def ledger_files       ; @ledger_files       ||= XDG.config_select('roll/ledger.list')                ; end
+
+      # TODO: Is config or share the proper directory?
+      def system_ledger_file ; @system_ledger_file ||= File.join(XDG.config_dirs.first, 'roll/ledger.list') ; end
 
       #
-      def system_ledger_file
-        @system_ledger_file ||= File.join(XDG.config_dirs.first, 'roll/ledger.list')
-      end
+      def user_ledger_file   ; @user_ledger_file   ||= File.join(XDG.config_home, 'roll/ledger.list')       ; end
 
       #
-      def user_ledger_file
-        @user_ledger_file ||= File.join(XDG.config_home, 'roll/ledger.list')
-      end
+      def system_ledger      ; @system_ledger      ||= Ledger.new(system_ledger_file)                       ; end
 
       #
-      def system_ledger
-        @system_ledger ||= Ledger.new(system_ledger_file)
-      end
-
-      #
-      def user_ledger
-        @user_ledger ||= Ledger.new(user_ledger_file)
-      end
+      def user_ledger        ; @user_ledger        ||= Ledger.new(user_ledger_file)                         ; end
 
       #
       #def save_system_ledger(list)
@@ -81,100 +78,87 @@ module Roll
 
       #
       def load_locations
-        locs = []
         ledger_files.each do |file|
-          File.readlines(file).each do |line|
-            next if line =~ /^\s*$/
-            dir, depth = *line.strip.split(/\s+/)
-            locs << find_projects(dir, depth)
-          end
+          locs = File.read(file).split(/\s*\n/)
+          locations.concat(locs)
         end
-        locations.concat(locs.flatten)
       end
 
-      # Search a given directory for projects upto a given depth.
-      # Projects directories are determined by containing a 
-      # 'meta' or '.meta' directory.
-      def find_projects(dir, depth=2)
-        depth = Integer(depth || 2)
-        depth = (1..depth).map{ |i| (["*"] * i).join('/') }.join(',')
-        glob = File.join(dir, "{#{depth}}", "{.meta,meta}")
-        meta_locations = Dir[glob]
-        meta_locations.map{ |d| d.chomp('/meta').chomp('/.meta') }
-      end
-
-      # Load projects into ledger.
-      #
       # TODO: load_path?
-      #
       def load_projects
         locations.each do |location|
           begin
-            lib = Library.new(location)
+            metadata = load_version(location)
+            metadata[:location] = location
+            metadata[:loadpath] = load_loadpath(location)
+
+            lib = Library.new(metadata)
+            #lib = Library.new(location, metadata)
+
             name = lib.name.downcase
+
             ledger[name] ||= []
             ledger[name] << lib
-          rescue => e
-            raise e if ENV['ROLL_DEBUG'] or $DEBUG
-            warn "scan error, library omitted -- #{location}" if ENV['ROLL_WARN'] or $VERBOSE
+
+            #@locations << location
+          #rescue => e
+          #  raise e if ENV['ROLL_DEBUG'] or $DEBUG
+          #  warn "scan error, library omitted -- #{location}" if ENV['ROLL_WARN'] or $VERBOSE
           end
         end
       end
 
-#      #
-#      def metadir(location)
-#        Dir.glob(File.join(location, '{meta,.meta}'))
-#      end
+      # Load and parse version stamp file.
+      def load_version(location)
+        patt = File.join(location,'VERSION')
+        file = Dir.glob(patt, File::FNM_CASEFOLD).first
+        if file
+          m = parse_version_stamp(File.read(file))
+        else
+          m = {}
+          m[:name]     = read_meta_entry(location, 'package') || read_meta_entry(location, 'name')
+          m[:version]  = read_meta_entry(location, 'version')
+          m[:date]     = read_meta_entry(location, 'release') || read_meta_entry(location, 'date')
+          m[:status]   = read_meta_entry(location, 'status')
+          m[:codename] = read_meta_entry(location, 'codename')
+          m = {} unless m[:name] and m[:version]
+        end
+        m
+      end
 
-#      # Load and parse version stamp file.
-#      def load_version(location)
-#        dir = Dir.glob(File.join(location, '{meta,.meta}'))
-#        m = {}
-#        m[:name]    = read_metadata_entry(dir, 'name') || read_metadata_entry(dir, 'package')
-#        m[:version] = read_metadata_entry(dir, 'version')
-#        m[:status]  = read_metadata_entry(dir, 'status')
-#        m[:date]    = read_metadata_entry(dir, 'date') || read_metadata_entry(dir, 'release')
-#        return m
-#        #patt = File.join(location,'VERSION')
-#        #file = Dir.glob(patt, File::FNM_CASEFOLD).first
-#        #if file
-#        #  parse_version_stamp(File.read(file))
-#        #else
-#        #  {}
-#        #end
-#      end
+      # Wish there was a way to do this without using a
+      # configuration file.
+      def load_loadpath(location)
+        file = File.join(location, 'meta', 'loadpath')
+        if File.file?(file)
+          paths = File.read(file).gsub(/\n\s*\n/m,"")
+          paths = paths.split(/\s*\n/)
+        else
+          paths = ['lib']
+        end
+      end
 
-#      #
-#      def read_metadata_entry(dir, name)
-#        file = File.join(dir,name)
-#        if File.file?(file)
-#          File.read(file).strip
-#        else
-#          nil
-#        end
-#      end
-
-#      # Wish there was a way to do this without using a
-#      # configuration file.
-#      def load_loadpath(location)
-#        file = File.join(location, 'meta', 'loadpath')
-#        if File.file?(file)
-#          paths = File.read(file).gsub(/\n\s*\n/m,"")
-#          paths = paths.split(/\s*\n/)
-#        else
-#          paths = ['lib']
-#        end
-#      end
+      #
+      def read_meta_entry(location, name)
+        patt = File.join(location,'{meta,.meta}', name)
+        file = Dir.glob(patt, File::FNM_CASEFOLD).first
+        if file
+          s = File.read(file).strip
+          s !~ /\w/ ? nil : s
+        else
+          nil
+        end      
+      end
 
       # Parse version stamp into it's various parts.
-      #def parse_version_stamp(text)
-      #  #info, *libpath = *data.split(/\s*\n\s*/)
-      #  name, version, status, date = *text.split(/\s+/)
-      #  version = Version.new(version)
-      #  date    = Time.mktime(*date.scan(/[0-9]+/))
-      #  #default = default || "../#{name}"
-      #  return {:name => name, :version => version, :status => status, :date => date}
-      #end
+      def parse_version_stamp(text)
+        #info, *libpath = *data.split(/\s*\n\s*/)
+        name, version, status, date = *text.split(/\s+/)
+        version = Version.new(version)
+        date    = Time.mktime(*date.scan(/[0-9]+/))
+        #default = default || "../#{name}"
+        return {:name => name, :version => version, :status => status, :date => date}
+      end
 
       # Get an instance of a library by name. Libraries are singleton, so once loaded
       # the same object is always returned.
@@ -270,7 +254,7 @@ module Roll
       # a bug in Ruby b/c autoload is not using the overriden
       # require.
       #
-      #alias_method :require_without_roll, :require
+      alias_method :require_without_rolls, :require
       #public :require_without_roll
 
       #alias_method :load_without_roll, :load
@@ -290,26 +274,27 @@ module Roll
           # actually just traditional require
           # (allowing other load hacks to work, including RubyGems)
           begin
-            return Kernel.require(file)
+            return require_without_rolls(file) #Kernel.require(file)
           rescue LoadError => load_error
           end
 
           # potential specified library
           # ie. head of path is library name
-          # TODO: don't do this, ask the library if file exists, then load if it does.
           name, *rest = file.split(/[\\\/]/)
           path = File.join(*rest)
           path = nil if path.empty?
           if lib = instance(name)
-            if lib.require_find(path)
+            begin
               return lib.require(path)
+            #rescue LoadError
             end
           end
 
           # try current library
           if lib = load_stack.last
-            if lib.require_find(file)
+            begin
               return lib.require(file)
+            rescue LoadError
             end
           end
 
@@ -341,15 +326,17 @@ module Roll
           path = File.join(*rest)
           path = nil if path.empty?
           if lib = instance(name)
-            if lib.load_find(path)
+            begin
               return lib.load(path, wrap)
+            rescue LoadError
             end
           end
 
           # try current library
           if lib = load_stack.last
-            if lib.load_find(file)
+            begin
               return lib.load(file, wrap)
+            rescue LoadError
             end
           end
         end
@@ -457,15 +444,6 @@ module Roll
       end
 
     end #module Management
-
-    # VersionError is raised when a requested version cannot be found.
-    class VersionError < ::RangeError  # :nodoc:
-    end
-
-    # VersionConflict is raised when selecting another version
-    # of a library when a previous version has already been selected.
-    class VersionConflict < ::LoadError  # :nodoc:
-    end
 
   end #class Library
 
