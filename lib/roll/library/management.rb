@@ -93,11 +93,11 @@ module Roll
       end
 
       # Search a given directory for projects upto a given depth.
-      # Projects directories are determined by containing a 
+      # Projects directories are determined by containing a
       # 'meta' or '.meta' directory.
-      def find_projects(dir, depth=2)
-        depth = Integer(depth || 2)
-        depth = (1..depth).map{ |i| (["*"] * i).join('/') }.join(',')
+      def find_projects(dir, depth=3)
+        depth = Integer(depth || 3)
+        depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
         glob = File.join(dir, "{#{depth}}", "{.meta,meta}")
         meta_locations = Dir[glob]
         meta_locations.map{ |d| d.chomp('/meta').chomp('/.meta') }
@@ -115,7 +115,7 @@ module Roll
             ledger[name] ||= []
             ledger[name] << lib
           rescue => e
-            raise e if ENV['ROLL_DEBUG'] or $DEBUG
+            raise e if ENV['ROLL_DEBUG']
             warn "scan error, library omitted -- #{location}" if ENV['ROLL_WARN'] or $VERBOSE
           end
         end
@@ -360,7 +360,7 @@ module Roll
 =begin
       # Require script.
       #
-      # NOTE: Ideally this would first look for a specific library 
+      # NOTE: Ideally this would first look for a specific library
       #       via ':', and then try the current library. Failing
       #       that it would fall back to Ruby itself. However this
       #       would break compatibility.

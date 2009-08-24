@@ -97,7 +97,7 @@ module Roll
       metadata.version
     end
 
-    # 
+    #
     def status
       metadata.status
     end
@@ -145,7 +145,7 @@ module Roll
 
     # List of subdirectories that are searched when loading.
     # This defualts to ['lib/{name}', 'lib']. The first entry is
-    # usually proper location; the latter is added for default 
+    # usually proper location; the latter is added for default
     # compatability with the traditional require system.
     def lib
       load_path.map{ |path| File.join(location, path) }
@@ -260,7 +260,7 @@ module Roll
 
     # List of subdirectories that are searched when loading.
     # This defualts to ['lib/{name}', 'lib']. The first entry is
-    # usually proper location; the latter is added for default 
+    # usually proper location; the latter is added for default
     # compatability with the traditional require system.
     #def libdir
     #  libpath.collect { |path| File.join(location, path) }
@@ -274,7 +274,7 @@ module Roll
     #end
 
     # Read metadata, if any exists. Metadata is purely extransous information.
-    # The metadata will be a Reap::Metadata object if Reap is installed 
+    # The metadata will be a Reap::Metadata object if Reap is installed
     # (providing more intelligent defaults), otherwise it  will be a  OpenStruct-like
     # object.
     #
@@ -294,7 +294,7 @@ module Roll
 
     # If method is missing delegate to metadata, if any.
     def method_missing(s, *a, &b)
-p s
+      $stderr << "method_missing: #{s.inspect}" if ENV['ROLL_DEBUG']
       if metadata
         metadata.send(s, *a, &b)
       else
