@@ -1,13 +1,18 @@
+require 'yaml'
+
 require 'roll/config'
 require 'roll/version'
 
-require 'roll/library/metadata'
+#require 'roll/library/metadata'
 require 'roll/library/management'
 
 #require 'roll/sign'
 #require 'roll/library/kernel'
 
 module Roll
+
+  class MissingReqMetadata < NameError
+  end
 
   # = Library
   #
@@ -18,39 +23,37 @@ module Roll
     # Location of library in the filesystem.
     attr_reader :location
 
-    # Name of library.
-    #attr_reader :name
+    # Package name of the library.
+    attr :package
 
-    # Version of library. This is a Version object.
-    #attr_reader :version
+    # Version of library package.
+    attr :version
 
     # Release date.
-    #attr_reader :date
+    attr :released
 
-    # Alias for date.
-    #alias_method :released, :date
+    # Paths within the package to put of the $LOAD_PATH.
+    attr :loadpath
 
-    # Status of project.
-    #attr_reader :status
+    # Alias for released.
+    alias_method :date, :released
 
-    # Libraries load paths.
-    #attr_reader :load_path
+    # Alias for loadpath.
+    alias_method :load_path, :loadpath
 
+    # Paths to look for files. This is not the same as the traditional
+    # $LOAD_PATH entry, which is often a directory above the libpath.
+    # For example, 'lib/' may be the loadpath, but 'lib/foo/'
+    # is the libpath. This is a significant difference between
+    # Roll and the traditional require system.
+    #
+    # In general this should include all the internal load paths,
+    # so long as there will be no name conflicts between directories.
+    #attr_reader :libpath
 
-  # Paths to look for files. This is not the same as the traditional
-  # $LOAD_PATH entry, which is often a directory above the libpath.
-  # For example, 'lib/' may be the loadpath, but 'lib/foo/'
-  # is the libpath. This is a significant difference between
-  # Roll and the traditional require system.
-  #
-  # In general this should include all the internal load paths,
-  # so long as there will be no name conflicts between directories.
-  #attr_reader :libpath
-
-  # Library dependencies. These are libraries that will be searched
-  # if a file is not found in the main libpath.
-  #attr_reader :depend
-
+    # Library dependencies. These are libraries that will be searched
+    # if a file is not found in the main libpath.
+    #attr_reader :depend
 
     # Library dependencies. These are libraries that will be searched
     # if a file is not found in the main libpath.
@@ -59,75 +62,38 @@ module Roll
     # New Library.
     def initialize(location)
       @location = location
+      @metadata = {}
 
-      #@name     = metadata.name
-      #@version  = metadata.version
-      #@date     = metadata.date
-      #@status   = metadata.status
-      #@loadpath = metadata.loadpath
+      @package  = read_metadata('package')
+      @version  = read_metadata('version')
 
-      #@default  = metadata[:default] || name
+      raise MissingReqMetadata, "[ROLL] OMIT b/c package: #{location}" unless package
+      raise MissingReqMetadata, "[ROLL] OMIT b/c version: #{location}" unless version
 
-      raise "no name -- #{location}"    unless name
-      raise "no version -- #{location}" unless version
+      @released = (
+        if rel = read_metadata('released')
+          (Time===rel) ? rel : Time.mktime(*rel.scan(/[0-9]+/))
+        end
+      )
 
-      #@location = location
-      #@name     = name
-
-      #if version
-      #  @version = (Version===version) ? version : Version.new(version)
-      #end
-
-      #if date
-      #  @date = (Time===date) ? date : Time.mktime(*date.scan(/[0-9]+/))
-      #end
-
-      #@status  = status
-
-      #@load_path = loadpath || ['lib']
+      @loadpath = read_metadata('loadpath', :yaml=>true, :list=>true)
+      @loadpath = @loadpath || ['lib']
     end
 
-    # Package name.
-    def name
-      metadata.name
-    end
-
-    # Version of library. This is a Version object.
-    def version
-      metadata.version
-    end
-
-    #
-    def status
-      metadata.status
-    end
-
-    # Release date.
-    def date
-      metadata.date
-    end
-
-    # Alias for date.
-    alias_method :released, :date
-
-    #
-    def load_path
-      metadata.loadpath || ['lib']
-    end
-
-    # Default library file. This is the default file to load if the library
-    # is required or loaded solely by it's own name. Eg. +require 'foo'+.
-    # If not specified it default is then name of the library (eg. 'foo').
+    # Default library file. This is the file to load when
+    # using +aquire+ and the request file is solely the
+    # package name. Eg. +acquire 'foo'+. It is always the 
+    # package name (eg. 'foo').
     def default
-      metadata.default || name
+      package
     end
 
     # Inspection.
     def inspect
       if version
-        "#<Library #{name}/#{version}>"
+        "#<Library #{package}/#{version}>"
       else
-        "#<Library #{name}>"
+        "#<Library #{package}>"
       end
     end
 
@@ -136,15 +102,19 @@ module Roll
       version <=> other.version
     end
 
-    #
+    # Activate this version of the library, placing it's load paths
+    # in the $LOAD_PATH, and making it the only version available
+    # in the ledger.
     def activate
+      Library.ledger[package] = self
       load_path.each do |lp|
         $LOAD_PATH.unshift(File.join(location, lp))
       end
+      self # returns self
     end
 
     # List of subdirectories that are searched when loading.
-    # This defualts to ['lib/{name}', 'lib']. The first entry is
+    # This defualts to ['lib/{package}', 'lib']. The first entry is
     # usually proper location; the latter is added for default
     # compatability with the traditional require system.
     def lib
@@ -172,9 +142,9 @@ module Roll
     def data #(versionless=false)
       File.join(location, 'data')
       #     if version and not versionless
-      #       File.join(Config::CONFIG['datadir'], name, version)
+      #       File.join(Config::CONFIG['datadir'], package, version)
       #     else
-      #       File.join(Config::CONFIG['datadir'], name)
+      #       File.join(Config::CONFIG['datadir'], package)
       #     end
     end
 
@@ -184,16 +154,16 @@ module Roll
     end
 
     # Returns the path to the configuration directory, ie. {location}/etc.
-    # Note that this does not look in the system's configuration directory (/etc/{name}).
+    # Note that this does not look in the system's configuration directory (/etc/{package}).
     #
     # TODO: This in particluar probably should look in the
     #       systems config directory-- maybe an overlay effect?
     def etc
       File.join(location, 'etc')
       #     if version
-      #       File.join(Config::CONFIG['confdir'], name, version)
+      #       File.join(Config::CONFIG['confdir'], package, version)
       #     else
-      #       File.join(Config::CONFIG['datadir'], name)
+      #       File.join(Config::CONFIG['datadir'], package)
       #     end
     end
 
@@ -206,7 +176,6 @@ module Roll
     alias_method :bindir , :bin
     alias_method :datadir, :data
     alias_method :confdir, :etc
-
 
     # Library specific #require.
     #
@@ -222,7 +191,7 @@ module Roll
       #elsif lib = depend.find{ |dl| dl.require_find(file) }
       #  lib.require(file)
       else
-        raise LoadError, "no such file to load -- #{name}:#{file}"
+        raise LoadError, "no such file to load -- #{package}:#{file}"
       end
     end
 
@@ -238,7 +207,7 @@ module Roll
         end
         success
       else
-        raise LoadError, "no such file to load -- #{name}:#{file}"
+        raise LoadError, "no such file to load -- #{package}:#{file}"
       end
     end
 
@@ -246,7 +215,7 @@ module Roll
     #
     def require_find(file)
       file = default if (file.nil? or file.empty?)
-      find = File.join(location, '{' + load_path.join(',') + '}', "{#{name}/,}" + file + "{#{Library.dlext},.rb,}")
+      find = File.join(location, '{' + load_path.join(',') + '}', "{#{package}/,}" + file + "{#{Library.dlext},.rb,}")
       Dir.glob(find).first
     end
 
@@ -254,12 +223,12 @@ module Roll
     #
     def load_find(file)
       file = default if (file.nil? or file.empty?)
-      find = File.join(location, '{' + load_path.join(',') + '}', "{#{name}/,}" + file)
+      find = File.join(location, '{' + load_path.join(',') + '}', "{#{package}/,}" + file)
       Dir.glob(find).first
     end
 
     # List of subdirectories that are searched when loading.
-    # This defualts to ['lib/{name}', 'lib']. The first entry is
+    # This defualts to ['lib/{package}', 'lib']. The first entry is
     # usually proper location; the latter is added for default
     # compatability with the traditional require system.
     #def libdir
@@ -280,23 +249,45 @@ module Roll
     #
     # TODO: Should we handle "ruby" library differently?
     #
-    def metadata
-      @metadata ||= Metadata.new(location)
+    def metadata(name)
+      if @metadata.key?(name)
+        @metadata[name]
+      else
+        @metadata[name] = read_metadata(name)
+      end
     end
 
     # DEPRECATE
-    alias_method :info, :metadata
+    #alias_method :info, :metadata
 
-    # Is metadata available?
-    def metadata?
-      metadata.metadata?
+    def read_metadata(name, opts={})
+      file = Dir[File.join(location, '{meta,.meta}', name)].first
+      if file && File.file?(file)
+        if opts[:yaml]
+          data = YAML.load(File.new(file))
+        else
+          data = File.read(file).strip
+        end
+        #$stderr << "#{self.inspect} #{name}: #{data.class} #{data} | #{opts.inspect}\n"
+        if String===data && opts[:list]
+          data = data.strip.split(/\s+/)  # TODO: use Shellwords so filenames can have spaces?
+        else
+          data
+        end
+      else
+        nil
+      end
     end
 
     # If method is missing delegate to metadata, if any.
     def method_missing(s, *a, &b)
-      $stderr << "method_missing: #{s.inspect}" if ENV['ROLL_DEBUG']
-      if metadata
-        metadata.send(s, *a, &b)
+      $stderr << "method_missing: #{s.inspect}\n" if ENV['ROLL_DEBUG']
+      s = s.to_s
+      super if /\?$/ =~ s
+      super if /\!$/ =~ s
+      super if /\=$/ =~ s
+      if val = metadata(s)
+        val
       else
         super
       end

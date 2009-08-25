@@ -124,13 +124,16 @@ module Roll
         end
       end
 
-      def name=(x)
+      #def package
+      #  @metadata['package']
+      #end
+
+      def package=(x)
         @metadata['package'] = x
       end
 
-      def name
-        self['name'] || self['package']
-      end
+      #alias_method :name , :package
+      alias_method :name=, :package=
 
       def released=(x)
         @metadata['date'] = x

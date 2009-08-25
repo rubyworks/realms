@@ -24,6 +24,10 @@ module ::Kernel
     Roll::Library.load(file, wrap)
   end
 
+  # Acquire script.
+  def acquire(file)
+    Roll::Library.acquire(file)
+  end
 
   # Activate a library.
   def roll(name, constraint=nil)

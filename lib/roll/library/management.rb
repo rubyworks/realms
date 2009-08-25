@@ -17,6 +17,21 @@ module Roll
     #
     module Management
 
+      #
+      attr :ledger_files
+
+      #
+      attr :system_ledger_file
+
+      #
+      attr :user_ledger_file
+
+      #
+      attr :system_ledger
+
+      #
+      attr :user_ledger
+
       # Setup library system.
       #
       def setup
@@ -27,7 +42,19 @@ module Roll
         #  :version=>RUBY_VERSION,
         #  :libpath=>Library.ruby_path
         #)
-        load_locations
+
+        @ledger             = {}
+        @ledger_files       = XDG.config_select('roll/ledger.list')
+
+        @system_ledger_file = File.join(XDG.config_dirs.first, 'roll/ledger.list')
+        @system_ledger      = Ledger.new(@system_ledger_file)
+
+        @user_ledger_file   = File.join(XDG.config_home, 'roll/ledger.list')
+        @user_ledger        = Ledger.new(@user_ledger_file)
+
+        @lookup = []
+
+        #load_locations
         load_projects
       end
 
@@ -37,33 +64,23 @@ module Roll
       end
 
       #
+      #def locations
+      #  @location ||= []
+      #end
+
+      #
       def locations
-        @location ||= []
-      end
-
-      #
-      def ledger_files
-        @ledger_files ||= XDG.config_select('roll/ledger.list')
-      end
-
-      #
-      def system_ledger_file
-        @system_ledger_file ||= File.join(XDG.config_dirs.first, 'roll/ledger.list')
-      end
-
-      #
-      def user_ledger_file
-        @user_ledger_file ||= File.join(XDG.config_home, 'roll/ledger.list')
-      end
-
-      #
-      def system_ledger
-        @system_ledger ||= Ledger.new(system_ledger_file)
-      end
-
-      #
-      def user_ledger
-        @user_ledger ||= Ledger.new(user_ledger_file)
+        @locations ||= (
+          locs = []
+          ledger_files.each do |file|
+            File.readlines(file).each do |line|
+              next if line =~ /^\s*$/
+              dir, depth = *line.strip.split(/\s+/)
+              locs << find_projects(dir, depth)
+            end
+          end
+          locs.flatten
+        )
       end
 
       #
@@ -74,22 +91,11 @@ module Roll
       #  end
       #end
 
+      attr :lookup
+
       # Return a list of library names.
       def list
         ledger.keys
-      end
-
-      #
-      def load_locations
-        locs = []
-        ledger_files.each do |file|
-          File.readlines(file).each do |line|
-            next if line =~ /^\s*$/
-            dir, depth = *line.strip.split(/\s+/)
-            locs << find_projects(dir, depth)
-          end
-        end
-        locations.concat(locs.flatten)
       end
 
       # Search a given directory for projects upto a given depth.
@@ -111,14 +117,29 @@ module Roll
         locations.each do |location|
           begin
             lib = Library.new(location)
-            name = lib.name.downcase
+            name = lib.package.downcase
             ledger[name] ||= []
             ledger[name] << lib
-          rescue => e
-            raise e if ENV['ROLL_DEBUG']
-            warn "scan error, library omitted -- #{location}" if ENV['ROLL_WARN'] or $VERBOSE
+            lib.loadpath.each do |path|
+              @lookup << [File.join(lib.package, path), lib]
+            end
+          rescue NameError => e
+            warn e if debug?
+            warn "scan error, library omitted -- #{location}" if warn?
           end
         end
+        # Sort lookup by version to ensure newest versions are found first.
+        @lookup.sort!{ |a,b| b[1].version <=> a[1].version }
+      end
+
+      # Debug mode?
+      def debug?
+        ENV['ROLL_DEBUG']
+      end
+
+      # Warn mode?
+      def warn?
+        ENV['ROLL_WARN'] or $VERBOSE
       end
 
 #      #
@@ -176,19 +197,19 @@ module Roll
       #  return {:name => name, :version => version, :status => status, :date => date}
       #end
 
-      # Get an instance of a library by name. Libraries are singleton, so once loaded
+      # Get an instance of a library by package name. Libraries are singleton, so once loaded
       # the same object is always returned.
-      def instance(name, constraint=nil)
-        name = name.to_s
+      def instance(package, constraint=nil)
+        package = package.to_s
 
-        #raise "no library -- #{name}" unless ledger.include?( name )
-        return nil unless ledger.include?(name)
+        #raise "no library -- #{package}" unless ledger.include?(package)
+        return nil unless ledger.include?(package)
 
-        library = ledger[name]
+        library = ledger[package]
 
         if Library===library
           if constraint
-            raise VersionConflict, "previously selected version -- #{ledger[name].version}"
+            raise VersionConflict, "previously selected version -- #{ledger[package].version}"
           else
             library
           end
@@ -200,24 +221,23 @@ module Roll
             version = library.max
           end
           unless version
-            raise VersionError, "no library version -- #{name} #{constraint}"
+            raise VersionError, "no library version -- #{package} #{constraint}"
           end
-# DIFFERENCE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#          version.activate
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          ledger[name] = version
+
+          #ledger[package] = version
+          version.activate
         end
       end
 
       # A shortcut for #instance.
       alias_method :[], :instance
 
-      # Same as #instance but will raise and error if the library is not found.
-      # This can also take a block to yield on the library.
-      def open(name, constraint=nil, &yld)
-        lib = instance(name, constraint)
+      # Same as #instance but will raise and error if the library is
+      # not found. This can also take a block to yield on the library.
+      def open(package, constraint=nil, &yld)
+        lib = instance(package, constraint)
         unless lib
-          raise LoadError, "no library -- #{name}"
+          raise LoadError, "no library -- #{package}"
         end
         yield(lib) if yld
         lib
@@ -229,8 +249,8 @@ module Roll
         @dlext ||= '.' + ::Config::CONFIG['DLEXT']
       end
 
-      # Standard load path. This is where all "used" libs
-      # a located.
+      # Standard load path. This is where all active libs
+      # place there loadable locations.
       def load_path ; $LOAD_PATH ; end
 
       # Location of Ruby's core/standard libraries.
@@ -252,208 +272,101 @@ module Roll
         load_stack.last
       end
 
-      # Rolls requires a modification to #require and #load.
-      # So that it is not neccessary to make the library() call
-      # if you just want the latest version.
-      #
-      # This would be a bit simpler if we mandated the
-      # use of the ':' notation when specifying the library
-      # name. Use of the ':' is robust. But we cannot do this
-      # w/o loosing backward-compatability. Using '/' in its
-      # place has a slight potential for pathname clashing, albeit
-      # the likelihood is small. There are two ways to bypass
-      # the problem if it arises. Use 'ruby:{path}' if the
-      # conflicting lib is a ruby core or standard library.
-      # Use ':{path}' to bypass Roll system altogether.
-      #
-      # FIXME This doesn;t work for autoload. This is really
-      # a bug in Ruby b/c autoload is not using the overriden
-      # require.
-      #
       #alias_method :require_without_roll, :require
       #public :require_without_roll
 
       #alias_method :load_without_roll, :load
       #public :load_without_roll
 
-      # Require
+      # Roll requires a modification to #require and #load.
+      # So that it is not neccessary to make the library() call
+      # if you just want the use latest version.
+      #
+      # [FIXME] This doesn't work for autoload. This is really
+      # a bug in Ruby b/c autoload is not using #require.
       #
       def require(file)
-        # specific library
-        if file.index(':')
-          name, path = file.split(':')
-          lib = Library.instance(name)
-          raise LoadError, "no library found -- #{file}" unless lib
-          lib.require(path)
-        else
-          # try Ruby core/standard library
-          # actually just traditional require
-          # (allowing other load hacks to work, including RubyGems)
-          begin
-            return Kernel.require(file)
-          rescue LoadError => load_error
-          end
-
-          # potential specified library
-          # ie. head of path is library name
-          # TODO: don't do this, ask the library if file exists, then load if it does.
-          name, *rest = file.split(/[\\\/]/)
-          path = File.join(*rest)
-          path = nil if path.empty?
-          if lib = instance(name)
-            if lib.require_find(path)
-              return lib.require(path)
-            end
-          end
-
-          # try current library
-          if lib = load_stack.last
-            if lib.require_find(file)
-              return lib.require(file)
-            end
-          end
-
-          raise load_error
+        begin
+          return Kernel.require(file)
+        rescue LoadError => load_error
         end
-      end
 
-      # Load
-      #
-      def load(file, wrap=false)
-        # specific library
-        if file.index(':')
-          name, path = file.split(':')
-          lib = Library.instance(name)
-          raise LoadError, "no library found -- #{file}" unless lib
-          lib.load(path, wrap)
-        else
-          # try Ruby core/standard library
-          # actually just traditional load
-          # (allowing other load hacks to work, including RubyGems)
-          begin
-            return Kernel.load(file, wrap)
-          rescue LoadError => load_error
-          end
+        fname = "#{file}.rb" if File.extname(file) == ''
 
-          # potentialy specified library,
-          # ie. head of path is library name
-          name, *rest = file.split(/[\\\/]/)
-          path = File.join(*rest)
-          path = nil if path.empty?
-          if lib = instance(name)
-            if lib.load_find(path)
-              return lib.load(path, wrap)
-            end
-          end
+        lib = nil
+        if @lookup.find{ |path, lib| File.file?(File.join(path, file)) }
+          return lib.require(file)
+        end
 
-          # try current library
-          if lib = load_stack.last
-            if lib.load_find(file)
-              return lib.load(file, wrap)
-            end
+        # NOTE: We could use #collect w/ if instead of #find and see if there
+        # is any path conflicts in packages without the same names.
+
+        # try current library
+        if lib = load_stack.last
+          if lib.require_find(file)
+            return lib.require(file)
           end
         end
 
         raise load_error
       end
 
-=begin
-      # Require script.
+      # Load
       #
-      # NOTE: Ideally this would first look for a specific library
-      #       via ':', and then try the current library. Failing
-      #       that it would fall back to Ruby itself. However this
-      #       would break compatibility.
-      #
-      def require(file)
-        # specific library
-        if file.index(':')
-          name, path = file.split(':')
-          lib = Library.instance(name)
-          raise LoadError, "no library found -- #{name}" unless lib
-          return lib.require(path)
-        end
-
-        load_error = nil
-
-        # potential specified library, ie. head of path is library name
-        name, *rest = file.split('/')
-        path = File.join(*rest)
-        path = nil if path.empty?
-        if lib = Library.instance(name)
-          begin
-            return lib.require(path)
-          rescue LoadError => load_error
-            #raise load_error if ENV['ROLL_DEBUG']
-          end
-        end
-
-        # traditional attempt (allows other load hacks to work, including RubyGems)
-        begin
-          return Kernel.require(file)
-        rescue LoadError => kernel_error
-          raise load_error if load_error
-          raise kernel_error
-        end
-
-        # failure
-        #raise kernel_error
-      end
-
-      # Load script.
       def load(file, wrap=false)
-        # specific library
-        if file.index(':')
-          name, path = file.split(':')
-          lib = Library.instance(name)
-          raise LoadError, "no library found -- #{file}" unless lib
-          return lib.load(path, wrap)
-        end
-
-        load_error = nil
-
-        # potential specified library, ie. head of path is library name
-        name, *rest = file.split('/')
-        path = File.join(*rest)
-        if lib = Library.instance(name)
-          begin
-            return lib.load(path, wrap)
-          rescue LoadError => load_error
-            #raise load_error if ENV['ROLL_DEBUG']
-          end
-        end
-
-        # traditional attempt (allows other load hacks to work, including RubyGems)
         begin
           return Kernel.load(file, wrap)
-        rescue LoadError => kernel_error
-          raise load_error if load_error
-          raise kernel_error
+        rescue LoadError => load_error
         end
 
-        # failure
-        #raise kernel_error
+        fname = "#{file}.rb" if File.extname(file) == ''
+
+        lib = nil
+        if @lookup.find{ |path, lib| File.file?(File.join(path, file)) }
+          return lib.load(file, wrap)
+        end
+
+        # try current library
+        if lib = load_stack.last
+          if lib.load_find(file)
+            return lib.load(file, wrap)
+          end
+        end
+
+        raise load_error
       end
-=end
 
-    private
-
+      # Use acquire to use Roll-style loading. This first
+      # looks for a specific library via ':'. If ':' is 
+      # not present it then tries the current library.
+      # Failing that it fallsback to Ruby itself.
       #
-      def parse_load_parameters(file)
-        if must = file.index(':')
-          name, path = file.split(':')
-        else
-          name, *rest = file.split('/')
-          path = File.join(*rest)
+      #   acquire('facets:string/margin')
+      #
+      # To "load" the library, rather than "require":
+      #
+      #   acquire('facets:string/margin', :load=>true)
+      #
+      def acquire(file, opts={})
+        if file.index(':') # a specific library
+          name, file = file.split(':')
+          lib = Library.open(name)
+        else # try the current library
+          cur = load_stack.last
+          if cur && cur.load_find(file)
+            lib = cur
+          elsif !file.index('/') # is this a package name?
+            if cur = Library.instance(file)
+              lib  = cur
+              file = lib.default # default file to load
+            end
+          end
         end
-        name = nil if name == ''
-        if name
-          lib = Library.instance(name)
+        if opts[:load]
+          lib ? lib.load(file) : Kernel.load(file)
         else
-          lib = nil
+          lib ? lib.require(file) : Kernel.require(file)
         end
-        raise LoadError, "no library found -- #{file}" if must && !lib
-        return lib, path, must
       end
 
     end #module Management
