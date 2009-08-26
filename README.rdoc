@@ -1,9 +1,19 @@
+
+       /  /
+    /        /
+   /          /
+   /          /
+    /        /
+       /  /
+
+
 = Rolling with Ruby
+
 
 * http://proutils.rubyforge.org/roll
 
 
-== DESCRIPTION
+== oOo description oOo
 
 Roll is a library and scm-based package manager for Ruby. With Rolls
 developers can run there programs in real time --no install phase is
@@ -15,14 +25,14 @@ management functions however are much newer and not as well tested,
 so please let me know it you encounter any errors. Thanks.
 
 
-== RELEASE NOTES
+== oOo release notes oOo
 
 Please see the HISTORY file.
 
 
-== SYNOPSIS
+== oOo synopsis oOo
 
-=== Setting Up
+=== setting up
 
 To use roll you will first have to add it your RUBYOPT environment
 variable.
@@ -44,7 +54,7 @@ current roll ledger.
 (NOTE: The way this works will probably change in the future b/c it has
 some shortcomings, such as not working on Windows.)
 
-=== Library Managment
+=== library managment
 
 To use +roll+ as a library manager, simply navigate to the root
 directory of a project. Make sure there is a meta/ruby, meta/package
@@ -76,7 +86,7 @@ root directory you would type:
 
 That's it. Your project is READY TO ROLL!
 
-=== Package Management
+=== package management
 
 Roll can also manage SCM repositories as a means of package
 distribution. For example:
@@ -99,16 +109,16 @@ Note that you can only install tagged versions. (Use -v to specify the
 version) and roll DOES NOT YET SUPPORT compiling native extensions,
 but will soon.
 
-=== Learning More
+=== learning more
 
 The above provides a breif overview of using roll. But there is more to
 it. To get a deeper understanding of the system and how to use +roll+ to
 it fullest extent, please visit http://proutils.rubyforge.org/roll/.
 
 
-== HOW TO INSTALL
+== oOo how to install oOo
 
-=== Manual Installation
+=== manual installation
 
 You will need Ruby Setup, the standalone setup.rb script, in order
 to install Roll. See: http://setup.rubyforge.org.
@@ -122,7 +132,7 @@ it manually as follows:
 
 On Windows, this last line needs to be 'ruby setup.rb all'.
 
-=== RubyGems Installation
+=== rubygems installation
 
 We strongly recommend installing Rolls manually b/c
 Rolls is a peer to RubyGems. However, you can use Gems to
@@ -134,12 +144,12 @@ If you like Rolls, then later you can uninstall the gem and
 install manually.
 
 
-== BY THE WAY
+== oOo by the way oOo
 
 Roll was Rubyforge project #1004. She's been around a while! ;)
 
 
-== LICENSE & COPYRIGHT
+== oOo LICENSE & COPYRIGHT oOo
 
 Roll, Copyright (c) 2006,2007 Thomas Sawyer
 
