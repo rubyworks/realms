@@ -1,27 +1,17 @@
 = Rolling with Ruby
-
-    __| | ___  _ __ ( ) |_                        _ __   __ _ _ __ (_) ___| |
-   / _` |/ _ \| '_ \ /| __|                      | '_ \ / _` | '_ \| |/ __| |
-  | (_| | (_) | | | | | |_         .....         | |_) | (_| | | | | | (__|_|
-   \__,_|\___/|_| |_|  \__|  .:<X!!UW$$$$$$bo.   | .__/ \__,_|_| |_|_|\___(_)
-                         .:!!!!!XQ$$$$$$$$$$$$$e.|_|   4. z  =
-              r3 h     .<!!!XXXM$$$$$$$$$$$$$$$$$$.     $ F de"
-            "ch` @    <!!!!!!*68$$$$$$$$$$$$$$$$$$$e    @R$$$
-             J$$$E.. <!!!!!!RMW$$$$$$$$$$$$$$$$$$$$$$F"#$$$$
-             ^?RP*""!!!!!?!MM9$N$$$$$$$$$$$$$$$$$$$$$$    R$.
-              '9>  :!!!!!!@SH@$$$$$$$$$$$$$$$$$$$$$$$$>    #$c
-              <$   !!!!XT!!ZW$$$$$$$$$$$$$$$$$$$$$$"*$bu...."$e
-              9$uuem!t"`HUM$$$$$$$$$$$$$$$$$$$$$#"  .$E$$$$$$#"
-             ~"~~```!!r  ##R$$$$$$$$$$$$$$$$$##"    @$
-                    `!R    "##$$$$$$$$$$RB##"      :$~
-                     '4?.      "#########"        zP"
-                       `!+.      --x   +.       z$#
-                         `4%+.     `"x `?Mr  :d*"
-                            `~!!:::  `!:`MMX~`
-                                ````  .XkXMMx
-                                     '!MMMMM8r
-                                      `"***""
-
+                ____
+            ,dP9CGG88@b,
+          ,IP""YICCG888@@b,
+         dIi   ,IICGG8888@b
+        dCIIiciIICCGG8888@@b
+________GCCIIIICCCGGG8888@@@__________________
+        GGCCCCCCCGGG88888@@@
+        GGGGCCCGGGG88888@@@@...
+        Y8GGGGGG8888888@@@@P.....
+         Y88888888888@@@@@P......
+         `Y8888888@@@@@@@P'......
+            `@@@@@@@@@P'.......
+                """"........
 
 * http://proutils.rubyforge.org/roll
 
@@ -33,7 +23,7 @@ developers can run there programs in real time --no install phase is
 required for one program to depend on another. This makes it very easy
 to work on a set of interdependent projects.
 
-NOTE: The library management functions work well; the package 
+NOTE: The library management functions work well; the package
 management functions however are much newer and not as well tested,
 so please let me know it you encounter any errors. Thanks.
 
@@ -45,7 +35,7 @@ Please see the HISTORY file.
 
 == oOo( synopsis )oOo
 
-=== setting up
+=== ( setting up )
 
 To use roll you will first have to add it your RUBYOPT environment
 variable.
@@ -67,7 +57,7 @@ current roll ledger.
 (NOTE: The way this works will probably change in the future b/c it has
 some shortcomings, such as not working on Windows.)
 
-=== library managment
+=== ( library managment )
 
 To use +roll+ as a library manager, simply navigate to the root
 directory of a project. Make sure there is a meta/ruby, meta/package
@@ -99,7 +89,7 @@ root directory you would type:
 
 That's it. Your project is READY TO ROLL!
 
-=== package management
+=== ( package management )
 
 Roll can also manage SCM repositories as a means of package
 distribution. For example:
@@ -122,7 +112,7 @@ Note that you can only install tagged versions. (Use -v to specify the
 version) and roll DOES NOT YET SUPPORT compiling native extensions,
 but will soon.
 
-=== learning more
+=== ( learning more )
 
 The above provides a breif overview of using roll. But there is more to
 it. To get a deeper understanding of the system and how to use +roll+ to
@@ -131,7 +121,7 @@ it fullest extent, please visit http://proutils.rubyforge.org/roll/.
 
 == oOo( how to install )oOo
 
-=== manual installation
+=== ( manual installation )
 
 You will need Ruby Setup, the standalone setup.rb script, in order
 to install Roll. See: http://setup.rubyforge.org.
@@ -145,7 +135,7 @@ it manually as follows:
 
 On Windows, this last line needs to be 'ruby setup.rb all'.
 
-=== rubygems installation
+=== ( rubygems installation )
 
 We strongly recommend installing Rolls manually b/c
 Rolls is a peer to RubyGems. However, you can use Gems to
@@ -162,7 +152,7 @@ install manually.
 Roll was Rubyforge project #1004. She's been around a while! ;)
 
 
-== oOo( LICENSE & COPYRIGHT )oOo
+== oOo( license & copyright )oOo
 
 Roll, Copyright (c) 2006,2007 Thomas Sawyer
 
