@@ -1,15 +1,18 @@
-= Roll
+= Rolling with Ruby
 
-* http://roll.rubyforge.org
+* http://proutils.rubyforge.org/roll
 
 
 == DESCRIPTION
 
-Roll is a library and scm-based package manager for Ruby.
-With Rolls developers can run there programs in real time
---no install phase is required for one program to depend
-on another. This makes it very easy to work on a set of
-interdependent projects.
+Roll is a library and scm-based package manager for Ruby. With Rolls
+developers can run there programs in real time --no install phase is
+required for one program to depend on another. This makes it very easy
+to work on a set of interdependent projects.
+
+NOTE: The library management functions work well; the package 
+management functions however are much newer and not as well tested,
+so please let me know it you encounter any errors. Thanks.
 
 
 == RELEASE NOTES
@@ -19,9 +22,10 @@ Please see the HISTORY file.
 
 == SYNOPSIS
 
-== Setting Up
+=== Setting Up
 
-To use roll you will first have to add it your RUBYOPT environment variable.
+To use roll you will first have to add it your RUBYOPT environment
+variable.
 
   $ export RUBYOPT="-roll"
 
@@ -29,22 +33,23 @@ I suspect you will be using RubyGems too, in which case do:
 
   $ export RUBYOPT="-roll -runbygems"
 
-To support executables you will need to add a line to your startup .bashrc
-(or equivalent) file.
+To support executables you will need to add a line to your startup
+.bashrc (or equivalent) file.
 
   export PATH="$PATH:$(roll path)"
 
-This will add the bin/ locations of the programs encompassed by your current
-roll ledger.
+This will add the bin/ locations of the programs encompassed by your
+current roll ledger.
 
-(NOTE: The way this works will be changed in the future b/c it has some shortcomings.)
+(NOTE: The way this works will probably change in the future b/c it has
+some shortcomings, such as not working on Windows.)
 
 === Library Managment
 
-To use roll as a library manager, simply navigate to the root directory
-of a project. Make sure there is a meta/ruby, meta/package and a 
-meta/version file, each containing that single piece of information.
-For example:
+To use +roll+ as a library manager, simply navigate to the root
+directory of a project. Make sure there is a meta/ruby, meta/package
+and a meta/version file, each containing that single piece of
+information. For example:
 
   $ cat facets/meta/ruby
   1.8+
@@ -55,15 +60,14 @@ For example:
   $ cat facets/meta/verion
   2.7.0
 
-
-The first file informs roll that this program is for Ruby and what 
+The first file informs roll that this program is for Ruby and what
 version(s) of Ruby the program is intended to work with. The second
 is the official package name, and the later is of course the offical
 version designation. These three files are the minimal requirements
 neccessary for a program to be used by roll.
 
-(Note meta/ can be named .meta/ if you would prefer to hide the directory
-though we recommend keeping it visible.)
+(Note meta/ can be named .meta/ if you would prefer to hide the
+directory though we recommend keeping it visible.)
 
 Now you need to add the program to the roll ledger. From the project's
 root directory you would type:
@@ -79,27 +83,27 @@ distribution. For example:
 
   roll install xdg
 
-This will look for an xdg repository on Rubyforge and install
-the latest tagged version of the XDG library. In this example
-we have relied on built-in defaults. The command is actually
-an abbreviated form of:
+This will look for an xdg repository on Rubyforge and install the
+latest tagged version of the XDG library. In this example we have
+relied on built-in defaults. The command is actually an abbreviated
+form of:
 
   roll install -r xdg/xdg
 
-Roll supports both Git and SVN repositories. Roll also supports
-GitHub. We could install the same library from GitHub using:
+Roll supports both Git and SVN repositories. Roll also supports GitHub.
+We could install the same library from GitHub using:
 
   roll install -g trans/xdg
 
-Note that you can only install tagged versions. (Use -v to
-sepcify the version) and roll DOES NOT YET SUPPORT compiling
-native extensions, but will soon.
+Note that you can only install tagged versions. (Use -v to specify the
+version) and roll DOES NOT YET SUPPORT compiling native extensions,
+but will soon.
 
 === Learning More
 
-The above provides a breif overview of using roll. To get a 
-deeper understanding of the system and how to use roll to
-it fullest, please navigate over to it's website (http://roll.rubyforge.org).
+The above provides a breif overview of using roll. But there is more to
+it. To get a deeper understanding of the system and how to use +roll+ to
+it fullest extent, please visit http://proutils.rubyforge.org/roll/.
 
 
 == HOW TO INSTALL
