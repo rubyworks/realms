@@ -1,27 +1,56 @@
-== 1.0.0 / 2008-10-28
+= RELEASE HISTORY
+
+== 1.0.0 / 2009-08-24
+
+Rewrote some of the underlying system. Roll is now complian
+with the "Ruby Way" i.e. using $LOAD_PATH.
+
+Changes:
 
 * Major overhaul of underlying system.
 * Roll now utilized $LOAD_PATH in standard fashion.
-* VERSION is the new "rollrc" file.
-* All extraneous loading modes have been removed.
 * Added in SCM-based package manager.
+* Metadata is now using POM meta/ standard.
+
+
+== 0.9.4 / 2008-06-05
+
+The .roll file is no longer used. Instead Rolls is now
+using a VERSION file combined with meta/ entries for
+loadpath and dependencies (ie. requires).
+
+Changes:
+
+* VERSION and meta/ entries are used instead of '.roll'.
+
 
 == 0.9.3 / 2007-02-10
+
+Changes:
 
 * Change roll file format and name. It is now .roll.
 * Relative require with #use should now work.
 
+
 == 0.9.2 / 2007-12-17
+
+Changes:
 
 * Changed roll file format from ROLLRC to {name}.roll.
 * The name change enabled an order of magnitude increase in startup time!
 
+
 == 0.9.1 / 2007-11-27
+
+Changes:
 
 * Standard metadate file is now ROLLRC.
 * Improved parsing of ROLLRC file, #release is now a Time object.
 
+
 == 0.9.0 / 2007-11-12
+
+Changes:
 
 * Removed Roll namespace. Library and VersionNumber are now in toplevel.
 * Fixed spelling of 'version' in Library#<=>.

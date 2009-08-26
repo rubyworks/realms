@@ -1,41 +1,113 @@
 = Roll
 
-Roll is a library manager for Ruby. With Rolls developers
-can run there projects in real time --no install phase
-is required for one project to depend on another.
+* http://roll.rubyforge.org
 
-To use Roll in this way, simply navigate to the root directory
-of a project. Make sure there is a "VERSION" file, formatted as: 
 
-  name version status (date)
+== DESCRIPTION
 
+Roll is a library and scm-based package manager for Ruby.
+With Rolls developers can run there programs in real time
+--no install phase is required for one program to depend
+on another. This makes it very easy to work on a set of
+interdependent projects.
+
+
+== RELEASE NOTES
+
+Please see the HISTORY file.
+
+
+== SYNOPSIS
+
+== Setting Up
+
+To use roll you will first have to add it your RUBYOPT environment variable.
+
+  $ export RUBYOPT="-roll"
+
+I suspect you will be using RubyGems too, in which case do:
+
+  $ export RUBYOPT="-roll -runbygems"
+
+To support executables you will need to add a line to your startup .bashrc
+(or equivalent) file.
+
+  export PATH="$PATH:$(roll path)"
+
+This will add the bin/ locations of the programs encompassed by your current
+roll ledger.
+
+(NOTE: The way this works will be changed in the future b/c it has some shortcomings.)
+
+=== Library Managment
+
+To use roll as a library manager, simply navigate to the root directory
+of a project. Make sure there is a meta/ruby, meta/package and a 
+meta/version file, each containing that single piece of information.
 For example:
 
-  xdg 0.5.0 stable (2008-10-28)
+  $ cat facets/meta/ruby
+  1.8+
 
-And then issue the command:
+  $ cat facets/meta/package
+  facets
+
+  $ cat facets/meta/verion
+  2.7.0
+
+
+The first file informs roll that this program is for Ruby and what 
+version(s) of Ruby the program is intended to work with. The second
+is the official package name, and the later is of course the offical
+version designation. These three files are the minimal requirements
+neccessary for a program to be used by roll.
+
+(Note meta/ can be named .meta/ if you would prefer to hide the directory
+though we recommend keeping it visible.)
+
+Now you need to add the program to the roll ledger. From the project's
+root directory you would type:
 
   $ roll in
 
-And your project it READY TO ROLL!
+That's it. Your project is READY TO ROLL!
 
-Roll can also manage SCM repositories as means of package
+=== Package Management
+
+Roll can also manage SCM repositories as a means of package
 distribution. For example:
 
   roll install xdg
 
 This will look for an xdg repository on Rubyforge and install
-the current development version of the XDG library.
+the latest tagged version of the XDG library. In this example
+we have relied on built-in defaults. The command is actually
+an abbreviated form of:
+
+  roll install -r xdg/xdg
+
+Roll supports both Git and SVN repositories. Roll also supports
+GitHub. We could install the same library from GitHub using:
+
+  roll install -g trans/xdg
+
+Note that you can only install tagged versions. (Use -v to
+sepcify the version) and roll DOES NOT YET SUPPORT compiling
+native extensions, but will soon.
+
+=== Learning More
+
+The above provides a breif overview of using roll. To get a 
+deeper understanding of the system and how to use roll to
+it fullest, please navigate over to it's website (http://roll.rubyforge.org).
 
 
-== How to Install
+== HOW TO INSTALL
 
 === Manual Installation
 
 You will need Ruby Setup, the standalone setup.rb script, in order
-top install Roll.
-
-See: http://setup.rubyforge.org.
+to install Roll. See: http://setup.rubyforge.org.
 
 Once you have setup.rb, download the Roll tarball and install
 it manually as follows:
@@ -58,9 +130,16 @@ If you like Rolls, then later you can uninstall the gem and
 install manually.
 
 
-== Copying
+== BY THE WAY
+
+Roll was Rubyforge project #1004. She's been around a while! ;)
+
+
+== LICENSE & COPYRIGHT
 
 Roll, Copyright (c) 2006,2007 Thomas Sawyer
 
-Rolls is distronbuted under the same terms as Ruby.
+Rolls is distributed under the same terms as Ruby.
+
+See the LICENSE file details.
 
