@@ -1,19 +1,32 @@
-
-       /  /
-    /        /
-   /          /
-   /          /
-    /        /
-       /  /
-
-
 = Rolling with Ruby
+
+  __| | ___  _ __ ( ) |_                        _ __   __ _ _ __ (_) ___| |
+ / _` |/ _ \| '_ \ /| __|                      | '_ \ / _` | '_ \| |/ __| |
+| (_| | (_) | | | | | |_         .....         | |_) | (_| | | | | | (__|_|
+ \__,_|\___/|_| |_|  \__|  .:<X!!UW$$$$$$bo.   | .__/ \__,_|_| |_|_|\___(_)
+                       .:!!!!!XQ$$$$$$$$$$$$$e.|_|   4. z  =
+            r3 h     .<!!!XXXM$$$$$$$$$$$$$$$$$$.     $ F de"
+          "ch` @    <!!!!!!*68$$$$$$$$$$$$$$$$$$$e    @R$$$
+           J$$$E.. <!!!!!!RMW$$$$$$$$$$$$$$$$$$$$$$F"#$$$$
+           ^?RP*""!!!!!?!MM9$N$$$$$$$$$$$$$$$$$$$$$$    R$.
+            '9>  :!!!!!!@SH@$$$$$$$$$$$$$$$$$$$$$$$$>    #$c
+            <$   !!!!XT!!ZW$$$$$$$$$$$$$$$$$$$$$$"*$bu...."$e
+            9$uuem!t"`HUM$$$$$$$$$$$$$$$$$$$$$#"  .$E$$$$$$#"
+           ~"~~```!!r  ##R$$$$$$$$$$$$$$$$$##"    @$
+                  `!R    "##$$$$$$$$$$RB##"      :$~
+                   '4?.      "#########"        zP"
+                     `!+.      --x   +.       z$#
+                       `4%+.     `"x `?Mr  :d*"
+                          `~!!:::  `!:`MMX~`
+                              ````  .XkXMMx
+                                   '!MMMMM8r
+                                    `"***""
 
 
 * http://proutils.rubyforge.org/roll
 
 
-== oOo description oOo
+== oOo( description )oOo
 
 Roll is a library and scm-based package manager for Ruby. With Rolls
 developers can run there programs in real time --no install phase is
@@ -25,12 +38,12 @@ management functions however are much newer and not as well tested,
 so please let me know it you encounter any errors. Thanks.
 
 
-== oOo release notes oOo
+== oOo( release notes )oOo
 
 Please see the HISTORY file.
 
 
-== oOo synopsis oOo
+== oOo( synopsis )oOo
 
 === setting up
 
@@ -116,7 +129,7 @@ it. To get a deeper understanding of the system and how to use +roll+ to
 it fullest extent, please visit http://proutils.rubyforge.org/roll/.
 
 
-== oOo how to install oOo
+== oOo( how to install )oOo
 
 === manual installation
 
@@ -144,12 +157,12 @@ If you like Rolls, then later you can uninstall the gem and
 install manually.
 
 
-== oOo by the way oOo
+== oOo( by the way )oOo
 
 Roll was Rubyforge project #1004. She's been around a while! ;)
 
 
-== oOo LICENSE & COPYRIGHT oOo
+== oOo( LICENSE & COPYRIGHT )oOo
 
 Roll, Copyright (c) 2006,2007 Thomas Sawyer
 
