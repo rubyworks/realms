@@ -53,16 +53,25 @@ module Roll
       @load_stack
     end
 
+    #
+    alias_method :original_require, :require
+
+    #
+    alias_method :original_load, :load
+
+    #--
     # TODO: Should Ruby's underlying require be tried first,
     # then fallback to Rolls. Or vice-versa as it is now.
-
+    #++
+ 
+    #
     def require(path)
       lib, file = *match(path)
       if lib && file
         constrain(lib)
         lib.require_absolute(file)
       else
-        Kernel.require(path)     # fallback to Ruby
+        original_require(path)     # fallback to Ruby
       end
     end
 
@@ -73,7 +82,7 @@ module Roll
         constrain(lib)
         lib.load_absolute(file, wrap)
       else
-        Kernel.load(path, wrap)  # fallback to Ruby
+        original_load(path, wrap)  # fallback to Ruby
       end
     end
 
@@ -110,9 +119,9 @@ module Roll
         end
       end
       if opts[:load]
-        lib ? lib.load(file) : Kernel.load(file)
+        lib ? lib.load(file) : original_load(file)
       else
-        lib ? lib.require(file) : Kernel.require(file)
+        lib ? lib.require(file) : original_require(file)
       end
     end
 
