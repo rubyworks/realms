@@ -1,171 +1,103 @@
-require 'tmpdir'
-require 'fileutils'
-#require 'getoptlong'
 require 'roll'
-
 require 'optparse'
 
 module Roll
-  VERSION   = "1.0.0"
-  COPYRIGHT = "Copyright (c) 2006,2009 Thomas Sawyer"
-  LICENSE   = "GPLv3"
 
-  # = Roll Command
-  #
-  # TODO: Need to make command pluggable. The COMMAND_INDEX must go!
-  #
   class Command
 
-    COMMAND_INDEX = {
-      'help'=>:help, '--help'=>:help, '-h'=>:help,
-      'version'=>:version, '--version'=>:version, '-v'=>:version,
-      'path'=>:path, '--path'=>:path, '-p'=>:path,
-      'insert'=>:insert, 'in'=>:insert,
-      'remove'=>:remove, 'rm'=>:remove, 'out'=>:remove,
-      'clean'=>:clean,
-      'list'=>:list,
-      'ledger'=>:ledger,
-      'install'=>:install,
-      'uninstall'=>:uninstall,
-      'update'=>:update,
-      'show'=>:show,
-      'sync'=>:sync
-    }
+    def self.run
+      new.execute
+    end
 
-    def start
-      $PRETEND = ARGV.delete('--pretend') || ARGV.delete('--dryrun')
-      $VERBOSE = ARGV.delete('--verbose')
+    #
+    def initialize
+    end
 
-      idx = ARGV.shift
-      cmd = COMMAND_INDEX[idx]
+    #
+    def execute
+      cmd = ARGV.find{ |e| e !~ /^\-/ }
 
-      if !cmd
-        puts "Unknown command. Try 'roll help'."
-        exit
-      end
-
-      case cmd
-      when :help
-        puts help
-        exit
-      when :version
-        puts version
-        exit
-      end
-
-      opts = OptionParser.new
-
+      parser  = OptionParser.new
       options = {}
 
-      send("#{cmd}_optparse", opts, options)
+      __send__("#{cmd}_optparse", parser, options) if cmd
 
-      opts.on("--debug", "debug mode") do
-        $DEBUG = true
-      end
-
-      opts.on_tail("-h", "--help", "show this message") do
-        puts opts
+      parser.on_tail("--help", "-h", "Display this help message." do
+        puts op
         exit
       end
-      
-      opts.parse! #(args)
 
-      args = ARGV.dup
+      parser.parse!
 
-      begin
-        send("#{cmd}", args, options)
-      rescue => err
-        raise err if $DEBUG
-        puts err
-      end
-    end
+      puts "(from #{Environment.current})"
 
-  private
-
-    #def help_optparse(opts, options)
-    #end
-
-    #def help(args, opts)
-    #  puts opts
-    #end
-
-    #
-    def windows?
-      processor, platform, *rest = RUBY_PLATFORM.split("-")
-      /ms/ =~ platform   # better?
-    end
-
-    # FIXME: break on ?
-    #
-    def find_root
-      dir = Dir.pwd
-      until dir == '/'
-        break File.directory?('meta')
-        break File.directory?('.meta')
-        dir = File.dirname(dir)
-      end
-      return nil if dir == '/'
-      return dir
-    end
-
-    #
-    def save_cache(list)
-      FileUtils.mkdir_p(File.dirname(user_ledger_file))
-      File.open(user_ledger_file, 'wb') do |f|
-        f << list.join("\n")
+      if cmd
+         __send__(cmd, ARGV, options)
+      else
+        # no command
       end
     end
 
     #
-    def user_ledger_file
-      @user_ledger_file ||= File.join(XDG.config_home, 'roll/ledger.list')
+    def env_optparse(op, options)
+      op.banner = "Usage: roll env [NAME]"
+      op.separator "Show or switch current environment."
+      op
     end
 
     #
-    def help
-      s = []
-      s << 'Usage: roll <command> [options] [arguments]'
-      s << ''
-      s << 'Ledger Commands:'
-      s << '  insert  in         insert current project into ledger'
-      s << '  remove  out        remove current project from ledger'
-      s << '  list               list the ledger entries'
-      s << '  clean              clean ledger of invalid entries'
-      s << '  path               output ledger bin PATH'
-      s << ''
-      s << 'Installation Commands:'
-      s << '  install            install package'
-      s << '  uninstall          uninstall package'
-      s << '  update             update package'
-      s << '  show               show package information'
-      s << ''
-      s << 'General Commands:'
-      s << '  help               see this help messge'
-      s << '  version            see this help messge'
-      s << ''
-      s << "For help with a command use 'roll <COMMAND> --help."
-      s.join("\n")
+    def sync_optparse(op, options)
+      op.banner = "Usage: roll sync [NAME]"
+      op.separator "Synchronize ledger(s) to their respective environment(s)."
+      op
     end
 
-    def version
-      "Roll v#{VERSION}\n#{COPYRIGHT}\nDistributed under the terms of the #{LICENSE} license"
+    #
+    def in_optparse(op, options)
+      op.banner = "Usage: roll in [PATH]"
+      op.separator "Insert path into current environment."
+      op.on("--depth", "-d [INTEGER]") do |integer|
+        options[:depth] = integer
+      op
+    end
+
+    #
+    def out_optparse(op, options)
+      op.banner = "Usage: roll out [PATH]"
+      op.separator "Remove path from current environment."
+      op
+    end
+
+    # Show/Change current environment.
+    #
+    def env(args, opts)
+      puts Roll.env(*args)
+    end
+
+    # Synchronize ledgers.
+    #
+    def sync(args, opts)
+      Roll.sync(*args)
+    end
+
+    #
+    def in(args, opts)
+      path  = args.first
+      depth = opts[:depth]
+      path, file = *Roll.in(path, depth)
+      puts "#{path}"
+      puts "  '-> #{file}"
+    end
+
+    #
+    def out(args, opts)
+      path  = args.first
+      path, file = *Roll.out(path)
+      puts "#{path}"
+      puts "  x <- #{file}"
     end
 
   end
 
 end
-
-# Load subcommands.
-require 'roll/command/clean'
-require 'roll/command/path'
-require 'roll/command/list'
-require 'roll/command/insert'
-require 'roll/command/remove'
-require 'roll/command/install'
-require 'roll/command/uninstall'
-require 'roll/command/update'
-require 'roll/command/ledger'
-require 'roll/command/show'
-require 'roll/command/sync'
-
 

@@ -12,7 +12,7 @@ module ::Config
   #++
 
   def self.datadir(name, versionless=false)
-    if lib = Library.instance(name)
+    if lib = Roll::Library.instance(name)
       lib.datadir(versionless)
     else
       File.join(CONFIG['datadir'], name)
@@ -22,10 +22,10 @@ module ::Config
   # Return the path to the configuration directory.
 
   def self.confdir(name)
-    if lib = Library.instance(name)
+    if lib = Roll::Library.instance(name)
       lib.confdir
     else
-      File.join(CONFIG['datadir'], name)
+      File.join(CONFIG['confdir'], name)
     end
   end
 end

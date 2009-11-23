@@ -1,7 +1,3 @@
-#! /usr/bin/ruby1.8
-
+#!/usr/bin/env ruby
 require 'roll/command'
-
-command = Roll::Command.new
-command.start
-
+Roll::Command.run

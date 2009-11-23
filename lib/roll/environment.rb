@@ -1,183 +1,121 @@
+require 'yaml'
 require 'fileutils'
 require 'roll/xdg'
 
 module Roll
+  require 'roll/locals'
 
-  # = Environment
   #
   class Environment
 
-    DEFAULT_ENVIRONMENT = "production"
+    #
+    DEFAULT = 'testing' #'production'
 
     #
-    def self.file
-      File.join(XDG.config_home, "roll/environment")
-    end
+    DIR = XDG.config_home, 'roll', 'index'
 
     #
     def self.current
-      file = file()
-      if File.exist?(file)
-        File.read(file).strip
-      else
-        DEFAULT_ENVIRONMENT # ENV['ROLL_ENVIRONEMT']
-      end
+      ENV['RUBYENV'] || DEFAULT
+    end
+
+    # List of available environments.
+    def self.list
+      Locals.list
     end
 
     #
-    def self.save(name)
-      file = file()
-      File.open(file, 'w'){ |f| f << "#{name}" }
-      #ledger = File.join(XDG.config_home, "roll/environments/#{name}")
-      #if !File.exist?(ledger)
-      #  File.open(ledger, 'w'){ |f| f << "" }
-      #end
-    end
-
-    #def environment_delete(name)
-    #  raise "Can't delete default ledger." if DEFAULT_ENVIRONMENT == name
-    #  File.open(environment_file, 'w'){ |f| f << DEFAULT_ENVIRONMENT }
-    #  ledger = File.join(XDG.config_home, "roll/#{name}.ledger")
-    #  if File.exist?(ledger)
-    #    FileUtils.rm(ledger)
-    #  end
-    #end
-
     include Enumerable
 
     #
-    attr :name
-
-    #
-    attr :file
-
-    #
-    attr :list
-
-    #
     def initialize(name=nil)
-      @name = (name ? name : self.class.current)
-      @file = XDG.config_find("roll/environments/#{@name}")
-      if @file
-        read
-      else
-        @file = File.join(XDG.config_home, "roll/environments/#{name}")
-      end
+      @name = name || self.class.current
+      reload
     end
 
-    # Corresponding reference file.
-    def cache
-      @cache ||= File.join(File.dirname(File.dirname(file)), "references", name)
-    end  
+    # Current ledger name.
+    def name
+      @name
+    end
 
-    # Read cache. If the cache does not exist, but the
-    # environment does, then sync and save the cache.
-    def read
-      if File.exist?(cache)
-        list = []
-        File.readlines(cache).each do |line|
-          case line
-          when /^\#/, /^\s*$/
-            next
-          else
-            list << line.strip
-          end
-        end
-        @list = list
-      elsif File.exist?(file)
-        sync
+    #
+    def file
+      @file ||= File.join(DIR, name)
+    end
+
+    #
+    def reload
+      if File.exist?(file)
+        @table = YAML.load(File.new(file))
+      else
+        @table = sync
         save
       end
     end
 
-    # Save reference file.
-    def save
-      out = list.join("\n")
-      if File.exist?(cache)
-        if out != File.read(cache)
-          File.open(cache, 'wb'){ |f| f << out }
-        else
-          puts "current: #{name}"
-        end
-      else
-        dir = File.dirname(cache)
-        FileUtils.mkdir_p(dir) unless File.exist?(dir)
-        File.open(cache, 'wb'){ |f| f << out }
-      end
-    end
-
-    #
-    #def save_environment
-    #  File.open(file, 'w'){ |f| << .join("\n") }
-    #end
-
-    #def locations
-    #  map{ |name, vers, path| path }
-    #end
-
-    #def names
-    #  map{ |name, vers, path| name }
-    #end
-
     #
     def each(&block)
-      @list.each(&block)
+      @table.each(&block)
     end
 
     #
     def size
-      @list.size
+      @table.size
     end
 
     #
-    #def method_missing(s, *a, &b)
-    #  @list.__send__(s, *a, &b)
-    #end
+    def to_h
+      @table.dup
+    end
+
+    # Save ledger file.
+    def save
+      out = @table.to_yaml
+      if File.exist?(file)
+        if out != File.read(file)
+          File.open(file, 'wb'){ |f| f << out }
+        else
+          puts "current: #{name}"
+        end
+      else
+        dir = File.dirname(file)
+        FileUtils.mkdir_p(dir) unless File.exist?(dir)
+        File.open(file, 'wb'){ |f| f << out }
+      end
+    end
+
+    #
+    def locals
+      @locals ||= Locals.new(name)
+    end
 
     #
     def sync
-      list = []
+      list = Hash.new{ |h,k| h[k] = [] }
       sync_locations.each do |path|
-        #name = load_name(path)
-        #vers = load_version(path)
-        #if name && vers
-          list << path
-        #end
+        name = load_name(path)
+        #h = {}
+        #h['v'] = load_version(path)
+        #h['r'] = load_released(path)
+        #h['l'] = load_loadpath(path)
+        #h['p'] = path
+        if name #&& vers
+          list[name] << path
+        end
       end
-      @list = list
+      list
     end
 
     #
     def sync_locations
       locs = []
       if File.exist?(file)
-        File.readlines(file).each do |line|
-          line = line.strip
-          next if line =~ /^\s*$/
-          next if line =~ /^\#/
-          dir, depth = *line.split(/\s+/)
+        locals.each do |line, depth|
           locs << find_projects(dir, depth)
         end
       end
       locs.flatten
     end
-
-=begin
-      #
-      def locations
-        @locations ||= (
-          locs = []
-          ledger_files.each do |file|
-            File.readlines(file).each do |line|
-              next if line =~ /^\s*$/
-              dir, depth = *line.strip.split(/\s+/)
-              locs << find_projects(dir, depth)
-            end
-          end
-          locs.flatten
-        )
-      end
-=end
 
     # Search a given directory for projects upto a given depth.
     # Projects directories are determined by containing a
@@ -190,8 +128,7 @@ module Roll
       meta_locations.map{ |d| d.chomp('/meta').chomp('/.meta') }
     end
 
-=begin
-    #
+    # Get library name.
     def load_name(path)
       file = Dir[File.join(path, '{,.}meta', 'name')].first
       if file
@@ -199,6 +136,8 @@ module Roll
       end
     end
 
+=begin
+    # Get library version.
     # TODO: handle VERSION file
     def load_version(path)
       file = Dir[File.join(path, '{,.}meta', 'version')].first
@@ -206,24 +145,27 @@ module Roll
         File.read(file).strip  # TODO: handle YAML
       end
     end
-=end
 
-    def to_s
-      name
+    # Get release date.
+    def load_released(path)
+      file = Dir[File.join(path, '{,.}meta', 'released')].first
+      if file
+        File.read(file).strip  # TODO: handle YAML
+      end
     end
 
-  end#class Environment
-
-end#module Roll
-
-
-
-
-=begin
-      # TODO: should there be a universal_ledger or shared_ledger?
-      #@system_ledger_file = File.join(XDG.config_dirs.first, 'roll/ledger.list')
-      #@system_ledger      = Ledger.new(@system_ledger_file)
-
-      @user_ledger_file   = File.join(XDG.config_home, "roll/#{environment}.ledger")
-      @user_ledger        = Ledger.new(@user_ledger_file)
+    # Get loadpaths.
+    def load_loadpath(path)
+      file = Dir[File.join(path, '{,.}meta', 'loadpath')].first
+      if file
+        File.read(file).strip.split(/\s*\n/)  # TODO: handle YAML
+      else
+        []
+      end
+    end
 =end
+
+  end
+
+end
+

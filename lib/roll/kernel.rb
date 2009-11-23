@@ -14,13 +14,6 @@ module ::Kernel
 
   module_function :library
 
-  # Activate a library.
-  def roll(name, constraint=nil)
-    Roll::Library.open(name, constraint)
-  end
-
-  module_function :roll
-
   # Require script.
   def require(file)
     Roll::Library.require(file)
@@ -35,6 +28,13 @@ module ::Kernel
   def acquire(file, opts={})
     Roll::Library.acquire(file, opts)
   end
+
+  # Activate a library.
+  def roll(name, constraint=nil)
+    Roll::Library.open(name, constraint)
+  end
+
+  module_function :roll
 
 end
 
