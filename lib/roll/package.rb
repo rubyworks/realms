@@ -10,12 +10,14 @@ module Roll
   # until a better alternative comes forth, it suffices
   # to convey the intention of this part of Rolls. Ie.
   # It serves in place of a traditional package manager.
-  #  
+  #
   class Package
 
-    STORE = '/opt/rolls/'
+    STORE = '/opt/rolls/' # TODO: Adjust STORE
 
-    attr :name
+    attr :project
+
+    attr :package
 
     attr :version
 
@@ -24,9 +26,15 @@ module Roll
     attr :uri
 
     #
-    def initialize(name, ioc)
-      @name      = name
+    def host_type
+      @host_type
+    end
 
+    #
+    def initialize(project, package, ioc)
+      package = project if !package
+      @project   = project
+      @package   = package
       @version   = ioc[:version]
       @store     = ioc[:store]
       @host_type = ioc[:host]
@@ -43,12 +51,12 @@ module Roll
       @host ||= (
         case host_type
         when :rubyforge
-          Host::Rubyforge.new(name, host_options)
+          Host::Rubyforge.new(project, package, host_options)
         when :github
-          Host::Github.new(name, host_options)
+          Host::Github.new(project, package, host_options)
         else
           puts "Unspecified host. Assuming RubyForge."
-          Host::Rubyforge.new(name, host_options)
+          Host::Rubyforge.new(project, package, host_options)
         end
       )
     end
@@ -62,19 +70,14 @@ module Roll
       opts
     end
 
-    #
-    def host_type
-      @host_type
-    end
-
     # Scm based on local snapshot.
     def scm
       @scm ||= (
         case scm_type
         when :git
-          Scm::Git.new(name, scm_options)
+          Scm::Git.new(project, package, scm_options)
         when :svn
-          Scm::Svn.new(name, scm_options)
+          Scm::Svn.new(project, package, scm_options)
         else
           raise "can't determine scm type"
         end
@@ -92,10 +95,10 @@ module Roll
 
     #
     def scm_type
-      return :svn if File.directory?(File.join(store, name, version, '.svn'))
-      return :git if File.directory?(File.join(store, name, version, '.git'))
-      return :svn if File.directory?(File.join(store, name, '0', '.svn'))
-      return :git if File.directory?(File.join(store, name, '0', '.git'))
+      return :svn if File.directory?(File.join(store, package, version, '.svn'))
+      return :git if File.directory?(File.join(store, package, version, '.git'))
+      return :svn if File.directory?(File.join(store, package, '0', '.svn'))
+      return :git if File.directory?(File.join(store, package, '0', '.git'))
       return nil
     end
 
@@ -119,13 +122,15 @@ module Roll
     end
 
     # insert installation into ledger
+    #
+    # TODO: Add option to add to universal ledger?
     def insert(dir)
       dir = File.expand_path(dir)
-      ledger = Library.system_ledger
+      ledger = Library.user_ledger #Library.system_ledger
       ledger << dir
       ledger.save
       puts "#{dir}" 
-      puts "  '-> #{Library.system_ledger_file}"
+      puts "  '-> #{Library.user_ledger_file}"
     end
 
     # TODO: Where to get extensions?

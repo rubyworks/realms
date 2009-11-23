@@ -1,49 +1,93 @@
 require 'tmpdir'
 require 'fileutils'
-require 'getoptlong'
+#require 'getoptlong'
 require 'roll'
 
+require 'optparse'
+
 module Roll
+  VERSION   = "1.0.0"
+  COPYRIGHT = "Copyright (c) 2006,2009 Thomas Sawyer"
+  LICENSE   = "GPLv3"
 
   # = Roll Command
   #
-  # TODO: Support multiple ledgers.
-  # :     This could be useful for working with different environments.
-  # :     For example: testing vs. development vs. production.
+  # TODO: Need to make command pluggable. The COMMAND_INDEX must go!
   #
   class Command
+
+    COMMAND_INDEX = {
+      'help'=>:help, '--help'=>:help, '-h'=>:help,
+      'version'=>:version, '--version'=>:version, '-v'=>:version,
+      'path'=>:path, '--path'=>:path, '-p'=>:path,
+      'insert'=>:insert, 'in'=>:insert,
+      'remove'=>:remove, 'rm'=>:remove, 'out'=>:remove,
+      'clean'=>:clean,
+      'list'=>:list,
+      'ledger'=>:ledger,
+      'install'=>:install,
+      'uninstall'=>:uninstall,
+      'update'=>:update,
+      'show'=>:show,
+      'sync'=>:sync
+    }
 
     def start
       $PRETEND = ARGV.delete('--pretend') || ARGV.delete('--dryrun')
       $VERBOSE = ARGV.delete('--verbose')
-      case ARGV[0]
-      when 'help', '--help', '-h'
+
+      idx = ARGV.shift
+      cmd = COMMAND_INDEX[idx]
+
+      if !cmd
+        puts "Unknown command. Try 'roll help'."
+        exit
+      end
+
+      case cmd
+      when :help
         puts help
-      when 'path', '--path', '-p'
-        path
-      when 'in', 'insert'
-        insert
-      when 'out', 'remove'
-        remove
-      when 'clean'
-        clean
-      when 'list'
-        list
-      when 'install'
-        install
-      when 'uninstall'
-        uninstall
-      when 'update'
-        update
-      when 'versions', 'show'
-        show
-      else
-        puts "Ruby Roll"
-        puts "Copyright (c) 2006 Tiger Ops"
+        exit
+      when :version
+        puts version
+        exit
+      end
+
+      opts = OptionParser.new
+
+      options = {}
+
+      send("#{cmd}_optparse", opts, options)
+
+      opts.on("--debug", "debug mode") do
+        $DEBUG = true
+      end
+
+      opts.on_tail("-h", "--help", "show this message") do
+        puts opts
+        exit
+      end
+      
+      opts.parse! #(args)
+
+      args = ARGV.dup
+
+      begin
+        send("#{cmd}", args, options)
+      rescue => err
+        raise err if $DEBUG
+        puts err
       end
     end
 
   private
+
+    #def help_optparse(opts, options)
+    #end
+
+    #def help(args, opts)
+    #  puts opts
+    #end
 
     #
     def windows?
@@ -80,19 +124,31 @@ module Roll
     #
     def help
       s = []
-      s << 'usage: roll <command> [options] [arguments]'
+      s << 'Usage: roll <command> [options] [arguments]'
       s << ''
-      s << 'commands:'
-      s << '  in         insert current project into ledger'
-      s << '  out        remove current project from ledger'
-      s << '  ledger     list the ledger entries'
-      s << '  clean      clean ledger of invalid entries'
-      s << '  path       output ledger bin PATH'
-      s << '  install    install project'
-      s << '  uninstall  uninstall project'
-      s << '  update     update project'
-      s << '  versions   list project versions'
+      s << 'Ledger Commands:'
+      s << '  insert  in         insert current project into ledger'
+      s << '  remove  out        remove current project from ledger'
+      s << '  list               list the ledger entries'
+      s << '  clean              clean ledger of invalid entries'
+      s << '  path               output ledger bin PATH'
+      s << ''
+      s << 'Installation Commands:'
+      s << '  install            install package'
+      s << '  uninstall          uninstall package'
+      s << '  update             update package'
+      s << '  show               show package information'
+      s << ''
+      s << 'General Commands:'
+      s << '  help               see this help messge'
+      s << '  version            see this help messge'
+      s << ''
+      s << "For help with a command use 'roll <COMMAND> --help."
       s.join("\n")
+    end
+
+    def version
+      "Roll v#{VERSION}\n#{COPYRIGHT}\nDistributed under the terms of the #{LICENSE} license"
     end
 
   end
@@ -108,5 +164,8 @@ require 'roll/command/remove'
 require 'roll/command/install'
 require 'roll/command/uninstall'
 require 'roll/command/update'
+require 'roll/command/ledger'
 require 'roll/command/show'
+require 'roll/command/sync'
+
 

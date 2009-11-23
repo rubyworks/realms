@@ -3,43 +3,27 @@ module Roll #:nodoc:
   class Command #:nodoc:
 
     #
-    def uninstall
-      require 'roll/package'
-
-      opts = GetoptLong.new(
-        [ '--help',     '-h', GetoptLong::NO_ARGUMENT ],
-        [ '--version',  '-v', GetoptLong::REQUIRED_ARGUMENT ]
-        #[ '--tag',      '-t', GetoptLong::REQUIRED_ARGUMENT ],
-        #[ '--branch',   '-b', GetoptLong::REQUIRED_ARGUMENT ],
-        #[ '--revision', '-r', GetoptLong::REQUIRED_ARGUMENT ],
-      )
-
-      host_type = nil
-      options   = {}
-
-      opts.each do |opt, arg|
-        case opt
-        when '--help'
-          # TODO
-        when '--version'
-          options[:version] = arg
-        when '--rubyforge'
-          options[:host] = :rubyforge
-        when '--github'
-          options[:host] = :github
-        #when '--tag'
-        #  options[:version_type] = :tag
-        #  options[:version] = arg
-        #when '--branch'
-        #  options[:version_type] = :branch
-        #  options[:version] = arg
-        #when '--revision'
-        #  options[:version_type] = :revision
-        #  options[:version] = arg
-        end
+    def uninstall_optparse(opts, options)
+      opts.banner = "Usage: roll uninstall [OPTIONS] [PROJECT/]<PACKAGE>"
+      opts.separator "Uninstall package from local system."
+      opts.on('-g', '--github', '') do
+        options[:host] = :github
       end
+      opts.on('-r', '--rubyforge', '') do
+        options[:host] = :rubyforge
+      end
+      opts.on('-v', '--version [VALUE]', '') do |value|
+        options[:version] = value
+      end
+      return opts
+    end
 
-      name = ARGV[1]
+    #
+    def uninstall(args, options)
+      require 'roll/package'
+      #host_type = nil
+
+      name = args.first #ARGV[1]
 
       installer = Package.new(name, options)
 

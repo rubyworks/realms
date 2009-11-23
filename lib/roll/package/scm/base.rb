@@ -9,28 +9,48 @@ module Scm
   class Base
 
     # Project name.
-    attr :name
+    attr_accessor :project
 
-    # Local repository store location.
-    attr :store
-
-    # Repository URI
-    attr :uri
+    # Package name.
+    attr_accessor :package
 
     #
-    def initialize(name, ioc={})
-      @name = name
+    attr_accessor :version
 
-      @version = ioc[:version]
-      @store   = ioc[:store]
-      @uri     = ioc[:uri]
+    # DEPRICATE
+    alias_method :name, :package
+
+    # Local repository store location.
+    attr_accessor :store
+
+    # Repository URI
+    attr_accessor :uri
+
+    #
+    def initialize(project, package, ioc={})
+      package = project unless package
+
+      self.project = project
+      self.package = package
+
+      self.version = ioc[:version]
+      self.store   = ioc[:store]
+      self.uri     = ioc[:uri]
+
+      if not version
+        self.version = versions.max{ |a,b| natcmp(a, b, true) }
+      end
+
+      if not version
+        raise "#{self.class.name.split('::').last} cannot determine latest version"
+      end
     end
 
     # Version.
     #
-    def version
-      @version ||= versions.max{ |a,b| natcmp(a, b, true) }
-    end
+    #def version
+    #  @version ||= versions.max{ |a,b| natcmp(a, b, true) }
+    #end
 
     # Version type is either :tag, :branch, :revision, or :version.
     #def type

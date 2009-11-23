@@ -14,7 +14,13 @@ module Host
   class Base
 
     # Project name
-    attr_accessor :name
+    attr_accessor :project
+
+    # Package name
+    attr_accessor :package
+
+    # DEPRECATE
+    alias_method :name, :package
 
     # Repository URI
     attr_accessor :uri
@@ -29,12 +35,22 @@ module Host
     #attr_accessor :type
 
     #
-    def initialize(name, options={})
-      raise "missing repository name" unless name
-      @name = name.to_s
+    def initialize(project, package, options={})
+      package = project unless package
+
+      raise "missing project name" unless project
+      raise "missing package name" unless package
+
+      self.project = project.to_s
+      self.package = package.to_s
+
       options.each do |k, v|
         __send__("#{k}=", v) if v && respond_to?("#{k}=")
       end
+
+      #self.version = latest_version if !version
+
+      raise "Could not determine version of #{package}." unless version
     end
 
     #

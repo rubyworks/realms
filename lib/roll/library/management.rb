@@ -1,6 +1,4 @@
-require 'fileutils'
-require 'roll/xdg'
-require 'roll/library/ledger'
+require 'roll/environment'
 
 module Roll
 
@@ -17,24 +15,13 @@ module Roll
     #
     module Management
 
-      #
-      attr :ledger_files
-
-      #
-      attr :system_ledger_file
-
-      #
-      attr :user_ledger_file
-
-      #
-      attr :system_ledger
-
-      #
-      attr :user_ledger
-
       # Setup library system.
       #
       def setup
+        @environment = Environment.new
+        @ledger = {}
+        @lookup = []
+
         # Add Ruby's core and standard libraries to the ledger.
         #@ledger['ruby'] = Library.new(
         #  Library.rubylibdir,
@@ -43,85 +30,39 @@ module Roll
         #  :libpath=>Library.ruby_path
         #)
 
-        @ledger             = {}
-        @ledger_files       = XDG.config_select('roll/ledger.list')
-
-        @system_ledger_file = File.join(XDG.config_dirs.first, 'roll/ledger.list')
-        @system_ledger      = Ledger.new(@system_ledger_file)
-
-        @user_ledger_file   = File.join(XDG.config_home, 'roll/ledger.list')
-        @user_ledger        = Ledger.new(@user_ledger_file)
-
-        @lookup = []
-
-        #load_locations
         load_projects
       end
 
       #
-      def ledger
-        @ledger ||= {}
-      end
-
-      #
-      #def locations
-      #  @location ||= []
+      #def current_ledger
+      #  environment.name #@user_ledger_file
       #end
 
       #
-      def locations
-        @locations ||= (
-          locs = []
-          ledger_files.each do |file|
-            File.readlines(file).each do |line|
-              next if line =~ /^\s*$/
-              dir, depth = *line.strip.split(/\s+/)
-              locs << find_projects(dir, depth)
-            end
-          end
-          locs.flatten
-        )
-      end
+      attr :environment
 
       #
-      #def save_system_ledger(list)
-      #  FileUtils.mkdir_p(File.dirname(system_ledger_file))
-      #  File.open(system_ledger_file, 'wb') do |f|
-      #    f << list.join("\n")
-      #  end
-      #end
+      attr :ledger
 
+      #
       attr :lookup
 
-      # Return a list of library names.
+      # Return a list of library names. (Add version?)
       def list
         ledger.keys
       end
 
-      # Search a given directory for projects upto a given depth.
-      # Projects directories are determined by containing a
-      # 'meta' or '.meta' directory.
-      def find_projects(dir, depth=3)
-        depth = Integer(depth || 3)
-        depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
-        glob = File.join(dir, "{#{depth}}", "{.meta,meta}")
-        meta_locations = Dir[glob]
-        meta_locations.map{ |d| d.chomp('/meta').chomp('/.meta') }
-      end
-
       # Load projects into ledger.
-      #
-      # TODO: load_path?
-      #
       def load_projects
-        locations.each do |location|
+        environment.each do |location|
           begin
             lib = Library.new(location)
-            name = lib.package.downcase
+            name = lib.name.downcase
             ledger[name] ||= []
             ledger[name] << lib
-            lib.loadpath.each do |path|
-              @lookup << [File.join(lib.package, path), lib]
+            loadpath = lib.loadpath #|| ['lib']
+            loadpath.each do |path|
+              @lookup << [File.join(location, path), lib]
             end
           rescue NameError => e
             warn e if debug?
@@ -142,60 +83,11 @@ module Roll
         ENV['ROLL_WARN'] or $VERBOSE
       end
 
-#      #
-#      def metadir(location)
-#        Dir.glob(File.join(location, '{meta,.meta}'))
-#      end
-
-#      # Load and parse version stamp file.
-#      def load_version(location)
-#        dir = Dir.glob(File.join(location, '{meta,.meta}'))
-#        m = {}
-#        m[:name]    = read_metadata_entry(dir, 'name') || read_metadata_entry(dir, 'package')
-#        m[:version] = read_metadata_entry(dir, 'version')
-#        m[:status]  = read_metadata_entry(dir, 'status')
-#        m[:date]    = read_metadata_entry(dir, 'date') || read_metadata_entry(dir, 'release')
-#        return m
-#        #patt = File.join(location,'VERSION')
-#        #file = Dir.glob(patt, File::FNM_CASEFOLD).first
-#        #if file
-#        #  parse_version_stamp(File.read(file))
-#        #else
-#        #  {}
-#        #end
-#      end
-
-#      #
-#      def read_metadata_entry(dir, name)
-#        file = File.join(dir,name)
-#        if File.file?(file)
-#          File.read(file).strip
-#        else
-#          nil
-#        end
-#      end
-
-#      # Wish there was a way to do this without using a
-#      # configuration file.
-#      def load_loadpath(location)
-#        file = File.join(location, 'meta', 'loadpath')
-#        if File.file?(file)
-#          paths = File.read(file).gsub(/\n\s*\n/m,"")
-#          paths = paths.split(/\s*\n/)
-#        else
-#          paths = ['lib']
-#        end
-#      end
-
-      # Parse version stamp into it's various parts.
-      #def parse_version_stamp(text)
-      #  #info, *libpath = *data.split(/\s*\n\s*/)
-      #  name, version, status, date = *text.split(/\s+/)
-      #  version = Version.new(version)
-      #  date    = Time.mktime(*date.scan(/[0-9]+/))
-      #  #default = default || "../#{name}"
-      #  return {:name => name, :version => version, :status => status, :date => date}
-      #end
+      # If monitor mode is on, this is used to store backtraces
+      # for each load/require.
+      def load_monitor
+        @load_monitor ||= {}
+      end
 
       # Get an instance of a library by package name. Libraries are singleton, so once loaded
       # the same object is always returned.
@@ -215,7 +107,7 @@ module Roll
           end
         else # library is an array of versions
           if constraint
-            compare = Version.constrant_lambda(constraint)
+            compare = Version.constraint_lambda(constraint)
             version = library.select(&compare).max
           else
             version = library.max
@@ -262,7 +154,7 @@ module Roll
       end
 
       # Load stack stores a list of libraries, where the one
-      # on top of the stack is the one current loading.
+      # on top of the stack is the one currently loading.
       def load_stack
         @load_stack ||= []
       end
@@ -286,15 +178,20 @@ module Roll
       # a bug in Ruby b/c autoload is not using #require.
       #
       def require(file)
+        load_monitor[file] = caller if $LOAD_MONITOR
+
         begin
           return Kernel.require(file)
         rescue LoadError => load_error
         end
 
-        fname = "#{file}.rb" if File.extname(file) == ''
+        file = "#{file}.rb" if File.extname(file) == ''
 
         lib = nil
-        if @lookup.find{ |path, lib| File.file?(File.join(path, file)) }
+        found = @lookup.find do |path, lib|
+          File.file?(File.join(path, file))
+        end
+        if found
           return lib.require(file)
         end
 
@@ -308,18 +205,20 @@ module Roll
           end
         end
 
-        raise load_error
+        raise clean_backtrace(load_error)
       end
 
       # Load
       #
       def load(file, wrap=false)
+        load_monitor[file] = caller if $LOAD_MONITOR
+
         begin
           return Kernel.load(file, wrap)
         rescue LoadError => load_error
         end
 
-        fname = "#{file}.rb" if File.extname(file) == ''
+        file = "#{file}.rb" if File.extname(file) == ''
 
         lib = nil
         if @lookup.find{ |path, lib| File.file?(File.join(path, file)) }
@@ -333,7 +232,19 @@ module Roll
           end
         end
 
-        raise load_error
+        raise clean_backtrace(load_error)
+      end
+
+      #
+      def clean_backtrace(error)
+        if $DEBUG
+          error
+        else
+          bt = error.backtrace
+          bt = bt.reject{ |e| /roll/ =~ e }
+          error.set_backtrace(bt)
+          error
+        end
       end
 
       # Use acquire to use Roll-style loading. This first

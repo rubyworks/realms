@@ -2,15 +2,22 @@ module Roll
 
   class Command
 
+    #
+    def insert_optparse(opts, options)
+      opts.banner = "Usage: roll insert"
+      opts.separator "Insert present working directory into current ledger."
+      return opts
+    end
+
     # This adds a location to the user ledger.
-    def insert
+    def insert(args, options)
       root = find_root
       if root
-        ledger = Library.user_ledger
-        ledger << root
-        ledger.save
+        env = Library.environment
+        env.list << root
+        env.save
         puts "#{root}"
-        puts "  '-> #{Library.user_ledger_file}"
+        puts "  '-> #{Library.environment.file}"
       end
     end
 

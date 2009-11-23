@@ -2,32 +2,25 @@ module Roll
 
   class Command
 
-    # Show project versions (branches/tags).
-    def show
-      require 'roll/package'
-
-      opts = GetoptLong.new(
-        [ '--help',      '-h', GetoptLong::NO_ARGUMENT ],
-        [ '--github',    '-g', GetoptLong::NO_ARGUMENT ],
-        [ '--rubyforge', '-r', GetoptLong::NO_ARGUMENT ]
-        #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ]
-      )
-
-      options = {}
-
-      opts.each do |opt, arg|
-        case opt
-        when '--help'
-          # TODO
-        when '--github'
-          options[:host] = :github
-        when '--rubyforge'
-          options[:host] = :rubyforge
-        end
+    #
+    def show_optparse(opts, options)
+      opts.banner = "Usage: roll show [options]"
+      opts.separator "Show information about installed package."
+      opts.on('-g', '--github', '') do
+        options[:host] = :github
       end
+      opts.on('-r', '--rubyforge', '') do
+        options[:host] = :rubyforge
+      end
+      #[ '--uri', '-u', GetoptLong::REQUIRED_ARGUMENT ]
+      return opts
+    end
 
+    # Show project versions (branches/tags).
+    def show(args, options)
+      require 'roll/package'
+      name = args.first
       installer = Package.new(name, options)
-
       installer.show
     end
 

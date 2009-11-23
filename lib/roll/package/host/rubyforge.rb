@@ -12,9 +12,9 @@ module Host     #:nodoc:
     def uri
       case scm_type
       when :git
-        'git://rubyforge.org/%s.git' % [name]
+        'git://rubyforge.org/%s.git' % [package]
       when :svn
-        'svn://rubyforge.org/var/svn/%s' % [name]
+        'svn://rubyforge.org/var/svn/%s/%s' % [project, package]
       end
     end
 
@@ -23,9 +23,9 @@ module Host     #:nodoc:
       @scm ||= (
         case scm_type
         when :git
-          Scm::Git.new(name, :version=>version, :uri=>uri, :store=>store)
+          Scm::Git.new(project, package, :version=>version, :uri=>uri, :store=>store)
         when :svn
-          Scm::Svn.new(name, :version=>version, :uri=>uri, :store=>store)
+          Scm::Svn.new(project, package, :version=>version, :uri=>uri, :store=>store)
         else
           raise "can't determine scm type"
         end
@@ -53,12 +53,26 @@ module Host     #:nodoc:
     # Remotely check the SCM type.
     def scm_check_remote
       begin
-        proj = name.split(/[\\\/]/).first
-        open("http://rubyforge.org/projects/#{proj}/").read =~ /SVN/im ? :svn : :git
+        #proj = name.split(/[\\\/]/).first
+        open("http://rubyforge.org/projects/#{project}/").read =~ /SVN/im ? :svn : :git
       #rescue
         #nil
       end
     end
+
+    # Remotely get the latest version of a package.
+    # TODO: This is harder than it looks!
+    #def latest_version
+    #  raise "verison is required"
+      #proj = name.split(/[\\\/]/).first
+      #page = open("http://rubyforge.org/projects/#{proj}/").read
+      #regx = Regexp.escape("#{name}</strong></td><td>") + "\s*(*.?)\s*" + Regexp.escape("</td>")
+      #if md = regx.match(page)
+      #  md[1]
+      #else
+      #  nil
+      #end
+    #end
 
   end #class Rubyforge
 

@@ -23,16 +23,16 @@ module Roll
     # Location of library in the filesystem.
     attr_reader :location
 
-    # Package name of the library.
-    attr :package
+    # Name of the library.
+    attr :name
 
-    # Version of library package.
+    # Version of library.
     attr :version
 
     # Release date.
     attr :released
 
-    # Paths within the package to put of the $LOAD_PATH.
+    # Paths within the library to put of the $LOAD_PATH.
     attr :loadpath
 
     # Alias for released.
@@ -64,17 +64,24 @@ module Roll
       @location = location
       @metadata = {}
 
-      @package  = read_metadata('package')
+      @name     = read_metadata('name')
       @version  = read_metadata('version')
+      @active   = read_metadata('active')
 
-      raise MissingReqMetadata, "[ROLL] OMIT b/c package: #{location}" unless package
-      raise MissingReqMetadata, "[ROLL] OMIT b/c version: #{location}" unless version
+      # TODO: improve active marker support
+      raise MissingReqMetadata, "[ROLL] IGNORE library: #{location}" if @active == 'false'
 
-      @released = (
-        if rel = read_metadata('released')
-          (Time===rel) ? rel : Time.mktime(*rel.scan(/[0-9]+/))
-        end
-      )
+      raise MissingReqMetadata, "[ROLL] OMIT lacking name: #{location}" unless name
+      raise MissingReqMetadata, "[ROLL] OMIT lacking version: #{location}" unless version
+
+      begin
+        @released = (
+          if rel = read_metadata('released')
+            (Time===rel) ? rel : Time.mktime(*rel.scan(/[0-9]+/))
+          end
+        )
+      rescue
+      end
 
       @loadpath = read_metadata('loadpath', :yaml=>true, :list=>true)
       @loadpath = @loadpath || ['lib']
@@ -82,18 +89,18 @@ module Roll
 
     # Default library file. This is the file to load when
     # using +aquire+ and the request file is solely the
-    # package name. Eg. +acquire 'foo'+. It is always the 
-    # package name (eg. 'foo').
+    # library name. Eg. +acquire 'foo'+. It is always the 
+    # library name (eg. 'foo').
     def default
-      package
+      name
     end
 
     # Inspection.
     def inspect
       if version
-        "#<Library #{package}/#{version}>"
+        "#<Library #{name}/#{version}>"
       else
-        "#<Library #{package}>"
+        "#<Library #{name}>"
       end
     end
 
@@ -106,7 +113,7 @@ module Roll
     # in the $LOAD_PATH, and making it the only version available
     # in the ledger.
     def activate
-      Library.ledger[package] = self
+      Library.ledger[name] = self
       load_path.each do |lp|
         $LOAD_PATH.unshift(File.join(location, lp))
       end
@@ -114,7 +121,7 @@ module Roll
     end
 
     # List of subdirectories that are searched when loading.
-    # This defualts to ['lib/{package}', 'lib']. The first entry is
+    # This defualts to ['lib/{name}', 'lib']. The first entry is
     # usually proper location; the latter is added for default
     # compatability with the traditional require system.
     def lib
@@ -142,9 +149,9 @@ module Roll
     def data #(versionless=false)
       File.join(location, 'data')
       #     if version and not versionless
-      #       File.join(Config::CONFIG['datadir'], package, version)
+      #       File.join(Config::CONFIG['datadir'], name, version)
       #     else
-      #       File.join(Config::CONFIG['datadir'], package)
+      #       File.join(Config::CONFIG['datadir'], name)
       #     end
     end
 
@@ -154,16 +161,16 @@ module Roll
     end
 
     # Returns the path to the configuration directory, ie. {location}/etc.
-    # Note that this does not look in the system's configuration directory (/etc/{package}).
+    # Note that this does not look in the system's configuration directory (/etc/{name}).
     #
     # TODO: This in particluar probably should look in the
     #       systems config directory-- maybe an overlay effect?
     def etc
       File.join(location, 'etc')
       #     if version
-      #       File.join(Config::CONFIG['confdir'], package, version)
+      #       File.join(Config::CONFIG['confdir'], name, version)
       #     else
-      #       File.join(Config::CONFIG['datadir'], package)
+      #       File.join(Config::CONFIG['datadir'], name)
       #     end
     end
 
@@ -183,7 +190,7 @@ module Roll
       if path = require_find(file)
         Library.load_stack << self
         begin
-           success = Kernel.require(path)
+          success = Kernel.require(path)
         ensure
           Library.load_stack.pop
         end
@@ -191,7 +198,7 @@ module Roll
       #elsif lib = depend.find{ |dl| dl.require_find(file) }
       #  lib.require(file)
       else
-        raise LoadError, "no such file to load -- #{package}:#{file}"
+        raise LoadError, "no such file to load -- #{name}:#{file}"
       end
     end
 
@@ -207,7 +214,7 @@ module Roll
         end
         success
       else
-        raise LoadError, "no such file to load -- #{package}:#{file}"
+        raise LoadError, "no such file to load -- #{name}:#{file}"
       end
     end
 
@@ -215,7 +222,7 @@ module Roll
     #
     def require_find(file)
       file = default if (file.nil? or file.empty?)
-      find = File.join(location, '{' + load_path.join(',') + '}', "{#{package}/,}" + file + "{#{Library.dlext},.rb,}")
+      find = File.join(location, '{' + load_path.join(',') + '}', "{#{name}/,}" + file + "{#{Library.dlext},.rb,}")
       Dir.glob(find).first
     end
 
@@ -223,12 +230,12 @@ module Roll
     #
     def load_find(file)
       file = default if (file.nil? or file.empty?)
-      find = File.join(location, '{' + load_path.join(',') + '}', "{#{package}/,}" + file)
+      find = File.join(location, '{' + load_path.join(',') + '}', "{#{name}/,}" + file)
       Dir.glob(find).first
     end
 
     # List of subdirectories that are searched when loading.
-    # This defualts to ['lib/{package}', 'lib']. The first entry is
+    # This defualts to ['lib/{name}', 'lib']. The first entry is
     # usually proper location; the latter is added for default
     # compatability with the traditional require system.
     #def libdir
@@ -257,9 +264,7 @@ module Roll
       end
     end
 
-    # DEPRECATE
-    #alias_method :info, :metadata
-
+    #
     def read_metadata(name, opts={})
       file = Dir[File.join(location, '{meta,.meta}', name)].first
       if file && File.file?(file)
@@ -275,8 +280,9 @@ module Roll
           data
         end
       else
-        nil
+        data = nil
       end
+      data
     end
 
     # If method is missing delegate to metadata, if any.
@@ -292,6 +298,16 @@ module Roll
         super
       end
     end
+
+      # Parse version stamp into it's various parts.
+      #def parse_version_stamp(text)
+      #  #info, *libpath = *data.split(/\s*\n\s*/)
+      #  name, version, status, date = *text.split(/\s+/)
+      #  version = Version.new(version)
+      #  date    = Time.mktime(*date.scan(/[0-9]+/))
+      #  #default = default || "../#{name}"
+      #  return {:name => name, :version => version, :status => status, :date => date}
+      #end
 
   end #class Library
 
