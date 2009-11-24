@@ -73,28 +73,36 @@ module Roll
 
     #--
     # TODO: Should Ruby's underlying require be tried first,
-    # then fallback to Rolls. Or vice-versa as it is now.
+    # then fallback to Rolls. Or vice-versa?
     #++
  
     #
     def require(path)
-      lib, file = *match(path)
-      if lib && file
-        constrain(lib)
-        lib.require_absolute(file)
-      else
-        original_require(path)     # fallback to Ruby
+      begin
+        original_require(path)
+      rescue LoadError => load_error
+        lib, file = *match(path)
+        if lib && file
+          constrain(lib)
+          lib.require_absolute(file)
+        else
+          raise clean_backtrace(load_error)
+        end
       end
     end
 
     #
     def load(path, wrap=nil)
-      lib, file = *match(path)
-      if lib && file
-        constrain(lib)
-        lib.load_absolute(file, wrap)
-      else
-        original_load(path, wrap)  # fallback to Ruby
+      begin
+        original_load(path, wrap)
+      rescue LoadError => load_error
+        lib, file = *match(path)
+        if lib && file
+          constrain(lib)
+          lib.load_absolute(file, wrap)
+        else
+          raise clean_backtrace(load_error)
+        end
       end
     end
 
@@ -207,6 +215,18 @@ module Roll
       warn "multiple matches for same request -- #{path}"
       matches.each do |lib, file|
         warn "  #{file}"
+      end
+    end
+
+    #
+    def clean_backtrace(error)
+      if $DEBUG
+        error
+      else
+        bt = error.backtrace
+        bt = bt.reject{ |e| /roll/ =~ e }
+        error.set_backtrace(bt)
+        error
       end
     end
 
