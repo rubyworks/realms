@@ -1,4 +1,5 @@
 = ROLLING WITH RUBY
+
                   ____
               ,dP9CGG88@b,
             ,IP""YICCG888@@b,
@@ -13,19 +14,15 @@
               `@@@@@@@@@P'.......
                   """"........
 
-* http://proutils.github.com/roll
+* home: http://proutils.github.com/roll
 
 
 == DESCRITION
 
-Roll is a library and scm-based package manager for Ruby. With Rolls
-developers can run there programs in real time --no install phase is
-required for one program to depend on another. This makes it very easy
-to work on a set of interdependent projects.
-
-NOTE: The library management functions work well; the package
-management functions however are much newer and not as well tested,
-so please let me know it you encounter any errors. Thanks.
+Roll is a library manager for Ruby. With Rolls developers can run there
+programs in real time --no install phase is required for one program
+to depend on another. This makes it very easy to work on a set of
+interdependent projects.
 
 
 == HOW TO USE
