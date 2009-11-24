@@ -1,8 +1,9 @@
-require 'roll/library'
+require 'roll/original'
+require 'roll/ledger'
 
 module ::Kernel
 
-  # In which library is this file participating?
+  # In which library is the current file participating?
   def __LIBRARY__
     Roll::Library.load_stack.last
   end
@@ -13,6 +14,13 @@ module ::Kernel
   end
 
   module_function :library
+
+  # Activate a library.
+  def roll(name, constraint=nil)
+    Roll::Library.open(name, constraint)
+  end
+
+  module_function :roll
 
   # Require script.
   def require(file)
@@ -28,13 +36,6 @@ module ::Kernel
   def acquire(file, opts={})
     Roll::Library.acquire(file, opts)
   end
-
-  # Activate a library.
-  def roll(name, constraint=nil)
-    Roll::Library.open(name, constraint)
-  end
-
-  module_function :roll
 
 end
 

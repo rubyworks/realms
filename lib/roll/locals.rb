@@ -40,7 +40,7 @@ module Roll
     def reload
       t = []
       if File.exist?(file)
-        lines = File.readlines(locals_file)
+        lines = File.readlines(file)
         lines.each do |line|
           line = line.strip
           path, depth = *line.split(/\s+/)
@@ -53,6 +53,16 @@ module Roll
         t = []
       end
       @table = t
+    end
+
+    #
+    def each(&block)
+      @table.each(&block)
+    end
+
+    #
+    def size
+      @table.size
     end
 
     #

@@ -1,4 +1,5 @@
 module Roll
+  require 'roll/original'
   require 'roll/environment'
   require 'roll/library'
 
@@ -12,15 +13,22 @@ module Roll
     def initialize
       @index = Hash.new{|h,k| h[k] = []}
 
-      environment = Environment.new
+      @environment = Environment.new
 
-      environment.each do |name, paths|
+      @environment.each do |name, paths|
         paths.each do |path|
-          @index[name] << Library.new(path, name)
+          lib = Library.new(path, name)
+          @index[name] << lib if lib.active?
         end
       end
 
-      @load_stack = []
+      @load_stack   = []
+      @load_monitor = Hash.new{ |h,k| h[k]=[] }
+    end
+
+    #
+    def enironment
+      @environment
     end
 
     #
@@ -31,6 +39,11 @@ module Roll
     #
     def []=(name, value)
       @index[name] = value
+    end
+
+    #
+    def include?(name)
+      @index.include?(name)
     end
 
     #
@@ -53,11 +66,10 @@ module Roll
       @load_stack
     end
 
-    #
-    alias_method :original_require, :require
-
-    #
-    alias_method :original_load, :load
+    # NOTE: Not used yet.
+    def load_monitor
+      @load_monitor
+    end
 
     #--
     # TODO: Should Ruby's underlying require be tried first,
@@ -145,8 +157,10 @@ module Roll
       if path.index(':') # a specific library
         name, path = path.split(':')
         lib  = Library.open(name)
-        file = lib.include?(path)
-        return lib, file
+        if lib.active?
+          file = lib.include?(path)
+          return lib, file
+        end
       end
 
       # try the load stack first
@@ -197,6 +211,48 @@ module Roll
     end
 
   end#class Ledger
+
+  #--
+  # Ledger augments the Library metaclass.
+  #++
+  class << Library
+
+    #
+    def ledger
+      @ledger ||= Ledger.new
+    end
+
+    # Current environment
+    def environment
+      ledger.environment
+    end
+
+    # List of library names.
+    def list
+      ledger.names
+    end
+
+    #
+    def require(path)
+      ledger.require(path)
+    end
+
+    #
+    def load(path, wrap=nil)
+      ledger.load(path, wrap)
+    end
+
+    #
+    def load_stack
+      ledger.load_stack
+    end
+
+    # NOTE: Not used yet.
+    def load_monitor
+      ledger.load_monitor
+    end
+
+  end
 
 end#module Roll
 

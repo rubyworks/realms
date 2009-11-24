@@ -1,22 +1,67 @@
 require 'rbconfig'
+require 'roll/version'
+require 'roll/metadata'
+require 'roll/errors'
 
 module Roll
-  require 'roll/manageable'
-  require 'roll/version'
-  require 'roll/metadata'
-  require 'roll/errors'
 
+  # = Library class
+  #
   class Library
 
     # Dynamic link extension.
     DLEXT = '.' + ::Config::CONFIG['DLEXT']
 
-    #
-    extend Manageable
+    # Get an instance of a library by name, or name and version.
+    # Libraries are singleton, so once loaded the same object is
+    # always returned.
 
-    # NOTE: Not used yet.
-    def self.load_monitor
-      @load_monitor ||= Hash.new{|h,k| h[k]=[] }
+    def self.instance(name, constraint=nil)
+      name = name.to_s
+
+      #raise "no library -- #{name}" unless ledger.include?(name)
+      return nil unless ledger.include?(name)
+
+      library = ledger[name]
+
+      if Library===library
+        if constraint # TODO: it's okay if constraint fits current
+          raise VersionConflict, "previously selected version -- #{ledger[name].version}"
+        else
+          library
+        end
+      else # library is an array of versions
+        if constraint
+          compare = Version.constraint_lambda(constraint)
+          library = library.select(&compare).max
+        else
+          library = library.max
+        end
+        unless library
+          raise VersionError, "no library version -- #{name} #{constraint}"
+        end
+        #ledger[name] = library
+        #library.activate
+        return library
+      end
+    end
+
+    # A shortcut for #instance.
+
+    def self.[](name, constraint=nil)
+      instance(name, constraint)
+    end
+
+    # Same as #instance but will raise and error if the library is
+    # not found. This can also take a block to yield on the library.
+
+    def self.open(name, constraint=nil) #:yield:
+      lib = instance(name, constraint)
+      unless lib
+        raise LoadError, "no library -- #{name}"
+      end
+      yield(lib) if block_given?
+      lib
     end
 
     #
@@ -41,7 +86,7 @@ module Roll
     end
 
     #
-    def active
+    def active?
       @active ||= load_active
     end
 
@@ -84,9 +129,9 @@ module Roll
       #Library.load_monitor[file] << caller if $LOAD_MONITOR
       Library.load_stack << self
       begin
-        success = Kernel.require(file)
-      rescue => load_error
-        raise clean_backtrace(load_error)
+        success = original_require(file)
+      #rescue LoadError => load_error
+      #  raise clean_backtrace(load_error)
       ensure
         Library.load_stack.pop
       end
@@ -108,9 +153,9 @@ module Roll
       #Library.load_monitor[file] << caller if $LOAD_MONITOR
       Library.load_stack << self
       begin
-        success = Kernel.load(file, wrap)
-      rescue => load_error
-        raise clean_backtrace(load_error)
+        success = original_load(file, wrap)
+      #rescue LoadError => load_error
+      #  raise clean_backtrace(load_error)
       ensure
         Library.load_stack.pop
       end
@@ -149,12 +194,13 @@ module Roll
 #    def libdir?
 #      lib.any?{ |d| File.directory?(d) }
 #    end
-#
-#    # Location of executable. This is alwasy bin/. This is a fixed
-#    # convention, unlike lib/ which needs to be more flexable.
-#
-#    def bindir  ; File.join(location, 'bin') ; end
-#    def bindir? ; File.exist?(bin) ; end
+
+    # Location of executable. This is alwasy bin/. This is a fixed
+    # convention, unlike lib/ which needs to be more flexable.
+    def bindir  ; File.join(location, 'bin') ; end
+
+    # Is there a <tt>bin/</tt> location?
+    def bindir? ; File.exist?(bindir) ; end
 
     # Location of library system configuration files.
     # This is alwasy the <tt>etc/</tt> directory.
@@ -199,7 +245,12 @@ module Roll
     def load_active
       file = Dir[File.join(location, '{,.}meta', 'active')].first
       if file
-        File.read(file).strip != 'false'
+        case File.read(file).strip.downcase
+        when 'false', 'no'
+          false
+        else
+          true
+        end
       else
         true
       end

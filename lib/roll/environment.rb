@@ -1,20 +1,22 @@
 require 'yaml'
 require 'fileutils'
 require 'roll/xdg'
+require 'roll/locals'
 
 module Roll
-  require 'roll/locals'
 
   #
   class Environment
 
-    #
-    DEFAULT = 'testing' #'production'
+    include Enumerable
 
-    #
+    # Default environment name.
+    DEFAULT = 'production'
+
+    # Location of environment files.
     DIR = XDG.config_home, 'roll', 'index'
 
-    #
+    # Current environment name.
     def self.current
       ENV['RUBYENV'] || DEFAULT
     end
@@ -24,10 +26,7 @@ module Roll
       Locals.list
     end
 
-    #
-    include Enumerable
-
-    #
+    # Instantiate environment.
     def initialize(name=nil)
       @name = name || self.class.current
       reload
@@ -38,12 +37,12 @@ module Roll
       @name
     end
 
-    #
+    # Environment file (full-path).
     def file
       @file ||= File.join(DIR, name)
     end
 
-    #
+    # Load the environment file.
     def reload
       if File.exist?(file)
         @table = YAML.load(File.new(file))
@@ -53,12 +52,12 @@ module Roll
       end
     end
 
-    #
+    # Look through the environment table.
     def each(&block)
       @table.each(&block)
     end
 
-    #
+    # Number of entries.
     def size
       @table.size
     end
@@ -94,11 +93,7 @@ module Roll
       list = Hash.new{ |h,k| h[k] = [] }
       sync_locations.each do |path|
         name = load_name(path)
-        #h = {}
-        #h['v'] = load_version(path)
-        #h['r'] = load_released(path)
-        #h['l'] = load_loadpath(path)
-        #h['p'] = path
+        #vers = load_version(path)
         if name #&& vers
           list[name] << path
         end
@@ -109,11 +104,11 @@ module Roll
     #
     def sync_locations
       locs = []
-      if File.exist?(file)
-        locals.each do |line, depth|
+      #if File.exist?(file)
+        locals.each do |dir, depth|
           locs << find_projects(dir, depth)
         end
-      end
+      #end
       locs.flatten
     end
 
@@ -142,25 +137,7 @@ module Roll
     def load_version(path)
       file = Dir[File.join(path, '{,.}meta', 'version')].first
       if file
-        File.read(file).strip  # TODO: handle YAML
-      end
-    end
-
-    # Get release date.
-    def load_released(path)
-      file = Dir[File.join(path, '{,.}meta', 'released')].first
-      if file
-        File.read(file).strip  # TODO: handle YAML
-      end
-    end
-
-    # Get loadpaths.
-    def load_loadpath(path)
-      file = Dir[File.join(path, '{,.}meta', 'loadpath')].first
-      if file
-        File.read(file).strip.split(/\s*\n/)  # TODO: handle YAML
-      else
-        []
+        File.read(file).strip  # TODO: handle YAML ?
       end
     end
 =end

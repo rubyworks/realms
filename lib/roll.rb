@@ -1,11 +1,7 @@
+require 'roll/kernel'
+
 module Roll
   VERSION = "0.1"  #:till: VERSION = "<%= version %>"
-
-  require 'roll/kernel'
-  #Roll::Library.setup
-
-  #def self.current
-  #end
 
   # Get environment.
 
@@ -60,6 +56,18 @@ module Roll
     env.save
 
     return path, locals.file
+  end
+
+  def self.path
+    # Go thru each roll lib and make sure bin path is in path.
+    binpaths = []
+    Library.list.each do |name|
+      lib = Library[name]
+      if lib.bindir?
+        binpaths << lib.bindir
+      end
+    end
+    binpaths
   end
 
 end
