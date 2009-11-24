@@ -16,7 +16,7 @@
 * http://proutils.github.com/roll
 
 
-== oOo DESCRITION oOo
+== DESCRITION
 
 Roll is a library and scm-based package manager for Ruby. With Rolls
 developers can run there programs in real time --no install phase is
@@ -28,100 +28,110 @@ management functions however are much newer and not as well tested,
 so please let me know it you encounter any errors. Thanks.
 
 
-== o- RELEAE NOTES -o
+== HOW TO USE
 
-Please see the HISTORY file.
+=== Setting Up
 
-
-== O- SYNOPSIS -O
-
-=== o- Setting Up -o
-
-To use roll you will first have to add it your RUBYOPT environment
+To use roll regularly you first need to add it your RUBYOPT environment
 variable.
 
   $ export RUBYOPT="-roll"
 
 I suspect you will be using RubyGems too, in which case do:
 
-  $ export RUBYOPT="-roll -runbygems"
+  $ export RUBYOPT="-rubygems -roll"
 
-To support executables you will need to add a line to your startup
+To support executables you will also need to add a line to your startup
 .bashrc (or equivalent) file.
 
   export PATH="$PATH:$(roll path)"
 
-This will add the bin/ locations of the programs encompassed by your
-current roll ledger.
+This will add the +bin+ locations of the programs encompassed by your
+current roll environment.
 
-(NOTE: The way this works will probably change in the future b/c it has
-some shortcomings, such as not working on Windows.)
+(NOTE: The way bin paths are handled will probably change in the future
+b/c it has some shortcomings.)
 
-=== o- Library Managment -o
+=== Preparing your Projects
 
-To use +roll+ as a library manager, simply navigate to the root
-directory of a project. Make sure there is a meta/ruby, meta/package
-and a meta/version file, each containing that single piece of
-information. For example:
+For your projects to be detected by Rolls they must conform to a
+minimal [POM](http://proutils.github.com/pom) setup. In particular
+the project must contain a +meta/+ directory with a +name+ and +version+
+entry. That is the bare minimum for a project to to be loadable via
+Rolls. Optionally you may provide a +loadpath+ entry if the load path 
+is not the +lib/+ default, as well as a +released+ date entry.
+
+(NOTE: +meta/+ can be named +.meta/+ if you would prefer to hide the
+directory, though we recommend keeping it visible.)
+
+Here are examples of Ruby Facets +meta/+ entries.
+
+  $ cat facets/meta/name
+  facets
+
+  $ cat facets/meta/verion
+  2.8.0
+
+  $ cat facets/meta/loadpath
+  lib/core
+  lib/more
 
   $ cat facets/meta/ruby
   1.8+
 
-  $ cat facets/meta/package
-  facets
+The +ruby+ entry informs Rolls of the particular implementations and versions
+of Ruby the project should operate under sucessfully.
+(NOTE: Rolls doesn't actually do anything with the ruby entry yet.)
 
-  $ cat facets/meta/verion
-  2.7.0
+Lastely, an +active+ entry can be set to +false+ to tell Rolls to skip the
+project when searching for library files. See [POM](http://proutils.github.com/pom)
+for more information.
 
-The first file informs roll that this program is for Ruby and what
-version(s) of Ruby the program is intended to work with. The second
-is the official package name, and the later is of course the offical
-version designation. These three files are the minimal requirements
-neccessary for a program to be used by roll.
 
-(Note meta/ can be named .meta/ if you would prefer to hide the
-directory though we recommend keeping it visible.)
+=== Library Managment
 
-Now you need to add the program to the roll ledger. From the project's
-root directory you would type:
+Next you need to setup an roll *environment*. The default environment
+is call +production+. You can add a library search location to it
+using +roll in+. Eg.
 
-  $ roll in
+  $ roll in /opt/ruby/
 
-That's it. Your project is READY TO ROLL!
+As a developer you will often want to use a +development+ environment.
+To change or add and environment, modify the RUBYENV enironment variable.
 
-=== o- Package Management -o
+  $ export RUBYENV="development"
 
-Roll can also manage SCM repositories as a means of package
-distribution. For example:
+Then you can add the paths you want. For instance my development
+environment is basically constructed like this:
 
-  roll install xdg
+  $ roll in ~/programs/proutils
+  $ roll in ~/programs/rubyworks
+  $ roll in ~/programs/thedeadly
+  $ roll in ~/programs/transcode
 
-This will look for an xdg repository on Rubyforge and install the
-latest tagged version of the XDG library. In this example we have
-relied on built-in defaults. The command is actually an abbreviated
-form of:
+By default these paths will be search for POM conforming projects
+up to a depth of three sub-directories. That's suitable for
+most needs. You can specify the the depth explicitly with the 
+<tt>--depth<tt> or <tt>-d</tt> option. For example, lets say you
+just want to add a single ruby project to the current environment.
+You can do so by navigating to the root directory of a project and
+executing:
 
-  roll install -r xdg/xdg
+  $ roll in --depth 1
 
-Roll supports both Git and SVN repositories. Roll also supports GitHub.
-We could install the same library from GitHub using:
+That's it. Your project is *READY-TO-ROLL*!
 
-  roll install -g trans/xdg
 
-Note that you can only install tagged versions. (Use -v to specify the
-version) and roll DOES NOT YET SUPPORT compiling native extensions,
-but will soon.
-
-=== o- Learning More -o
+== LEARNING MORE
 
 The above provides a breif overview of using roll. But there is more to
 it. To get a deeper understanding of the system and how to use +roll+ to
-it fullest extent, please visit http://proutils.rubyforge.org/roll/.
+it fullest extent, please visit http://proutils.github.org/roll/.
 
 
-== O- HOW TO INSTALL -O
+== HOW TO INSTALL
 
-=== o- Manual Installation -o
+=== Manual Installation
 
 You will need Ruby Setup, the standalone setup.rb script, in order
 to install Roll. See: http://setup.rubyforge.org.
@@ -135,7 +145,7 @@ it manually as follows:
 
 On Windows, this last line needs to be 'ruby setup.rb all'.
 
-=== o- Rubygems Installation -o
+=== Rubygems Installation
 
 We strongly recommend installing Rolls manually b/c
 Rolls is a peer to RubyGems. However, you can use Gems to
@@ -147,12 +157,12 @@ If you like Rolls, then later you can uninstall the gem and
 install manually.
 
 
-== O- BY THE WAY -O
+== BY THE WAY
 
 Roll was Rubyforge project #1004. She's been around a while! ;)
 
 
-== O- LICENSE & COPYRIGHT -O
+== LICENSE & COPYRIGHT
 
 Roll, Copyright (c) 2006,2007 Thomas Sawyer
 
