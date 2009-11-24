@@ -71,15 +71,21 @@ module Roll
     def save
       out = @table.to_yaml
       if File.exist?(file)
-        if out != File.read(file)
-          File.open(file, 'wb'){ |f| f << out }
+        yaml = YAML.load(File.new(file))
+        if @table != yaml
+          File.open(file, 'w'){ |f| f << out }
+          #puts "updated: #{name}"
+          true
         else
-          puts "current: #{name}"
+          #puts "current: #{name}"
+          false
         end
       else
         dir = File.dirname(file)
         FileUtils.mkdir_p(dir) unless File.exist?(dir)
         File.open(file, 'wb'){ |f| f << out }
+        #puts "created: #{name}"
+        true
       end
     end
 
