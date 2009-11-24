@@ -30,6 +30,7 @@ module Roll
 
     locals = env.locals
     locals.append(path, depth)
+    locals.save
 
     env.sync
     env.save

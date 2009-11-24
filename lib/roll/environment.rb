@@ -5,7 +5,7 @@ require 'roll/locals'
 
 module Roll
 
-  #
+  # TODO: Using a hash table means un-order, fix?
   class Environment
 
     include Enumerable
@@ -67,12 +67,12 @@ module Roll
       @table.dup
     end
 
-    # Save ledger file.
+    # Save environment file.
     def save
       out = @table.to_yaml
       if File.exist?(file)
         yaml = YAML.load(File.new(file))
-        if @table != yaml
+        if out != yaml
           File.open(file, 'w'){ |f| f << out }
           #puts "updated: #{name}"
           true
@@ -83,7 +83,7 @@ module Roll
       else
         dir = File.dirname(file)
         FileUtils.mkdir_p(dir) unless File.exist?(dir)
-        File.open(file, 'wb'){ |f| f << out }
+        File.open(file, 'w'){ |f| f << out }
         #puts "created: #{name}"
         true
       end
@@ -104,7 +104,7 @@ module Roll
           list[name] << path
         end
       end
-      list
+      @table = list
     end
 
     #

@@ -66,13 +66,28 @@ module Roll
     end
 
     #
-    def append(path, depth)
-      @table << [path, depth.to_i]
+    def append(path, depth=3)
+      path  = File.expand_path(path)
+      depth = (depth || 3).to_i
+      @table = @table.reject{ |(p, d)| path == p }
+      @table.push([path, depth])
     end
 
     #
     def delete(path)
       @table.reject!{ |p,d| path == p }
+    end
+
+    #
+    def save
+      out = @table.map do |(path, depth)|
+        "#{path}   #{depth}"
+      end
+      dir = File.dirname(file)
+      FileUtils.mkdir_p(dir) unless File.exist?(dir)
+      File.open(file, 'w') do |f|
+        f <<  out.join("\n")
+      end
     end
 
   end

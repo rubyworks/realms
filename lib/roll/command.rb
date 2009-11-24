@@ -58,8 +58,8 @@ module Roll
     def in_optparse(op, options)
       op.banner = "Usage: roll in [PATH]"
       op.separator "Insert path into current environment."
-      op.on("--depth", "-d [INTEGER]") do |integer|
-        options[:depth] = integer
+      op.on("--depth", "-d [INTEGER]") do |int|
+        options[:depth] = int
       end
     end
 
@@ -100,7 +100,7 @@ module Roll
 
     #
     def in(args, opts)
-      path  = args.first
+      path  = File.expand_path(args.first || Dir.pwd)
       depth = opts[:depth]
       path, file = *Roll.in(path, depth)
       puts "#{path}"
