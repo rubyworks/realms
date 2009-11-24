@@ -18,7 +18,7 @@ module Roll
 
     #
     def execute
-      cmd = ARGV.find{ |e| e !~ /^\-/ }
+      cmd = ARGV.shift #find{ |e| e !~ /^\-/ }
 
       options = {}
 
@@ -86,7 +86,16 @@ module Roll
     # Synchronize ledgers.
     #
     def sync(args, opts)
-      Roll.sync(*args)
+      name = args.first
+      list = name ? [name] : Environment.list
+      list.each do |name|
+        result = Roll.sync(name)
+        if result
+          puts "   saved #{name}"
+        else
+          puts " current #{name}"
+        end
+      end
     end
 
     #

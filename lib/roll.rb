@@ -1,7 +1,7 @@
 require 'roll/kernel'
 
 module Roll
-  VERSION = "0.1"  #:till: VERSION = "<%= version %>"
+  VERSION = "2.0"  #:till: VERSION = "<%= version %>"
 
   # Get environment.
 
@@ -14,20 +14,13 @@ module Roll
     env
   end
 
-  # Synchronize an environment by +name+. If no
-  # +name+ is given, synchronize all environments.
+  # Synchronize an environment by +name+. If a +name+
+  # is not given the current environment is synchronized.
 
   def self.sync(name=nil)
-    if name
-      list = [name]
-    else
-      list = Environment.list
-    end
-    list.each do |name|
-      env = Environment.new(name)
-      env.sync
-      env.save
-    end
+    env = name ? Environment.new(name) : Environment.new
+    env.sync
+    env.save
   end
 
   # Add path to current environment.
@@ -44,7 +37,7 @@ module Roll
     return path, locals.file
   end
 
-  # Remove path from current ledger.
+  # Remove path from current environment.
 
   def self.out(path)
     env = Environment.new
@@ -58,8 +51,9 @@ module Roll
     return path, locals.file
   end
 
+  # Go thru each roll lib and collect bin paths.
+
   def self.path
-    # Go thru each roll lib and make sure bin path is in path.
     binpaths = []
     Library.list.each do |name|
       lib = Library[name]
