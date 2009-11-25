@@ -78,38 +78,45 @@ module Roll
  
     #
     def require(path)
-      begin
-        original_require(path)
-      rescue LoadError => load_error
-        lib, file = *match(path)
-        if lib && file
-          constrain(lib)
-          lib.require_absolute(file)
-        else
+      #begin
+      #  original_require(path)
+      #rescue LoadError => load_error
+      #  lib, file = *match(path)
+      #  if lib && file
+      #    constrain(lib)
+      #    lib.require_absolute(file)
+      #  else
+      #    raise clean_backtrace(load_error)
+      #  end
+      #end
+      lib, file = *match(path)
+      if lib && file
+        constrain(lib)
+        lib.require_absolute(file)
+      else
+        begin
+          original_require(path)
+        rescue LoadError => load_error
           raise clean_backtrace(load_error)
         end
       end
+
     end
 
     #
     def load(path, wrap=nil)
-      begin
-        original_load(path, wrap)
-      rescue LoadError => load_error
-        lib, file = *match(path)
-        if lib && file
-          constrain(lib)
-          lib.load_absolute(file, wrap)
-        else
+      lib, file = *match(path)
+      if lib && file
+        constrain(lib)
+        lib.load_absolute(file, wrap)
+      else
+        begin
+          original_load(path, wrap)
+        rescue LoadError => load_error
           raise clean_backtrace(load_error)
         end
       end
     end
-
-    #--
-    # This may no longer be neccessary becuase require and load
-    # now check the load_stack first.
-    #++
 
     # Use acquire to use Roll-style loading. This first
     # looks for a specific library via ':'. If ':' is 
@@ -166,14 +173,14 @@ module Roll
         name, path = path.split(':')
         lib  = Library.open(name)
         if lib.active?
-          file = lib.include?(path)
+          file = lib.find(path)
           return lib, file
         end
       end
 
       # try the load stack first
       load_stack.reverse_each do |lib|
-        if file = lib.include?(path)
+        if file = lib.find(path)
           matches << [lib, file]
           break
         end
@@ -185,7 +192,7 @@ module Roll
           when Array
             pos = []
             libs.each do |lib|
-              if file = lib.include?(path)
+              if file = lib.find(path)
                 pos << [lib, file]
               end
             end
@@ -196,7 +203,7 @@ module Roll
             end
           else
             lib = libs
-            if file = lib.include?(path)
+            if file = lib.find(path)
               matches << [lib, file]
               break unless $VERBOSE
             end

@@ -1,4 +1,4 @@
-require 'rbconfig'
+#require 'rbconfig'
 require 'roll/version'
 require 'roll/metadata'
 require 'roll/errors'
@@ -10,7 +10,13 @@ module Roll
   class Library
 
     # Dynamic link extension.
-    DLEXT = '.' + ::Config::CONFIG['DLEXT']
+    #DLEXT = '.' + ::Config::CONFIG['DLEXT']
+
+    #
+    SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
+
+    #
+    SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
 
     # Get an instance of a library by name, or name and version.
     # Libraries are singleton, so once loaded the same object is
@@ -100,23 +106,37 @@ module Roll
       @released ||= load_released
     end
 
-    # Does this library have this library +file+?
-    #--
-    # TODO: Rename to #find (?)
-    #++
-    def include?(file)
+    # Find first matching +file+.
+
+    def find(file)
       case File.extname(file)
       when '.rb', DLEXT
         find = File.join(lookup_glob, file)
       else
-        find = File.join(lookup_glob, "{#{name}/,}" + file + '{' + ".rb,#{DLEXT}" + '}')
+        find = File.join(lookup_glob, file + SUFFIX_PATTERN #'{' + ".rb,#{DLEXT}" + '}')
       end
+      Dir[find].first
+    end
+
+    # Does this library have a matching +file+? If so, the full-path
+    # of the file is returned.
+    #
+    # Unlike #find, this also matches within the library directory
+    # itself, eg. <tt>lib/foo/*</tt>. It used by #aquire.
+    #
+    def include?(file)
+      case File.extname(file)
+      when '.rb', DLEXT
+        find = File.join(lookup_glob, "{#{name}/,}" + file)
+      else
+        find = File.join(lookup_glob, "{#{name}/,}" + file + SUFFIX_PATTERN  #'{' + ".rb,#{DLEXT}" + '}')
+       end
       Dir[find].first
     end
 
     #
     def require(file)
-      if path = include?(file)
+      if path = find(file)
         require_absolute(path)
       else
         load_error = LoadError.new("no such file to require -- #{name}:#{file}")
@@ -140,7 +160,7 @@ module Roll
 
     #
     def load(file, wrap=nil)
-      if path = include?(file)
+      if path = find(file)
         load_absolute(path, wrap)
       else
         load_error = LoadError.new("no such file to load -- #{name}:#{file}")
