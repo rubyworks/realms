@@ -1,16 +1,18 @@
 = RELEASE HISTORY
 
-== 1.0.0 / 2009-08-24
+== 1.0 / 2009-12-25
 
-Rewrote some of the underlying system. Roll is now complian
-with the "Ruby Way" i.e. using $LOAD_PATH.
+Roll is finally ready for the masses. This release overhauls
+the underlying system, which is now blazing fast, supports
+customizable library environments, and banashes all traces
+of package management to the domain of other tools.
 
 Changes:
 
-* Major overhaul of underlying system.
-* Roll now utilized $LOAD_PATH in standard fashion.
-* Added in SCM-based package manager.
+* Overhauled the entire underlying system.
+* Loading is now blazing fast, as is startup time.
 * Metadata is now using POM meta/ standard.
+* Environments provide selectable sets of available libraries.
 
 
 == 0.9.4 / 2008-06-05
