@@ -18,16 +18,28 @@ module Roll
 
     #
     def execute
-      cmd = ARGV.shift #find{ |e| e !~ /^\-/ }
+      cmd = ARGV.find{ |e| e !~ /^\-/ }
 
       options = {}
 
       parser  = OptionParser.new
 
+      parser.banner = "Usage: roll [COMMAND]"
+
       __send__("#{cmd}_optparse", parser, options) if cmd
 
+      if !cmd
+        parser.separator "Commands:"
+        parser.separator "    in  " + (" " * 29) + "Roll directory into current environment."
+        parser.separator "    out " + (" " * 29) + "Remove directory from current environment"
+        parser.separator "    env " + (" " * 29) + "Show or change current environment"
+        parser.separator "    sync" + (" " * 29) + "Synchronize environment indexes"
+        parser.separator "    path" + (" " * 29) + "Output bin PATH list"
+        parser.separator "Options:"
+      end
+
       parser.on_tail("--help", "-h", "Display this help message.") do
-        puts op
+        puts parser
         exit
       end
 
@@ -58,6 +70,7 @@ module Roll
     def in_optparse(op, options)
       op.banner = "Usage: roll in [PATH]"
       op.separator "Insert path into current environment."
+      op.separator "Options:"
       op.on("--depth", "-d [INTEGER]") do |int|
         options[:depth] = int
       end
