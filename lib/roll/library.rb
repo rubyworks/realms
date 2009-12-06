@@ -13,7 +13,8 @@ module Roll
     #DLEXT = '.' + ::Config::CONFIG['DLEXT']
 
     #
-    SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
+    #SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
+    SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
 
     #
     SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
@@ -110,10 +111,10 @@ module Roll
 
     def find(file)
       case File.extname(file)
-      when '.rb', DLEXT
+      when *SUFFIXES
         find = File.join(lookup_glob, file)
       else
-        find = File.join(lookup_glob, file + SUFFIX_PATTERN #'{' + ".rb,#{DLEXT}" + '}')
+        find = File.join(lookup_glob, file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
       end
       Dir[find].first
     end
@@ -122,14 +123,14 @@ module Roll
     # of the file is returned.
     #
     # Unlike #find, this also matches within the library directory
-    # itself, eg. <tt>lib/foo/*</tt>. It used by #aquire.
+    # itself, eg. <tt>lib/foo/*</tt>. It is used by #aquire.
     #
     def include?(file)
       case File.extname(file)
-      when '.rb', DLEXT
+      when *SUFFIXES
         find = File.join(lookup_glob, "{#{name}/,}" + file)
       else
-        find = File.join(lookup_glob, "{#{name}/,}" + file + SUFFIX_PATTERN  #'{' + ".rb,#{DLEXT}" + '}')
+        find = File.join(lookup_glob, "{#{name}/,}" + file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
        end
       Dir[find].first
     end
