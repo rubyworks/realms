@@ -2,6 +2,8 @@ require 'roll'
 #require 'roll/platform'
 require 'optparse'
 
+# TODO: clean command to remove dead directories from locals
+
 module Roll
 
   # = Command-line Interface
@@ -45,10 +47,12 @@ module Roll
 
       parser.parse!
 
+      ARGV.shift # remove command
+
       if cmd
          __send__(cmd, ARGV, options)
       else
-        # no command
+        # no command ?
       end
     end
 
@@ -122,10 +126,10 @@ module Roll
 
     #
     def out(args, opts)
-      path = args.first
+      path = File.expand_path(args.first || Dir.pwd)
       path, file = *Roll.out(path)
-      puts "#{path}"
-      puts "  x <- #{file}"
+      puts "#{file}"
+      puts "  '-> #{path} -> [x]"
     end
 
     # This script builds a list of all roll-ready bin locations

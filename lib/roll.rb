@@ -45,6 +45,7 @@ module Roll
 
     locals = env.locals
     locals.delete(path)
+    locals.save
 
     env.sync
     env.save
