@@ -32,11 +32,12 @@ module Roll
 
       if !cmd
         parser.separator "Commands:"
-        parser.separator "    in  " + (" " * 29) + "Roll directory into current environment."
-        parser.separator "    out " + (" " * 29) + "Remove directory from current environment"
-        parser.separator "    env " + (" " * 29) + "Show or change current environment"
-        parser.separator "    sync" + (" " * 29) + "Synchronize environment indexes"
-        parser.separator "    path" + (" " * 29) + "Output bin PATH list"
+        parser.separator "    in    " + (" " * 29) + "Roll directory into current environment"
+        parser.separator "    out   " + (" " * 29) + "Remove directory from current environment"
+        parser.separator "    env   " + (" " * 29) + "Show or change current environment"
+        parser.separator "    index " + (" " * 29) + "Show current environment index"
+        parser.separator "    sync  " + (" " * 29) + "Synchronize environment indexes"
+        parser.separator "    path  " + (" " * 29) + "Output bin PATH list"
         parser.separator "Options:"
       end
 
@@ -60,6 +61,13 @@ module Roll
     def env_optparse(op, options)
       op.banner = "Usage: roll env [NAME]"
       op.separator "Show or switch current environment."
+      op
+    end
+
+    #
+    def index_optparse(op, options)
+      op.banner = "Usage: roll index [NAME]"
+      op.separator "Show current environment index."
       op
     end
 
@@ -98,6 +106,12 @@ module Roll
     #
     def env(args, opts)
       puts Roll.env(*args)
+    end
+
+    # Show/Change current environment.
+    #
+    def index(args, opts)
+      puts Roll.index(*args)
     end
 
     # Synchronize ledgers.

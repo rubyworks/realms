@@ -14,6 +14,15 @@ module Roll
     env
   end
 
+  def self.index(name=nil)
+    if name
+      env = Environment.new(name)
+    else
+      env = Environment.new
+    end
+    env.to_h.to_yaml
+  end
+
   # Synchronize an environment by +name+. If a +name+
   # is not given the current environment is synchronized.
 

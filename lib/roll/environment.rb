@@ -148,7 +148,14 @@ module Roll
     end
 =end
 
+    def to_s
+      str = ""
+      locals.each do |(path, depth)|
+        str << "#{path}  #{depth}\n"
+      end
+      str
+    end
+
   end
 
 end
-
