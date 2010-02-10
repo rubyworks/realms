@@ -34,7 +34,7 @@ module Roll
         parser.separator "Commands:"
         parser.separator "    in    " + (" " * 29) + "Roll directory into current environment"
         parser.separator "    out   " + (" " * 29) + "Remove directory from current environment"
-        parser.separator "    env   " + (" " * 29) + "Show or change current environment"
+        parser.separator "    env   " + (" " * 29) + "Show current environment"
         parser.separator "    index " + (" " * 29) + "Show current environment index"
         parser.separator "    sync  " + (" " * 29) + "Synchronize environment indexes"
         parser.separator "    path  " + (" " * 29) + "Output bin PATH list"
@@ -60,7 +60,7 @@ module Roll
     #
     def env_optparse(op, options)
       op.banner = "Usage: roll env [NAME]"
-      op.separator "Show or switch current environment."
+      op.separator "Show current environment."
       op
     end
 

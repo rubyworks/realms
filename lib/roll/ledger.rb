@@ -17,6 +17,10 @@ module Roll
 
       @environment.each do |name, paths|
         paths.each do |path|
+          unless File.directory?(path)
+            warn "roll: invalid path for #{name} -- #{path}"
+            next
+          end
           lib = Library.new(path, name)
           @index[name] << lib if lib.active?
         end

@@ -25,7 +25,6 @@ module Roll
 
     def self.instance(name, constraint=nil)
       name = name.to_s
-
       #raise "no library -- #{name}" unless ledger.include?(name)
       return nil unless ledger.include?(name)
 
