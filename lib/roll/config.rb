@@ -16,6 +16,22 @@ module ::Config
     dirs.collect{ |d| File.expand_path(d) }
   )
 
+  WIN_PATTERNS = [
+    /bccwin/i,
+    /cygwin/i,
+    /djgpp/i,
+    /mingw/i,
+    /mswin/i,
+    /wince/i,
+  ]
+
+  # Is this a windows platform?
+  def self.win_platform?
+    @win_platform ||= (
+      !!WIN_PATTERNS.find{ |r| RUBY_PLATFORM =~ r }
+    )
+  end
+
   # Return the path to the data directory associated with the given
   # library name.
   #--
