@@ -2,7 +2,9 @@ require 'roll'
 #require 'roll/platform'
 require 'optparse'
 
-# TODO: clean command to remove dead directories from locals
+#--
+# TODO: clean command to remove dead directories from environment
+#++
 
 module Roll
 
@@ -10,17 +12,19 @@ module Roll
   #
   class Command
 
-    def self.run
-      new.execute
+    # Initialize and execute command.
+    def self.main(*argv)
+      new(*argv).execute
     end
 
-    #
-    def initialize
+    # New Command.
+    def initialize(*argv)
+      @argv = argv
     end
 
     #
     def execute
-      cmd = ARGV.find{ |e| e !~ /^\-/ }
+      cmd = @argv.find{ |e| e !~ /^\-/ }
 
       options = {}
 
