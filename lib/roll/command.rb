@@ -32,12 +32,13 @@ module Roll
 
       if !cmd
         parser.separator "Commands:"
-        parser.separator "    in    " + (" " * 29) + "Roll directory into current environment"
-        parser.separator "    out   " + (" " * 29) + "Remove directory from current environment"
-        parser.separator "    env   " + (" " * 29) + "Show current environment"
-        parser.separator "    index " + (" " * 29) + "Show current environment index"
-        parser.separator "    sync  " + (" " * 29) + "Synchronize environment indexes"
-        parser.separator "    path  " + (" " * 29) + "Output bin PATH list"
+        parser.separator "    in     " + (" " * 29) + "Roll directory into current environment."
+        parser.separator "    out    " + (" " * 29) + "Remove directory from current environment."
+        parser.separator "    env    " + (" " * 29) + "Show current environment."
+        parser.separator "    index  " + (" " * 29) + "Show current environment index."
+        parser.separator "    sync   " + (" " * 29) + "Synchronize environment indexes."
+        parser.separator "    path   " + (" " * 29) + "Output bin PATH list."
+        parser.separator "    verify " + (" " * 29) + "Verify dependencies in current enironment."
         parser.separator "Options:"
       end
 
@@ -102,6 +103,13 @@ module Roll
       op
     end
 
+    #
+    def verify_optparse(op, options)
+      op.banner = "Usage: roll verify"
+      op.separator "Verify dependencies in current environment."
+      op
+    end
+
     # Show/Change current environment.
     #
     def env(args, opts)
@@ -144,6 +152,14 @@ module Roll
       path, file = *Roll.out(path)
       puts "#{file}"
       puts "  '-> #{path} -> [x]"
+    end
+
+    #
+    def verify(args, opts)
+      list = Roll.verify
+      list.each do |(name, constraint)|
+        puts "#{name} #{constraint}"
+      end
     end
 
     # This script builds a list of all roll-ready bin locations
