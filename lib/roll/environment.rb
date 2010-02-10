@@ -1,20 +1,20 @@
 require 'yaml'
 require 'fileutils'
-require 'roll/xdg'
-require 'roll/locals'
+#require 'roll/xdg'
+require 'roll/config'
 
 module Roll
 
-  # TODO: Using a hash table means un-order, fix?
+  # An Environment represents a set of libraries.
+  #
   class Environment
 
-    include Enumerable
-
     # Default environment name.
-    DEFAULT = 'production'
+    DEFAULT = 'production'  # 'local' ?
 
     # Location of environment files.
-    DIR = XDG.config_home, 'roll', 'index'
+    #DIR = XDG.config_home, 'roll', 'index'
+    DIR = ::Config.find_config('roll', 'index').first
 
     # Current environment name.
     def self.current
@@ -23,119 +23,120 @@ module Roll
 
     # List of available environments.
     def self.list
-      Locals.list
+      Dir[File.join(DIR, '*')].map do |file|
+        File.basename(file)
+      end
     end
+
+    # Environment name.
+    attr :name
 
     # Instantiate environment.
     def initialize(name=nil)
-      @name = name || self.class.current
-      reload
-    end
-
-    # Current ledger name.
-    def name
-      @name
-    end
-
-    # Environment file (full-path).
-    def file
-      @file ||= File.join(DIR, name)
-    end
-
-    # Load the environment file.
-    def reload
-      if File.exist?(file)
-        @table = YAML.load(File.new(file))
-      else
-        @table = sync
-        save
-      end
-    end
-
-    # Look through the environment table.
-    def each(&block)
-      @table.each(&block)
-    end
-
-    # Number of entries.
-    def size
-      @table.size
+      @name = name || Environment.current
     end
 
     #
-    def to_h
-      @table.dup
-    end
-
-    # Save environment file.
-    def save
-      out = @table.to_yaml
-      if File.exist?(file)
-        yaml = YAML.load(File.new(file))
-        if out != yaml
-          File.open(file, 'w'){ |f| f << out }
-          #puts "updated: #{name}"
-          true
-        else
-          #puts "current: #{name}"
-          false
-        end
-      else
-        dir = File.dirname(file)
-        FileUtils.mkdir_p(dir) unless File.exist?(dir)
-        File.open(file, 'w'){ |f| f << out }
-        #puts "created: #{name}"
-        true
-      end
+    def index
+      @index ||= Index.new(name)
     end
 
     #
-    def locals
-      @locals ||= Locals.new(name)
+    def lookup
+      @lookup ||= Lookup.new(name)
     end
 
-    #
+    # Synchronize index to lookup table.
     def sync
-      list = Hash.new{ |h,k| h[k] = [] }
-      sync_locations.each do |path|
-        name = load_name(path)
-        #vers = load_version(path)
-        if name #&& vers
-          list[name] << path
-        end
-      end
-      @table = list
+      index.reset(lookup.index)
+    end
+
+    # Save index.
+    def save
+      index.save
     end
 
     #
-    def sync_locations
-      locs = []
-      #if File.exist?(file)
-        locals.each do |dir, depth|
-          locs << find_projects(dir, depth)
-        end
-      #end
-      locs.flatten
-    end
+    def each(&block) ; index.each(&block) ; end
 
-    # Search a given directory for projects upto a given depth.
-    # Projects directories are determined by containing a
-    # 'meta' or '.meta' directory.
-    def find_projects(dir, depth=3)
-      depth = Integer(depth || 3)
-      depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
-      glob = File.join(dir, "{#{depth}}", "{.meta,meta}")
-      meta_locations = Dir[glob]
-      meta_locations.map{ |d| d.chomp('/meta').chomp('/.meta') }
-    end
+    #
+    def size ; index.size ; end
 
-    # Get library name.
-    def load_name(path)
-      file = Dir[File.join(path, '{,.}meta', 'name')].first
-      if file
-        File.read(file).strip  # TODO: handle YAML
+    # Index tracks the name and location of each library
+    # in an environment.
+    #--
+    # TODO: Using a hash table means un-order, fix?
+    #++
+    class Index
+      include Enumerable
+
+      # Instantiate environment.
+      def initialize(name=nil)
+        @name = name || Environment.current
+        reload
       end
-    end
+
+      # Current ledger name.
+      def name
+        @name
+      end
+
+      # Environment file (full-path).
+      def file
+        @file ||= File.join(DIR, name)
+      end
+
+      # Load the environment file.
+      def reload
+        #if File.exist?(file)
+          @table = YAML.load(File.new(file))
+        #else
+        #  @table = sync
+        #  save
+        #end
+      end
+
+      #
+      def reset(index)
+        @table = index
+      end
+
+      # Look through the environment table.
+      def each(&block)
+        @table.each(&block)
+      end
+
+      # Number of entries.
+      def size
+        @table.size
+      end
+
+      #
+      def to_h
+        @table.dup
+      end
+
+      # Save environment file.
+      def save
+        out = @table.to_yaml
+        if File.exist?(file)
+          yaml = YAML.load(File.new(file))
+          if out != yaml
+            File.open(file, 'w'){ |f| f << out }
+            #puts "updated: #{name}"
+            true
+          else
+            #puts "current: #{name}"
+            false
+          end
+        else
+          dir = File.dirname(file)
+          FileUtils.mkdir_p(dir) unless File.exist?(dir)
+          File.open(file, 'w'){ |f| f << out }
+          #puts "created: #{name}"
+          true
+        end
+      end
 
 =begin
     # Get library version.
@@ -148,14 +149,141 @@ module Roll
     end
 =end
 
-    def to_s
-      str = ""
-      locals.each do |(path, depth)|
-        str << "#{path}  #{depth}\n"
+      def to_s
+        str = ""
+        locals.each do |(path, depth)|
+          str << "#{path}  #{depth}\n"
+        end
+        str
       end
-      str
+
     end
 
-  end
+    # The Lookup class provides a table of paths which
+    # make it easy to quickly populate and refresh the
+    # environment index.
+
+    class Lookup
+      include Enumerable
+
+      #
+      #DIR = XDG.config_home, 'roll', 'locals'
+      DIR = ::Config.find_config('roll', 'locals').first
+
+      #
+      def initialize(name=nil)
+        @name = name || Environment.current
+        reload
+      end
+
+      #
+      def name
+        @name
+      end
+
+      #
+      def file
+        @file ||= File.join(DIR, name)
+      end
+
+      #
+      def reload
+        t = []
+        if File.exist?(file)
+          lines = File.readlines(file)
+          lines.each do |line|
+            line = line.strip
+            path, depth = *line.split(/\s+/)
+            next if line =~ /^\s*$/  # blank
+            next if line =~ /^\#/    # comment
+            dir, depth = *line.split(/\s+/)
+            t << [path, (depth || 3).to_i]
+          end
+        else
+          t = []
+        end
+        @table = t
+      end
+
+      #
+      def each(&block)
+        @table.each(&block)
+      end
+
+      #
+      def size
+        @table.size
+      end
+
+      #
+      def append(path, depth=3)
+        path  = File.expand_path(path)
+        depth = (depth || 3).to_i
+        @table = @table.reject{ |(p, d)| path == p }
+        @table.push([path, depth])
+      end
+
+      #
+      def delete(path)
+        @table.reject!{ |p,d| path == p }
+      end
+
+      #
+      def save
+        out = @table.map do |(path, depth)|
+          "#{path}   #{depth}"
+        end
+        dir = File.dirname(file)
+        FileUtils.mkdir_p(dir) unless File.exist?(dir)
+        File.open(file, 'w') do |f|
+          f <<  out.join("\n")
+        end
+      end
+
+      # Generate index from lookup list.
+      def index
+        set = Hash.new{ |h,k| h[k] = [] }
+        locate.each do |path|
+          name = load_name(path)
+          #vers = load_version(path)
+          if name #&& vers
+            set[name] << path
+          end
+        end
+        set
+      end
+
+      #
+      def locate
+        locs = []
+        each do |dir, depth|
+          locs << find_projects(dir, depth)
+        end
+        locs.flatten
+      end
+
+      # Search a given directory for projects upto a given depth.
+      # Projects directories are determined by containing a
+      # 'meta' or '.meta' directory.
+      def find_projects(dir, depth=3)
+        depth = Integer(depth || 3)
+        depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
+        glob = File.join(dir, "{#{depth}}", "{.meta,meta}")
+        meta_locations = Dir[glob]
+        meta_locations.map{ |d| d.chomp('/meta').chomp('/.meta') }
+      end
+
+      # Get library name.
+      def load_name(path)
+        file = Dir[File.join(path, '{,.}meta', 'name')].first
+        if file
+          File.read(file).strip  # TODO: handle YAML
+        end
+      end
+
+    end#class Lookup
+
+  end#class Environment
 
 end
+
