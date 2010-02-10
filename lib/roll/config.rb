@@ -2,6 +2,20 @@ require 'rbconfig'
 
 module ::Config
 
+  HOME = File.expand_path('~') # ENV['HOME']
+
+  # Location of user's personal config directory.
+  CONFIG_HOME = File.expand_path(ENV['XDG_CONFIG_HOME'] || File.join(HOME, '.config'))
+
+  # List of user shared system config directories.
+  CONFIG_DIRS = (
+    dirs = ENV['XDG_CONFIG_DIRS'].to_s.split(/[:;]/)
+    if dirs.empty?
+      dirs = File.join(Config::CONFIG['sysconfdir'], 'xdg')
+    end
+    dirs.collect{ |d| File.expand_path(d) }
+  )
+
   # Return the path to the data directory associated with the given
   # library name.
   #--
@@ -28,5 +42,23 @@ module ::Config
       File.join(CONFIG['confdir'], name)
     end
   end
+
+  # Lookup configuration file.
+
+  def self.find_config(*glob)
+    flag = 0
+    flag = (flag | glob.pop) while Fixnum === glob.last
+    find = []
+    [CONFIG_HOME, *CONFIG_DIRS].each do |dir|
+      path = File.join(dir, *glob)
+      if block_given?
+        find.concat(Dir.glob(path, flag).select(&block))
+      else
+        find.concat(Dir.glob(path, flag))
+      end
+    end
+    find
+  end
+
 end
 
