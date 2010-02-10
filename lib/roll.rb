@@ -15,19 +15,19 @@ module Roll
   end
 
   def self.index(name=nil)
-    if name
-      env = Environment.new(name)
-    else
-      env = Environment.new
-    end
-    env.to_h.to_yaml
+    #if name
+    #  env = Environment.new(name)
+    #else
+    #  env = Environment.new
+    #end
+    env(name).index.to_h.to_yaml
   end
 
   # Synchronize an environment by +name+. If a +name+
   # is not given the current environment is synchronized.
 
   def self.sync(name=nil)
-    env = name ? Environment.new(name) : Environment.new
+    env = env(name)
     env.sync
     env.save
   end
@@ -37,14 +37,14 @@ module Roll
   def self.in(path, depth=3)
     env = Environment.new
 
-    locals = env.locals
-    locals.append(path, depth)
-    locals.save
+    lookup = env.lookup
+    lookup.append(path, depth)
+    lookup.save
 
     env.sync
     env.save
 
-    return path, locals.file
+    return path, lookup.file
   end
 
   # Remove path from current environment.
@@ -52,14 +52,14 @@ module Roll
   def self.out(path)
     env = Environment.new
 
-    locals = env.locals
-    locals.delete(path)
-    locals.save
+    lookup = env.lookup
+    lookup.delete(path)
+    lookup.save
 
     env.sync
     env.save
 
-    return path, locals.file
+    return path, lookup.file
   end
 
   # Go thru each roll lib and collect bin paths.
