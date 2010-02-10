@@ -62,6 +62,17 @@ module Roll
     #
     def size ; index.size ; end
 
+    #
+    def to_s
+      str = ""
+      lookup.each do |(path, depth)|
+        str << "#{path}  #{depth}\n"
+      end
+      str
+    end
+
+
+
     # Index tracks the name and location of each library
     # in an environment.
     #--
@@ -148,14 +159,6 @@ module Roll
       end
     end
 =end
-
-      def to_s
-        str = ""
-        locals.each do |(path, depth)|
-          str << "#{path}  #{depth}\n"
-        end
-        str
-      end
 
     end
 

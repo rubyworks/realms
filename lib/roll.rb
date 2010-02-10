@@ -75,5 +75,13 @@ module Roll
     binpaths
   end
 
+  # Verify dependencies are in current environment.
+  #--
+  # TODO: Instead of Dir.pwd, lookup project root.
+  #++
+  def self.verify(root=Dir.pwd)   
+    Library.new(root).verify
+  end
+
 end
 
