@@ -13,8 +13,11 @@ module Roll
     DEFAULT = 'production'  # 'local' ?
 
     # Location of environment files.
+    #--
+    # Perhaps combine all enrtries instead?
+    #++
+    DIR = ::Config.find_config('roll').first
     #DIR = XDG.config_home, 'roll', 'index'
-    DIR = ::Config.find_config('roll', 'index').first
 
     # Current environment name.
     def self.current
@@ -94,7 +97,7 @@ module Roll
 
       # Environment file (full-path).
       def file
-        @file ||= File.join(DIR, name)
+        @file ||= File.join(DIR, name, 'index')
       end
 
       # Load the environment file.
@@ -170,8 +173,7 @@ module Roll
       include Enumerable
 
       #
-      #DIR = XDG.config_home, 'roll', 'locals'
-      DIR = ::Config.find_config('roll', 'locals').first
+      #DIR = ::Config.find_config('roll').first
 
       #
       def initialize(name=nil)
@@ -186,7 +188,7 @@ module Roll
 
       #
       def file
-        @file ||= File.join(DIR, name)
+        @file ||= File.join(DIR, name, 'lookup')
       end
 
       #
