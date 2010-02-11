@@ -295,65 +295,10 @@ module Roll
 
   private
 
-    ## Get library name.
-    #def load_name
-    #  file = Dir[File.join(location, '{,.}meta', 'name')].first
-    #  if file
-    #    File.read(file).strip
-    #  end
-    #end
-
-    ## Get library version.
-    ## TODO: handle VERSION file
-    ## TODO: handle YAML
-    #def load_version
-    #  file = Dir[File.join(location, '{,.}meta', 'version')].first
-    #  if file
-    #    Version.new(File.read(file).strip)
-    #  end
-    #end
-
-    ## Get library active state.
-    #def load_active
-    #  file = Dir[File.join(location, '{,.}meta', 'active')].first
-    #  if file
-    #    case File.read(file).strip.downcase
-    #    when 'false', 'no'
-    #      false
-    #    else
-    #      true
-    #    end
-    #  else
-    #    true
-    #  end
-    #end
-
-    ## Get library loadpath.
-    #def load_loadpath
-    #  file = Dir[File.join(location, '{,.}meta', 'loadpath')].first
-    #  if file
-    #    val = File.read(file).strip.split(/\s*\n/)  # TODO: handle YAML
-    #    val = ['lib'] if val.empty?
-    #    val
-    #  else
-    #    ['lib']
-    #  end
-    #end
-
-    ## Get library release date.
-    #def load_released
-    #  file = Dir[File.join(location, '{,.}meta', 'released')].first
-    #  if file
-    #    File.read(file).strip
-    #  else
-    #    "1900-01-01"  # TODO: default to what?
-    #  end
-    #end
-
     #
-    def lookup_glob
-      @lookup_glob ||= File.join(location, '{' + loadpath.join(',') + '}')
-    end
+    #def lookup_glob
+    #  @lookup_glob ||= File.join(location, '{' + loadpath.join(',') + '}')
+    #end
 
     #
     def clean_backtrace(error)
