@@ -1,1 +1,1 @@
-puts "Try Me v1.0"
+$message = "Try Me v1.0"

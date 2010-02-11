@@ -1,0 +1,33 @@
+= Library Instances
+
+To demonstrate the Library instance, we first need to load the Library library ;)
+
+  require 'roll/library'
+
+A Library class can be initialized given the location of the "project".
+
+  tryme10 = Roll::Library.new('../fixture/tryme/1.0')
+  tryme11 = Roll::Library.new('../fixture/tryme/1.1')
+
+With a library instance in hand we can query it for primary information, or
+metadata, about itself.
+
+  tryme10.name.assert == "tryme"
+  tryme11.name.assert == "tryme"
+
+  tryme10.version.to_s.assert == "1.0"
+  tryme11.version.to_s.assert == "1.1"
+
+Secondary and arbitrary information can be queried vie the #metadata method.
+
+  tryme10.metadata.homepage.assert == "http://proutils.github.com/roll/"
+  tryme11.metadata.homepage.assert == "http://proutils.github.com/roll/"
+
+Of course, the most important function of a library is to load/require a file.
+
+  tryme10.load('tryme.rb')
+  $message.assert == "Try Me v1.0"
+
+  tryme11.load('tryme.rb')
+  $message.assert == "Try Me v1.1"
+
