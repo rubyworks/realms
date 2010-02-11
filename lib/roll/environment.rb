@@ -75,7 +75,6 @@ module Roll
     end
 
 
-
     # Index tracks the name and location of each library
     # in an environment.
     #--
@@ -86,7 +85,8 @@ module Roll
 
       # Instantiate environment.
       def initialize(name=nil)
-        @name = name || Environment.current
+        @name  = name || Environment.current
+        @table = Hash.new{ |h,k| h[k] = [] }
         reload
       end
 
@@ -102,12 +102,12 @@ module Roll
 
       # Load the environment file.
       def reload
-        #if File.exist?(file)
-          @table = YAML.load(File.new(file))
-        #else
-        #  @table = sync
-        #  save
-        #end
+        File.readlines(file).each do |line|
+          line = line.strip
+          next if line.empty?
+          name, path = *line.split(/\s+/)
+          @table[name.strip] << path.strip
+        end
       end
 
       #
@@ -132,10 +132,16 @@ module Roll
 
       # Save environment file.
       def save
-        out = @table.to_yaml
+        out = ""
+        max = @table.map{ |name, paths| name.size }.max
+        @table.map do |name, paths|
+          paths.each do |path|
+            out << "%-#{max}s %s\n" % [name, path]
+          end
+        end
         if File.exist?(file)
-          yaml = YAML.load(File.new(file))
-          if out != yaml
+          data = File.read(file)
+          if out != data
             File.open(file, 'w'){ |f| f << out }
             #puts "updated: #{name}"
             true

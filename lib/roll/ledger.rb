@@ -158,10 +158,11 @@ module Roll
 
     #
     def constrain(lib)
-      if Array === self[lib.name]
+      cmp = self[lib.name]
+      if Array === cmp
         self[lib.name] = lib
       else
-        if lib.version != self[lib.name].version
+        if lib.version != cmp.version
           raise VersionError
         end
       end
@@ -185,37 +186,40 @@ module Roll
       # try the load stack first
       load_stack.reverse_each do |lib|
         if file = lib.find(path)
+          return [lib, file] unless $VERBOSE
           matches << [lib, file]
-          break
         end
       end
 
-      if matches.empty?
-        each do |name, libs|
-          case libs
-          when Array
-            pos = []
-            libs.each do |lib|
-              if file = lib.find(path)
-                pos << [lib, file]
-              end
-            end
-            unless pos.empty?
-              latest = pos.sort{ |a,b| b[0].version <=> a[0].version }.first
-              matches << latest
-              break unless $VERBOSE #$WARN
-            end
-          else
-            lib = libs
-            if file = lib.find(path)
-              matches << [lib, file]
-              break unless $VERBOSE
-            end
+      # TODO: Perhaps the selected and unselected should be kept in separate lists?
+      unselected, selected = *@index.partition{ |name, libs| Array === libs }
+
+      selected.each do |(name, lib)|
+        if file = lib.find(path)
+          #matches << [lib, file]
+          #return matches.first unless $VERBOSE
+          return [lib, file] unless $VERBOSE
+          matches << [lib, file]
+        end
+      end
+
+      unselected.each do |(name, libs)|
+        pos = []
+        libs.each do |lib|
+          if file = lib.find(path)
+            pos << [lib, file]
           end
         end
-        if matches.size > 1
-          warn_multiples(path, matches)
+        unless pos.empty?
+          latest = pos.sort{ |a,b| b[0].version <=> a[0].version }.first
+          return latest unless $VERBOSE
+          matches << latest
+          #return matches.first unless $VERBOSE
         end
+      end
+
+      if matches.size > 1
+        warn_multiples(path, matches)
       end
 
       matches.first

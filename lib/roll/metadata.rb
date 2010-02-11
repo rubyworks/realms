@@ -83,18 +83,30 @@ module Roll
 
   private
 
-    #--
-    # TODO: handle YAML
-    #++
+    #
     def read(name)
       file = Dir[File.join(location, "{meta,.meta}", name.to_s)].first
       if file
-        File.read(file).strip
+        text = File.read(file)
+        if text =~ /^---/
+          require_yaml
+          YAML.load(text)
+        else
+          text.strip
+        end
       else
         nil
       end
     end
 
+    #
+    def require_yaml
+      @require_yaml ||=(
+        require 'yaml'
+        true
+      )
+    end
   end
 
 end
+

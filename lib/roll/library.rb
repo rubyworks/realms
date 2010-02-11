@@ -14,7 +14,7 @@ module Roll
 
     #
     #SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
-    SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
+    SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
 
     #
     SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
@@ -120,14 +120,25 @@ module Roll
 
     # Find first matching +file+.
 
-    def find(file)
-      case File.extname(file)
-      when *SUFFIXES
-        find = File.join(lookup_glob, file)
-      else
-        find = File.join(lookup_glob, file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
+    #def find(file, suffix=true)
+    #  case File.extname(file)
+    #  when *SUFFIXES
+    #    find = File.join(lookup_glob, file)
+    #  else
+    #    find = File.join(lookup_glob, file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
+    #  end
+    #  Dir[find].first
+    #end
+
+    #
+    def find(file, suffix=true)
+      loadpath.each do |lpath|
+        SUFFIXES.each do |ext|
+          f = File.join(location, lpath, file + ext)
+          return f if File.file?(f)
+        end
       end
-      Dir[find].first
+      nil
     end
 
     # Does this library have a matching +file+? If so, the full-path
@@ -137,14 +148,26 @@ module Roll
     # itself, eg. <tt>lib/foo/*</tt>. It is used by #aquire.
     #
     def include?(file)
-      case File.extname(file)
-      when *SUFFIXES
-        find = File.join(lookup_glob, "{#{name}/,}" + file)
-      else
-        find = File.join(lookup_glob, "{#{name}/,}" + file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
-       end
-      Dir[find].first
+      loadpath.each do |lpath|
+        SUFFIXES.each do |ext|
+          f = File.join(location, lpath, name, file + ext)
+          return f if File.file?(f)
+          f = File.join(location, lpath, file + ext)
+          return f if File.file?(f)
+        end
+      end
+      nil
     end
+
+    #def include?(file)
+    #  case File.extname(file)
+    #  when *SUFFIXES
+    #    find = File.join(lookup_glob, "{#{name}/,}" + file)
+    #  else
+    #    find = File.join(lookup_glob, "{#{name}/,}" + file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
+    #   end
+    #  Dir[find].first
+    #end
 
     #
     def require(file)
@@ -312,7 +335,7 @@ module Roll
 
     #
     def lookup_glob
-      File.join(location, '{'+loadpath.join(',')+'}')
+      @lookup_glob ||= File.join(location, '{' + loadpath.join(',') + '}')
     end
 
     #
