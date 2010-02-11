@@ -109,7 +109,7 @@ module Roll
 
     #
     def load(path, wrap=nil)
-      lib, file = *match(path)
+      lib, file = *match(path, false)
       if lib && file
         constrain(lib)
         lib.load_absolute(file, wrap)
@@ -171,21 +171,21 @@ module Roll
   private
 
     # Find require matches.
-    def match(path)
+    def match(path, suffix=true)
       matches = []
 
       if path.index(':') # a specific library
         name, path = path.split(':')
         lib  = Library.open(name)
         if lib.active?
-          file = lib.find(path)
+          file = lib.find(path, suffix)
           return lib, file
         end
       end
 
       # try the load stack first
       load_stack.reverse_each do |lib|
-        if file = lib.find(path)
+        if file = lib.find(path, suffix)
           return [lib, file] unless $VERBOSE
           matches << [lib, file]
         end
@@ -195,7 +195,7 @@ module Roll
       unselected, selected = *@index.partition{ |name, libs| Array === libs }
 
       selected.each do |(name, lib)|
-        if file = lib.find(path)
+        if file = lib.find(path, suffix)
           #matches << [lib, file]
           #return matches.first unless $VERBOSE
           return [lib, file] unless $VERBOSE
@@ -206,7 +206,7 @@ module Roll
       unselected.each do |(name, libs)|
         pos = []
         libs.each do |lib|
-          if file = lib.find(path)
+          if file = lib.find(path, suffix)
             pos << [lib, file]
           end
         end

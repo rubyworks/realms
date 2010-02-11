@@ -130,11 +130,19 @@ module Roll
     #  Dir[find].first
     #end
 
+    # Standard loadpath search.
     #
     def find(file, suffix=true)
-      loadpath.each do |lpath|
+      if suffix
         SUFFIXES.each do |ext|
-          f = File.join(location, lpath, file + ext)
+          loadpath.each do |lpath|
+            f = File.join(location, lpath, file + ext)
+            return f if File.file?(f)
+          end
+        end
+      else
+        loadpath.each do |lpath|
+          f = File.join(location, lpath, file)
           return f if File.file?(f)
         end
       end
@@ -147,12 +155,21 @@ module Roll
     # Unlike #find, this also matches within the library directory
     # itself, eg. <tt>lib/foo/*</tt>. It is used by #aquire.
     #
-    def include?(file)
-      loadpath.each do |lpath|
+    def include?(file, suffix=true)
+      if suffix
         SUFFIXES.each do |ext|
-          f = File.join(location, lpath, name, file + ext)
+          loadpath.each do |lpath|
+            f = File.join(location, lpath, name, file + ext)
+            return f if File.file?(f)
+            f = File.join(location, lpath, file + ext)
+            return f if File.file?(f)
+          end
+        end
+      else
+        loadpath.each do |lpath|
+          f = File.join(location, lpath, name, file)
           return f if File.file?(f)
-          f = File.join(location, lpath, file + ext)
+          f = File.join(location, lpath, file)
           return f if File.file?(f)
         end
       end
@@ -171,7 +188,7 @@ module Roll
 
     #
     def require(file)
-      if path = find(file)
+      if path = include?(file)
         require_absolute(path)
       else
         load_error = LoadError.new("no such file to require -- #{name}:#{file}")
@@ -195,7 +212,7 @@ module Roll
 
     #
     def load(file, wrap=nil)
-      if path = find(file)
+      if path = include?(file, false)
         load_absolute(path, wrap)
       else
         load_error = LoadError.new("no such file to load -- #{name}:#{file}")
@@ -344,7 +361,7 @@ module Roll
         error
       else
         bt = error.backtrace
-        bt = bt.reject{ |e| /roll/ =~ e }
+        bt = bt.reject{ |e| /roll/ =~ e } if bt
         error.set_backtrace(bt)
         error
       end
