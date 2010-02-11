@@ -1,6 +1,6 @@
 = RELEASE HISTORY
 
-== 1.0 / 2009-12-25
+== 1.0.0 / 2010-02-11
 
 Roll is finally ready for the masses. This release overhauls
 the underlying system, which is now blazing fast, supports
@@ -10,8 +10,8 @@ of package management to the domain of other tools.
 Changes:
 
 * Overhauled the entire underlying system.
-* Loading is now blazing fast, as is startup time.
-* Metadata is now using POM meta/ standard.
+* Start-up time is blazing fast, loading's is pretty good too.
+* Metadata uses POM standard, although not dependent (yet?).
 * Environments provide selectable sets of available libraries.
 
 
