@@ -6,8 +6,8 @@ To demonstrate the Library instance, we first need to load the Library library ;
 
 A Library class can be initialized given the location of the "project".
 
-  tryme10 = Roll::Library.new('../fixture/tryme/1.0')
-  tryme11 = Roll::Library.new('../fixture/tryme/1.1')
+  tryme10 = Roll::Library.new('../fixtures/tryme/1.0')
+  tryme11 = Roll::Library.new('../fixtures/tryme/1.1')
 
 With a library instance in hand we can query it for primary information, or
 metadata, about itself.
