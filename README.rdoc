@@ -17,7 +17,7 @@
 * home: http://proutils.github.com/roll
 
 
-== DESCRITION
+== DESCRIPTION
 
 Roll is a library manager for Ruby. With Rolls developers can run there
 programs in real time --no install phase is required for one program
@@ -52,7 +52,7 @@ b/c it has some shortcomings.)
 === Preparing your Projects
 
 For your projects to be detected by Rolls they must conform to a
-minimal [POM](http://proutils.github.com/pom) setup. In particular
+minimal POM[http://proutils.github.com/pom] setup. In particular
 the project must contain a +meta/+ directory with a +name+ and +version+
 entry. That is the bare minimum for a project to to be loadable via
 Rolls. Optionally you may provide a +loadpath+ entry if the load path 
@@ -66,7 +66,7 @@ Here are examples of Ruby Facets +meta/+ entries.
   $ cat facets/meta/name
   facets
 
-  $ cat facets/meta/verion
+  $ cat facets/meta/version
   2.8.0
 
   $ cat facets/meta/loadpath
@@ -77,15 +77,15 @@ Here are examples of Ruby Facets +meta/+ entries.
   1.8+
 
 The +ruby+ entry informs Rolls of the particular implementations and versions
-of Ruby the project should operate under sucessfully.
+of Ruby the project should operate under successfully.
 (NOTE: Rolls doesn't actually do anything with the ruby entry yet.)
 
-Lastely, an +active+ entry can be set to +false+ to tell Rolls to skip the
-project when searching for library files. See [POM](http://proutils.github.com/pom)
+Lastly, an +active+ entry can be set to +false+ to tell Rolls to skip the
+project when searching for library files. See POM[http://proutils.github.com/pom]
 for more information.
 
 
-=== Library Managment
+=== Library Management
 
 Next you need to setup an roll *environment*. The default environment
 is call +production+. You can add a library search location to it
@@ -94,7 +94,7 @@ using +roll in+. Eg.
   $ roll in /opt/ruby/
 
 As a developer you will often want to use a +development+ environment.
-To change or add and environment, modify the RUBYENV enironment variable.
+To change or add and environment, modify the RUBYENV environment variable.
 
   $ export RUBYENV="development"
 
@@ -106,10 +106,10 @@ environment is basically constructed like this:
   $ roll in ~/programs/thedeadly
   $ roll in ~/programs/transcode
 
-By default these paths will be search for POM conforming projects
+By default these paths will be searched for POM conforming projects
 up to a depth of three sub-directories. That's suitable for
 most needs. You can specify the the depth explicitly with the 
-<tt>--depth<tt> or <tt>-d</tt> option. For example, lets say you
+<tt>--depth</tt> or <tt>-d</tt> option. For example, lets say you
 just want to add a single ruby project to the current environment.
 You can do so by navigating to the root directory of a project and
 executing:
@@ -121,7 +121,7 @@ That's it. Your project is *READY-TO-ROLL*!
 
 == LEARNING MORE
 
-The above provides a breif overview of using roll. But there is more to
+The above provides a brief overview of using roll. But there is more to
 it. To get a deeper understanding of the system and how to use +roll+ to
 it fullest extent, please visit http://proutils.github.org/roll/.
 
@@ -142,7 +142,7 @@ it manually as follows:
 
 On Windows, this last line needs to be 'ruby setup.rb all'.
 
-=== Rubygems Installation
+=== RubyGems Installation
 
 We strongly recommend installing Rolls manually b/c
 Rolls is a peer to RubyGems. However, you can use Gems to
@@ -156,7 +156,7 @@ install manually.
 
 == BY THE WAY
 
-Roll was Rubyforge project #1004. She's been around a while! ;)
+Roll was RubyForge project #1004. She's been around a while! ;)
 
 
 == LICENSE & COPYRIGHT
