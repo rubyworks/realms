@@ -36,13 +36,13 @@ module Roll
 
       if !cmd
         parser.separator "Commands:"
-        parser.separator "    in     " + (" " * 29) + "Roll directory into current environment."
-        parser.separator "    out    " + (" " * 29) + "Remove directory from current environment."
-        parser.separator "    env    " + (" " * 29) + "Show current environment."
-        parser.separator "    index  " + (" " * 29) + "Show current environment index."
-        parser.separator "    sync   " + (" " * 29) + "Synchronize environment indexes."
-        parser.separator "    path   " + (" " * 29) + "Output bin PATH list."
-        parser.separator "    verify " + (" " * 29) + "Verify dependencies in current enironment."
+        parser.separator "    in  [DIR] " + (" " * 23) + "Roll directory into current environment."
+        parser.separator "    out [DIR] " + (" " * 23) + "Remove directory from current environment."
+        parser.separator "    env       " + (" " * 23) + "Show current environment."
+        parser.separator "    index     " + (" " * 23) + "Show current environment index."
+        parser.separator "    sync      " + (" " * 23) + "Synchronize environment indexes."
+        parser.separator "    path      " + (" " * 23) + "Output bin PATH list."
+        parser.separator "    verify    " + (" " * 23) + "Verify project dependencies in current environment."
         parser.separator "Options:"
       end
 

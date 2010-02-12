@@ -20,7 +20,7 @@ module Roll
     #else
     #  env = Environment.new
     #end
-    env(name).index.to_h.to_yaml
+    env(name).index.to_s
   end
 
   # Synchronize an environment by +name+. If a +name+

@@ -131,8 +131,8 @@ module Roll
         @table.dup
       end
 
-      # Save environment file.
-      def save
+      #
+      def to_s
         out = ""
         max = @table.map{ |name, paths| name.size }.max
         @table.map do |name, paths|
@@ -140,6 +140,18 @@ module Roll
             out << "%-#{max}s %s\n" % [name, path]
           end
         end
+        out
+      end
+
+      # Save environment file.
+      def save
+        out = to_s
+        #max = @table.map{ |name, paths| name.size }.max
+        #@table.map do |name, paths|
+        #  paths.each do |path|
+        #    out << "%-#{max}s %s\n" % [name, path]
+        #  end
+        #end
         file = File.join(::Config::CONFIG_HOME, 'roll', name, 'index')
         if File.exist?(file)
           data = File.read(file)
