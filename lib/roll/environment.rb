@@ -16,8 +16,7 @@ module Roll
     #--
     # Perhaps combine all enrtries instead?
     #++
-    DIR = ::Config.find_config('roll').first
-    #DIR = XDG.config_home, 'roll', 'index'
+    DIRS = ::Config.find_config('roll')
 
     # Current environment name.
     def self.current
@@ -97,16 +96,18 @@ module Roll
 
       # Environment file (full-path).
       def file
-        @file ||= File.join(DIR, name, 'index')
+        @file ||= ::Config.find_config('roll', name, 'index').first
       end
 
       # Load the environment file.
       def reload
-        File.readlines(file).each do |line|
-          line = line.strip
-          next if line.empty?
-          name, path = *line.split(/\s+/)
-          @table[name.strip] << path.strip
+        if file && File.exist?(file)
+          File.readlines(file).each do |line|
+            line = line.strip
+            next if line.empty?
+            name, path = *line.split(/\s+/)
+            @table[name.strip] << path.strip
+          end
         end
       end
 
@@ -139,6 +140,7 @@ module Roll
             out << "%-#{max}s %s\n" % [name, path]
           end
         end
+        file = File.join(::Config::CONFIG_HOME, 'roll', name, 'index')
         if File.exist?(file)
           data = File.read(file)
           if out != data
@@ -156,6 +158,7 @@ module Roll
           #puts "created: #{name}"
           true
         end
+        @file = file
       end
 
 =begin
@@ -194,13 +197,13 @@ module Roll
 
       #
       def file
-        @file ||= File.join(DIR, name, 'lookup')
+        @file ||= ::Config.find_config('roll', name, 'lookup').first
       end
 
       #
       def reload
         t = []
-        if File.exist?(file)
+        if file && File.exist?(file)
           lines = File.readlines(file)
           lines.each do |line|
             line = line.strip
@@ -241,6 +244,7 @@ module Roll
 
       #
       def save
+        file = File.join(::Config::CONFIG_HOME, 'roll', name, 'lookup')
         out = @table.map do |(path, depth)|
           "#{path}   #{depth}"
         end
@@ -249,6 +253,7 @@ module Roll
         File.open(file, 'w') do |f|
           f <<  out.join("\n")
         end
+        @file = file
       end
 
       # Generate index from lookup list.
