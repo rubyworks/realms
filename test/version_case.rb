@@ -1,4 +1,4 @@
-require 'roll/version'
+Covers 'roll/version'
 
 Case Roll::Version do
 
