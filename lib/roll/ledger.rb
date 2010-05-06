@@ -172,6 +172,7 @@ module Roll
 
     # Find require matches.
     def match(path, suffix=true)
+      path = path.to_s
       matches = []
 
       if path.index(':') # a specific library
