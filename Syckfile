@@ -15,9 +15,7 @@ email:
 
 box:
   service: Box
-  types  : [ gem, gz ]
-  include: [ bin, doc, lib, meta, test, "[A-Z]*" ]
-  exclude: [ doc/rdoc, doc/ri, Syckfile ]
+  types: [ gem, gz ]
 
 #testrb:
 #  service  : testrb
@@ -36,7 +34,7 @@ syntax:
 
 rdoc:
   service: rdoc
-  template: redfish
+  template: newfish
   exclude: [ Syckfile ]
   active: true
 
