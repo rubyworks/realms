@@ -1,0 +1,671 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+
+  <title>Class: Roll::Metadata</title>
+
+  
+    <link rel="SHORTCUT ICON" href="../assets/icon/class.png">
+  
+
+  <link type="text/css" rel="stylesheet" href="../assets/rdoc.css" media="screen" />
+  <link type="text/css" rel="stylesheet" href="../assets/highlight/styles/github.css" title="GitHub" />
+
+  <script type="text/javascript" charset="utf-8" src="../assets/jquery.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/highlight/highlight.pack.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/quicksearch.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/main.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready( function() {
+      $('#documentation pre').wrapInner('<code></code>');
+      hljs.tabReplace = '    ';
+      hljs.initHighlightingOnLoad('ruby');
+
+	    hookSourceViews();
+	    hookDebuggingToggle();
+	    hookQuickSearch();
+	    highlightLocationTarget();
+
+	    $('ul.link-list a').bind( "click", highlightClickTarget );
+    });
+  </script>
+</head>
+<body class="class">
+<div id="main">
+
+  <div class="head">
+    <h1>
+      
+        <img src="../assets/icon/class.png" align="absmiddle">&nbsp;
+      
+      <a href="../index.html">Roll</a>&nbsp;
+      <a href="/">Roll::Metadata</a>
+    </h1>
+  </div>
+
+  <div id="metadata">
+    <div id="project-metadata">
+
+      <div id="file-list-section" class="section">
+        <h3 class="section-header">In Files</h3>
+        <div class="section-body">
+          <ul>
+          
+            <li class="file"><a href="../lib/roll/metadata_rb.html?TB_iframe=true&amp;height=550&amp;width=785"
+              class="thickbox" title="lib/roll/metadata.rb">lib/roll/metadata.rb</a></li>
+          
+          </ul>
+        </div>
+      </div>
+
+      <!-- What about Git info, or Hg info? This seems almost silly, albeit kind of cool. -->
+      <!-- TODO: generalize this for all SCMs -->
+
+      
+    </div>
+
+    <div id="class-metadata">
+
+      <!-- Parent Class -->
+      
+      <div id="parent-class-section" class="section">
+        <h3 class="section-header">Parent</h3>
+        <ul>
+          
+          <li class="class">Object</li>
+          
+        </ul>
+      </div>
+      
+
+      <!-- Namespace Contents -->
+      
+
+      <!-- Method Quickref -->
+      
+      <div id="method-list-section" class="section">
+        <h3 class="section-header">Methods</h3>
+        <ul class="link-list">
+          
+            
+            <li class="singleton">
+              <a href="#method-c-new">::new</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-active">#active</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-loadpath">#loadpath</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-method_missing">#method_missing</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-name">#name</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-read">#read</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-released">#released</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-require_yaml">#require_yaml</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-requires">#requires</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-version">#version</a>
+            </li>
+          
+        </ul>
+      </div>
+      
+
+      <!-- Included Modules -->
+      
+    </div>
+
+    <div id="project-metadata">
+      
+      
+      <div id="fileindex-section" class="section project-section">
+        <h3 class="section-header">Information</h3>
+        <ul>
+        
+          <li class="file"><a href="../SetupConfig.html">SetupConfig</a></li>
+        
+          <li class="file"><a href="../HISTORY.html">HISTORY</a></li>
+        
+          <li class="file"><a href="../COPYING.html">COPYING</a></li>
+        
+          <li class="file"><a href="../SetupReceipt.html">SetupReceipt</a></li>
+        
+          <li class="file"><a href="../README_rdoc.html">README.rdoc</a></li>
+        
+          <li class="file"><a href="../TODO.html">TODO</a></li>
+        
+        </ul>
+      </div>
+      
+
+      <div id="classindex-section" class="section project-section">
+        <h3 class="section-header">Class Index
+          <span class="search-toggle"><img src="../assets/icon/find.png"
+            height="16" width="16" alt="[+]"
+            title="show/hide quicksearch" /></span></h3>
+        <form action="#" method="get" accept-charset="utf-8" class="initially-hidden">
+        <fieldset>
+          <legend>Quicksearch</legend>
+          <input type="text" name="quicksearch" value=""
+            class="quicksearch-field" />
+        </fieldset>
+        </form>
+
+        <!-- classpage.html : classes -->
+        <ul class="link-list">
+        
+          <li class="module"><a href="../Roll.html">Roll</a></li>
+        
+          <li class="class"><a href="../Roll/Command.html">Roll::Command</a></li>
+        
+          <li class="class"><a href="../Roll/Environment.html">Roll::Environment</a></li>
+        
+          <li class="class"><a href="../Roll/Environment/Index.html">Roll::Environment::Index</a></li>
+        
+          <li class="class"><a href="../Roll/Environment/Lookup.html">Roll::Environment::Lookup</a></li>
+        
+          <li class="class"><a href="../Roll/Ledger.html">Roll::Ledger</a></li>
+        
+          <li class="class"><a href="../Roll/Library.html">Roll::Library</a></li>
+        
+          <li class="class"><a href="../Roll/Locals.html">Roll::Locals</a></li>
+        
+          <li class="class"><a href="../Roll/Metadata.html">Roll::Metadata</a></li>
+        
+          <li class="class"><a href="../Roll/Version.html">Roll::Version</a></li>
+        
+          <li class="module"><a href="../Config.html">Config</a></li>
+        
+          <li class="module"><a href="../Kernel.html">Kernel</a></li>
+        
+        </ul>
+        <div id="no-class-search-results" style="display: none;">No matching classes.</div>
+      </div>
+    </div>
+
+    <div id="validator-badges">
+      
+      <div style="float: right; margin-right: 5px;">
+        <a href="http://validator.w3.org/check/referer"><img src="../assets/icon/check.png" alt="[Validate]" height="16" width="16" /></a>
+      </div>
+      Generated with <a href="http://github.com/proutils/webri">WebRI Redfish</a> 1.2.1
+      <br/><br/>
+    </div>
+  </div>
+
+  <div id="documentation">
+
+    <div id="description">
+      
+        <h1>Metadata</h1>
+      
+
+      
+    </div>
+
+    <!-- Constants -->
+    
+
+    <!-- Attributes -->
+    
+    <div id="attribute-method-details" class="method-section section">
+      <h3 class="section-header">Attributes</h3>
+
+      
+      <div id="location-attribute-method" class="method-detail">
+        <a name="location"></a>
+        
+        <div class="method-heading attribute-method-heading">
+          <span class="method-name">location</span><span
+            class="attribute-access-type">[R]</span>
+        </div>
+
+        <div class="method-description">
+        
+        <p>
+TODO: hide most methods
+</p>
+        
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- Methods -->
+    
+    <div id="public-class-method-details" class="method-section section">
+      <h3 class="section-header">Public Class Methods</h3>
+
+    
+      <div id="new-method" class="method-detail ">
+        <a name="method-c-new"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">new</span><span
+            class="method-args">(location)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="new-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 13</span>
+13:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">location</span>)
+14:       <span class="ruby-ivar">@location</span> = <span class="ruby-identifier">location</span>
+15:       <span class="ruby-ivar">@cache</span> = {}
+16:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+    <div id="public-instance-method-details" class="method-section section">
+      <h3 class="section-header">Public Instance Methods</h3>
+
+    
+      <div id="active-method" class="method-detail ">
+        <a name="method-i-active"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">active</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Get library active state.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="active-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 33</span>
+33:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">active</span>
+34:       <span class="ruby-keyword kw">return</span> <span class="ruby-ivar">@cache</span>[<span class="ruby-value">:active</span>] <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@cache</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:active</span>)
+35:       <span class="ruby-ivar">@cache</span>[<span class="ruby-value">:active</span>] = (
+36:         <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">read</span>(<span class="ruby-value">:active</span>).<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">downcase</span>
+37:         <span class="ruby-keyword kw">when</span> <span class="ruby-value str">'false'</span>, <span class="ruby-value str">'no'</span>
+38:           <span class="ruby-keyword kw">false</span>
+39:         <span class="ruby-keyword kw">else</span>
+40:           <span class="ruby-keyword kw">true</span>
+41:         <span class="ruby-keyword kw">end</span>
+42:       )
+43:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="loadpath-method" class="method-detail ">
+        <a name="method-i-loadpath"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">loadpath</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Get library loadpath.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="loadpath-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 54</span>
+54:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">loadpath</span>
+55:       <span class="ruby-ivar">@cache</span>[<span class="ruby-value">:loadpath</span>] <span class="ruby-operator">||=</span> (
+56:         <span class="ruby-identifier">val</span> = <span class="ruby-identifier">read</span>(<span class="ruby-value">:loadpath</span>).<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">strip</span>.<span class="ruby-identifier">split</span>(<span class="ruby-regexp re">/\s*\n/</span>)  <span class="ruby-comment cmt"># TODO: handle YAML</span>
+57:         <span class="ruby-identifier">val</span> = [<span class="ruby-value str">'lib'</span>] <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">val</span>.<span class="ruby-identifier">empty?</span>
+58:         <span class="ruby-identifier">val</span>
+59:       )
+60:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="method-missing-method" class="method-detail ">
+        <a name="method-i-method_missing"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">method_missing</span><span
+            class="method-args">(name, *args)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="method-missing-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 76</span>
+76:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">method_missing</span>(<span class="ruby-identifier">name</span>, *<span class="ruby-identifier">args</span>)
+77:       <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@cache</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">name</span>)
+78:         <span class="ruby-ivar">@cache</span>[<span class="ruby-identifier">name</span>]
+79:       <span class="ruby-keyword kw">else</span>
+80:         <span class="ruby-ivar">@cache</span>[<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">read</span>(<span class="ruby-identifier">name</span>)
+81:       <span class="ruby-keyword kw">end</span>
+82:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="name-method" class="method-detail ">
+        <a name="method-i-name"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">name</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Get library name.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="name-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 19</span>
+19:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">name</span>
+20:       <span class="ruby-ivar">@cache</span>[<span class="ruby-value">:name</span>] <span class="ruby-operator">||=</span> <span class="ruby-identifier">read</span>(<span class="ruby-value str">'name'</span>)
+21:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="released-method" class="method-detail ">
+        <a name="method-i-released"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">released</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Get library release date. 
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="released-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 49</span>
+49:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">released</span>
+50:       <span class="ruby-ivar">@cache</span>[<span class="ruby-value">:released</span>] <span class="ruby-operator">||=</span> <span class="ruby-identifier">read</span>(<span class="ruby-value">:released</span>) <span class="ruby-operator">||</span> <span class="ruby-value str">&quot;1900-01-01&quot;</span>
+51:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="requires-method" class="method-detail ">
+        <a name="method-i-requires"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">requires</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="requires-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 63</span>
+63:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">requires</span>
+64:       <span class="ruby-ivar">@cache</span>[<span class="ruby-value">:requires</span>] <span class="ruby-operator">||=</span> (
+65:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">entry</span> = <span class="ruby-identifier">read</span>(<span class="ruby-value">:requires</span>)
+66:           <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">strip</span>.<span class="ruby-identifier">split</span>(<span class="ruby-value str">&quot;\n&quot;</span>).<span class="ruby-identifier">map</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">line</span><span class="ruby-operator">|</span>
+67:             <span class="ruby-identifier">line</span>.<span class="ruby-identifier">strip</span>.<span class="ruby-identifier">split</span>(<span class="ruby-regexp re">/\s+/</span>)
+68:           <span class="ruby-keyword kw">end</span>
+69:         <span class="ruby-keyword kw">else</span>
+70:           []
+71:         <span class="ruby-keyword kw">end</span>
+72:       )
+73:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="version-method" class="method-detail ">
+        <a name="method-i-version"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">version</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Get library version. 
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="version-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 28</span>
+28:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">version</span>
+29:       <span class="ruby-ivar">@cache</span>[<span class="ruby-value">:version</span>] <span class="ruby-operator">||=</span> <span class="ruby-constant">Version</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">read</span>(<span class="ruby-value">:version</span>))
+30:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+    <div id="private-instance-method-details" class="method-section section">
+      <h3 class="section-header">Private Instance Methods</h3>
+
+    
+      <div id="read-method" class="method-detail ">
+        <a name="method-i-read"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">read</span><span
+            class="method-args">(name)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="read-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 87</span>
+ 87:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">read</span>(<span class="ruby-identifier">name</span>)
+ 88:       <span class="ruby-identifier">file</span> = <span class="ruby-constant">Dir</span>[<span class="ruby-constant">File</span>.<span class="ruby-identifier">join</span>(<span class="ruby-identifier">location</span>, <span class="ruby-value str">&quot;{meta,.meta}&quot;</span>, <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>)].<span class="ruby-identifier">first</span>
+ 89:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">file</span>
+ 90:         <span class="ruby-identifier">text</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">read</span>(<span class="ruby-identifier">file</span>)
+ 91:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">text</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/^---/</span>
+ 92:           <span class="ruby-identifier">require_yaml</span>
+ 93:           <span class="ruby-constant">YAML</span>.<span class="ruby-identifier">load</span>(<span class="ruby-identifier">text</span>)
+ 94:         <span class="ruby-keyword kw">else</span>
+ 95:           <span class="ruby-identifier">text</span>.<span class="ruby-identifier">strip</span>
+ 96:         <span class="ruby-keyword kw">end</span>
+ 97:       <span class="ruby-keyword kw">else</span>
+ 98:         <span class="ruby-keyword kw">nil</span>
+ 99:       <span class="ruby-keyword kw">end</span>
+100:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="require-yaml-method" class="method-detail ">
+        <a name="method-i-require_yaml"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">require_yaml</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="require-yaml-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/metadata.rb, line 103</span>
+103:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">require_yaml</span>
+104:       <span class="ruby-ivar">@require_yaml</span> <span class="ruby-operator">||=</span>(
+105:         <span class="ruby-identifier">require</span> <span class="ruby-value str">'yaml'</span>
+106:         <span class="ruby-keyword kw">true</span>
+107:       )
+108:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+
+  </div>
+
+
+  <div id="rdoc-debugging-section-dump" class="debugging-section">
+  
+    <p>Disabled; run with --debug to generate this.</p>
+  
+  </div>
+
+</main>
+</body>
+</html>
+

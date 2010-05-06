@@ -1,0 +1,967 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+
+  <title>Class: Roll::Command</title>
+
+  
+    <link rel="SHORTCUT ICON" href="../assets/icon/class.png">
+  
+
+  <link type="text/css" rel="stylesheet" href="../assets/rdoc.css" media="screen" />
+  <link type="text/css" rel="stylesheet" href="../assets/highlight/styles/github.css" title="GitHub" />
+
+  <script type="text/javascript" charset="utf-8" src="../assets/jquery.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/highlight/highlight.pack.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/quicksearch.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/main.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready( function() {
+      $('#documentation pre').wrapInner('<code></code>');
+      hljs.tabReplace = '    ';
+      hljs.initHighlightingOnLoad('ruby');
+
+	    hookSourceViews();
+	    hookDebuggingToggle();
+	    hookQuickSearch();
+	    highlightLocationTarget();
+
+	    $('ul.link-list a').bind( "click", highlightClickTarget );
+    });
+  </script>
+</head>
+<body class="class">
+<div id="main">
+
+  <div class="head">
+    <h1>
+      
+        <img src="../assets/icon/class.png" align="absmiddle">&nbsp;
+      
+      <a href="../index.html">Roll</a>&nbsp;
+      <a href="/">Roll::Command</a>
+    </h1>
+  </div>
+
+  <div id="metadata">
+    <div id="project-metadata">
+
+      <div id="file-list-section" class="section">
+        <h3 class="section-header">In Files</h3>
+        <div class="section-body">
+          <ul>
+          
+            <li class="file"><a href="../lib/roll/command_rb.html?TB_iframe=true&amp;height=550&amp;width=785"
+              class="thickbox" title="lib/roll/command.rb">lib/roll/command.rb</a></li>
+          
+          </ul>
+        </div>
+      </div>
+
+      <!-- What about Git info, or Hg info? This seems almost silly, albeit kind of cool. -->
+      <!-- TODO: generalize this for all SCMs -->
+
+      
+    </div>
+
+    <div id="class-metadata">
+
+      <!-- Parent Class -->
+      
+      <div id="parent-class-section" class="section">
+        <h3 class="section-header">Parent</h3>
+        <ul>
+          
+          <li class="class">Object</li>
+          
+        </ul>
+      </div>
+      
+
+      <!-- Namespace Contents -->
+      
+
+      <!-- Method Quickref -->
+      
+      <div id="method-list-section" class="section">
+        <h3 class="section-header">Methods</h3>
+        <ul class="link-list">
+          
+            
+            <li class="singleton">
+              <a href="#method-c-main">::main</a>
+            </li>
+          
+            
+            <li class="singleton">
+              <a href="#method-c-new">::new</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-env">#env</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-env_optparse">#env_optparse</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-execute">#execute</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-in">#in</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-in_optparse">#in_optparse</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-index">#index</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-index_optparse">#index_optparse</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-out">#out</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-out_optparse">#out_optparse</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-path">#path</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-path_optparse">#path_optparse</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-sync">#sync</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-sync_optparse">#sync_optparse</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-verify">#verify</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-verify_optparse">#verify_optparse</a>
+            </li>
+          
+        </ul>
+      </div>
+      
+
+      <!-- Included Modules -->
+      
+    </div>
+
+    <div id="project-metadata">
+      
+      
+      <div id="fileindex-section" class="section project-section">
+        <h3 class="section-header">Information</h3>
+        <ul>
+        
+          <li class="file"><a href="../SetupConfig.html">SetupConfig</a></li>
+        
+          <li class="file"><a href="../HISTORY.html">HISTORY</a></li>
+        
+          <li class="file"><a href="../COPYING.html">COPYING</a></li>
+        
+          <li class="file"><a href="../SetupReceipt.html">SetupReceipt</a></li>
+        
+          <li class="file"><a href="../README_rdoc.html">README.rdoc</a></li>
+        
+          <li class="file"><a href="../TODO.html">TODO</a></li>
+        
+        </ul>
+      </div>
+      
+
+      <div id="classindex-section" class="section project-section">
+        <h3 class="section-header">Class Index
+          <span class="search-toggle"><img src="../assets/icon/find.png"
+            height="16" width="16" alt="[+]"
+            title="show/hide quicksearch" /></span></h3>
+        <form action="#" method="get" accept-charset="utf-8" class="initially-hidden">
+        <fieldset>
+          <legend>Quicksearch</legend>
+          <input type="text" name="quicksearch" value=""
+            class="quicksearch-field" />
+        </fieldset>
+        </form>
+
+        <!-- classpage.html : classes -->
+        <ul class="link-list">
+        
+          <li class="module"><a href="../Roll.html">Roll</a></li>
+        
+          <li class="class"><a href="../Roll/Command.html">Roll::Command</a></li>
+        
+          <li class="class"><a href="../Roll/Environment.html">Roll::Environment</a></li>
+        
+          <li class="class"><a href="../Roll/Environment/Index.html">Roll::Environment::Index</a></li>
+        
+          <li class="class"><a href="../Roll/Environment/Lookup.html">Roll::Environment::Lookup</a></li>
+        
+          <li class="class"><a href="../Roll/Ledger.html">Roll::Ledger</a></li>
+        
+          <li class="class"><a href="../Roll/Library.html">Roll::Library</a></li>
+        
+          <li class="class"><a href="../Roll/Locals.html">Roll::Locals</a></li>
+        
+          <li class="class"><a href="../Roll/Metadata.html">Roll::Metadata</a></li>
+        
+          <li class="class"><a href="../Roll/Version.html">Roll::Version</a></li>
+        
+          <li class="module"><a href="../Config.html">Config</a></li>
+        
+          <li class="module"><a href="../Kernel.html">Kernel</a></li>
+        
+        </ul>
+        <div id="no-class-search-results" style="display: none;">No matching classes.</div>
+      </div>
+    </div>
+
+    <div id="validator-badges">
+      
+      <div style="float: right; margin-right: 5px;">
+        <a href="http://validator.w3.org/check/referer"><img src="../assets/icon/check.png" alt="[Validate]" height="16" width="16" /></a>
+      </div>
+      Generated with <a href="http://github.com/proutils/webri">WebRI Redfish</a> 1.2.1
+      <br/><br/>
+    </div>
+  </div>
+
+  <div id="documentation">
+
+    <div id="description">
+      
+
+      <h1>Command-line Interface</h1>
+
+    </div>
+
+    <!-- Constants -->
+    
+
+    <!-- Attributes -->
+    
+
+    <!-- Methods -->
+    
+    <div id="public-class-method-details" class="method-section section">
+      <h3 class="section-header">Public Class Methods</h3>
+
+    
+      <div id="main-method" class="method-detail ">
+        <a name="method-c-main"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">main</span><span
+            class="method-args">(*argv)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Initialize and execute command.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="main-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/command.rb, line 16</span>
+16:     <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">main</span>(*<span class="ruby-identifier">argv</span>)
+17:       <span class="ruby-identifier">new</span>(*<span class="ruby-identifier">argv</span>).<span class="ruby-identifier">execute</span>
+18:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="new-method" class="method-detail ">
+        <a name="method-c-new"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">new</span><span
+            class="method-args">(*argv)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+New <a href="Command.html">Command</a>.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="new-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/command.rb, line 21</span>
+21:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(*<span class="ruby-identifier">argv</span>)
+22:       <span class="ruby-ivar">@argv</span> = <span class="ruby-identifier">argv</span>
+23:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+    <div id="public-instance-method-details" class="method-section section">
+      <h3 class="section-header">Public Instance Methods</h3>
+
+    
+      <div id="env-method" class="method-detail ">
+        <a name="method-i-env"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">env</span><span
+            class="method-args">(args, opts)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Show/Change current environment.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="env-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 119</span>
+119:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">env</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">opts</span>)
+120:       <span class="ruby-identifier">puts</span> <span class="ruby-constant">Roll</span>.<span class="ruby-identifier">env</span>(*<span class="ruby-identifier">args</span>)
+121:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="env-optparse-method" class="method-detail ">
+        <a name="method-i-env_optparse"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">env_optparse</span><span
+            class="method-args">(op, options)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="env-optparse-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/command.rb, line 66</span>
+66:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">env_optparse</span>(<span class="ruby-identifier">op</span>, <span class="ruby-identifier">options</span>)
+67:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll env [NAME]&quot;</span>
+68:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Show current environment.&quot;</span>
+69:       <span class="ruby-identifier">op</span>
+70:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="execute-method" class="method-detail ">
+        <a name="method-i-execute"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">execute</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="execute-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/command.rb, line 26</span>
+26:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">execute</span>
+27:       <span class="ruby-identifier">cmd</span> = <span class="ruby-ivar">@argv</span>.<span class="ruby-identifier">find</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-identifier">e</span> <span class="ruby-operator">!~</span> <span class="ruby-regexp re">/^\-/</span> }
+28: 
+29:       <span class="ruby-identifier">options</span> = {}
+30: 
+31:       <span class="ruby-identifier">parser</span>  = <span class="ruby-constant">OptionParser</span>.<span class="ruby-identifier">new</span>
+32: 
+33:       <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll [COMMAND]&quot;</span>
+34: 
+35:       <span class="ruby-identifier">__send__</span>(<span class="ruby-node">&quot;#{cmd}_optparse&quot;</span>, <span class="ruby-identifier">parser</span>, <span class="ruby-identifier">options</span>) <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cmd</span>
+36: 
+37:       <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">cmd</span>
+38:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Commands:&quot;</span>
+39:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;    in  [DIR] &quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-value str">&quot; &quot;</span> * <span class="ruby-value">23</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;Roll directory into current environment.&quot;</span>
+40:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;    out [DIR] &quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-value str">&quot; &quot;</span> * <span class="ruby-value">23</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;Remove directory from current environment.&quot;</span>
+41:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;    env       &quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-value str">&quot; &quot;</span> * <span class="ruby-value">23</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;Show current environment.&quot;</span>
+42:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;    index     &quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-value str">&quot; &quot;</span> * <span class="ruby-value">23</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;Show current environment index.&quot;</span>
+43:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;    sync      &quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-value str">&quot; &quot;</span> * <span class="ruby-value">23</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;Synchronize environment indexes.&quot;</span>
+44:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;    path      &quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-value str">&quot; &quot;</span> * <span class="ruby-value">23</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;Output bin PATH list.&quot;</span>
+45:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;    verify    &quot;</span> <span class="ruby-operator">+</span> (<span class="ruby-value str">&quot; &quot;</span> * <span class="ruby-value">23</span>) <span class="ruby-operator">+</span> <span class="ruby-value str">&quot;Verify project dependencies in current environment.&quot;</span>
+46:         <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Options:&quot;</span>
+47:       <span class="ruby-keyword kw">end</span>
+48: 
+49:       <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">on_tail</span>(<span class="ruby-value str">&quot;--help&quot;</span>, <span class="ruby-value str">&quot;-h&quot;</span>, <span class="ruby-value str">&quot;Display this help message.&quot;</span>) <span class="ruby-keyword kw">do</span>
+50:         <span class="ruby-identifier">puts</span> <span class="ruby-identifier">parser</span>
+51:         <span class="ruby-identifier">exit</span>
+52:       <span class="ruby-keyword kw">end</span>
+53: 
+54:       <span class="ruby-identifier">parser</span>.<span class="ruby-identifier">parse!</span>
+55: 
+56:       <span class="ruby-constant">ARGV</span>.<span class="ruby-identifier">shift</span> <span class="ruby-comment cmt"># remove command</span>
+57: 
+58:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cmd</span>
+59:          <span class="ruby-identifier">__send__</span>(<span class="ruby-identifier">cmd</span>, <span class="ruby-constant">ARGV</span>, <span class="ruby-identifier">options</span>)
+60:       <span class="ruby-keyword kw">else</span>
+61:         <span class="ruby-comment cmt"># no command ?</span>
+62:       <span class="ruby-keyword kw">end</span>
+63:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="in-method" class="method-detail ">
+        <a name="method-i-in"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">in</span><span
+            class="method-args">(args, opts)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="in-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 145</span>
+145:     <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">in</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">opts</span>)
+146:       <span class="ruby-identifier">path</span>  = <span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-identifier">args</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">||</span> <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">pwd</span>)
+147:       <span class="ruby-identifier">depth</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-value">:depth</span>]
+148:       <span class="ruby-identifier">path</span>, <span class="ruby-identifier">file</span> = *<span class="ruby-constant">Roll</span>.<span class="ruby-identifier">in</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">depth</span>)
+149:       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;#{path}&quot;</span>
+150:       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;  '-&gt; #{file}&quot;</span>
+151:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="in-optparse-method" class="method-detail ">
+        <a name="method-i-in_optparse"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">in_optparse</span><span
+            class="method-args">(op, options)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="in-optparse-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/command.rb, line 87</span>
+87:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">in_optparse</span>(<span class="ruby-identifier">op</span>, <span class="ruby-identifier">options</span>)
+88:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll in [PATH]&quot;</span>
+89:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Insert path into current environment.&quot;</span>
+90:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Options:&quot;</span>
+91:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">on</span>(<span class="ruby-value str">&quot;--depth&quot;</span>, <span class="ruby-value str">&quot;-d [INTEGER]&quot;</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">int</span><span class="ruby-operator">|</span>
+92:         <span class="ruby-identifier">options</span>[<span class="ruby-value">:depth</span>] = <span class="ruby-identifier">int</span>
+93:       <span class="ruby-keyword kw">end</span>
+94:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="index-method" class="method-detail ">
+        <a name="method-i-index"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">index</span><span
+            class="method-args">(args, opts)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Show/Change current environment.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="index-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 125</span>
+125:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">index</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">opts</span>)
+126:       <span class="ruby-identifier">puts</span> <span class="ruby-constant">Roll</span>.<span class="ruby-identifier">index</span>(*<span class="ruby-identifier">args</span>)
+127:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="index-optparse-method" class="method-detail ">
+        <a name="method-i-index_optparse"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">index_optparse</span><span
+            class="method-args">(op, options)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="index-optparse-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/command.rb, line 73</span>
+73:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">index_optparse</span>(<span class="ruby-identifier">op</span>, <span class="ruby-identifier">options</span>)
+74:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll index [NAME]&quot;</span>
+75:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Show current environment index.&quot;</span>
+76:       <span class="ruby-identifier">op</span>
+77:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="out-method" class="method-detail ">
+        <a name="method-i-out"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">out</span><span
+            class="method-args">(args, opts)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="out-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 154</span>
+154:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">out</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">opts</span>)
+155:       <span class="ruby-identifier">path</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-identifier">args</span>.<span class="ruby-identifier">first</span> <span class="ruby-operator">||</span> <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">pwd</span>)
+156:       <span class="ruby-identifier">path</span>, <span class="ruby-identifier">file</span> = *<span class="ruby-constant">Roll</span>.<span class="ruby-identifier">out</span>(<span class="ruby-identifier">path</span>)
+157:       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;#{file}&quot;</span>
+158:       <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;  '-&gt; #{path} -&gt; [x]&quot;</span>
+159:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="out-optparse-method" class="method-detail ">
+        <a name="method-i-out_optparse"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">out_optparse</span><span
+            class="method-args">(op, options)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="out-optparse-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 97</span>
+ 97:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">out_optparse</span>(<span class="ruby-identifier">op</span>, <span class="ruby-identifier">options</span>)
+ 98:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll out [PATH]&quot;</span>
+ 99:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Remove path from current environment.&quot;</span>
+100:       <span class="ruby-identifier">op</span>
+101:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="path-method" class="method-detail ">
+        <a name="method-i-path"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">path</span><span
+            class="method-args">(args, opts)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+This script builds a list of all roll-ready bin locations and writes that
+list as an environment setting shell script. On Linux a call to this to you
+.bashrc file. Eg.
+</p>
+<pre>
+  if [ -f ~/.rollrc ]; then
+      . roll
+  fi
+</pre>
+<p>
+Currently this only supports bash.
+</p>
+<p>
+TODO: It would be better to &#8220;install&#8221; executables to an
+appropriate bin dir, using links (soft if possible). There could go in
+~/.bin or .config/roll/<ledger>.bin/
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="path-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 183</span>
+183:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">path</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">opts</span>)
+184:       <span class="ruby-keyword kw">case</span> <span class="ruby-constant">RUBY_PLATFORM</span>
+185:       <span class="ruby-keyword kw">when</span> <span class="ruby-regexp re">/mswin/</span>, <span class="ruby-regexp re">/wince/</span>
+186:         <span class="ruby-identifier">div</span> = <span class="ruby-value str">';'</span>
+187:       <span class="ruby-keyword kw">else</span>
+188:         <span class="ruby-identifier">div</span> = <span class="ruby-value str">':'</span>
+189:       <span class="ruby-keyword kw">end</span>
+190:       <span class="ruby-identifier">env_path</span> = <span class="ruby-constant">ENV</span>[<span class="ruby-value str">'PATH'</span>].<span class="ruby-identifier">split</span>(<span class="ruby-node">/[#{div}]/</span>)
+191:       <span class="ruby-comment cmt"># Go thru each roll lib and make sure bin path is in path.</span>
+192:       <span class="ruby-identifier">binpaths</span> = []
+193:       <span class="ruby-constant">Library</span>.<span class="ruby-identifier">list</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span><span class="ruby-operator">|</span>
+194:         <span class="ruby-identifier">lib</span> = <span class="ruby-constant">Library</span>[<span class="ruby-identifier">name</span>]
+195:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">bindir?</span>
+196:           <span class="ruby-identifier">binpaths</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">bindir</span>
+197:         <span class="ruby-keyword kw">end</span>
+198:       <span class="ruby-keyword kw">end</span>
+199:       <span class="ruby-comment cmt">#pathenv = ([&quot;$PATH&quot;] + binpaths).join(div)</span>
+200:       <span class="ruby-identifier">pathenv</span> = <span class="ruby-identifier">binpaths</span>.<span class="ruby-identifier">join</span>(<span class="ruby-identifier">div</span>)
+201:       <span class="ruby-comment cmt">#puts %{export PATH=&quot;#{pathenv}&quot;}</span>
+202:       <span class="ruby-identifier">puts</span> <span class="ruby-identifier">pathenv</span>
+203:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="path-optparse-method" class="method-detail ">
+        <a name="method-i-path_optparse"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">path_optparse</span><span
+            class="method-args">(op, options)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="path-optparse-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 104</span>
+104:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">path_optparse</span>(<span class="ruby-identifier">op</span>, <span class="ruby-identifier">options</span>)
+105:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll path&quot;</span>
+106:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Generate executable PATH list.&quot;</span>
+107:       <span class="ruby-identifier">op</span>
+108:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="sync-method" class="method-detail ">
+        <a name="method-i-sync"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">sync</span><span
+            class="method-args">(args, opts)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Synchronize ledgers.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="sync-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 131</span>
+131:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">sync</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">opts</span>)
+132:       <span class="ruby-identifier">name</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">first</span>
+133:       <span class="ruby-identifier">list</span> = <span class="ruby-identifier">name</span> <span class="ruby-operator">?</span> [<span class="ruby-identifier">name</span>] <span class="ruby-operator">:</span> <span class="ruby-constant">Environment</span>.<span class="ruby-identifier">list</span>
+134:       <span class="ruby-identifier">list</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span><span class="ruby-operator">|</span>
+135:         <span class="ruby-identifier">result</span> = <span class="ruby-constant">Roll</span>.<span class="ruby-identifier">sync</span>(<span class="ruby-identifier">name</span>)
+136:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">result</span>
+137:           <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;   saved #{name}&quot;</span>
+138:         <span class="ruby-keyword kw">else</span>
+139:           <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot; current #{name}&quot;</span>
+140:         <span class="ruby-keyword kw">end</span>
+141:       <span class="ruby-keyword kw">end</span>
+142:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="sync-optparse-method" class="method-detail ">
+        <a name="method-i-sync_optparse"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">sync_optparse</span><span
+            class="method-args">(op, options)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="sync-optparse-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/command.rb, line 80</span>
+80:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">sync_optparse</span>(<span class="ruby-identifier">op</span>, <span class="ruby-identifier">options</span>)
+81:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll sync [NAME]&quot;</span>
+82:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Synchronize ledger(s) to their respective environment(s).&quot;</span>
+83:       <span class="ruby-identifier">op</span>
+84:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="verify-method" class="method-detail ">
+        <a name="method-i-verify"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">verify</span><span
+            class="method-args">(args, opts)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="verify-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 162</span>
+162:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">verify</span>(<span class="ruby-identifier">args</span>, <span class="ruby-identifier">opts</span>)
+163:       <span class="ruby-identifier">list</span> = <span class="ruby-constant">Roll</span>.<span class="ruby-identifier">verify</span>
+164:       <span class="ruby-identifier">list</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">constraint</span>)<span class="ruby-operator">|</span>
+165:         <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;#{name} #{constraint}&quot;</span>
+166:       <span class="ruby-keyword kw">end</span>
+167:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="verify-optparse-method" class="method-detail ">
+        <a name="method-i-verify_optparse"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">verify_optparse</span><span
+            class="method-args">(op, options)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="verify-optparse-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/command.rb, line 111</span>
+111:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">verify_optparse</span>(<span class="ruby-identifier">op</span>, <span class="ruby-identifier">options</span>)
+112:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">banner</span> = <span class="ruby-value str">&quot;Usage: roll verify&quot;</span>
+113:       <span class="ruby-identifier">op</span>.<span class="ruby-identifier">separator</span> <span class="ruby-value str">&quot;Verify dependencies in current environment.&quot;</span>
+114:       <span class="ruby-identifier">op</span>
+115:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+
+  </div>
+
+
+  <div id="rdoc-debugging-section-dump" class="debugging-section">
+  
+    <p>Disabled; run with --debug to generate this.</p>
+  
+  </div>
+
+</main>
+</body>
+</html>
+

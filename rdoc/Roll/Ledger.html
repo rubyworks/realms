@@ -1,0 +1,1024 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+
+  <title>Class: Roll::Ledger</title>
+
+  
+    <link rel="SHORTCUT ICON" href="../assets/icon/class.png">
+  
+
+  <link type="text/css" rel="stylesheet" href="../assets/rdoc.css" media="screen" />
+  <link type="text/css" rel="stylesheet" href="../assets/highlight/styles/github.css" title="GitHub" />
+
+  <script type="text/javascript" charset="utf-8" src="../assets/jquery.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/highlight/highlight.pack.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/quicksearch.js"></script>
+  <script type="text/javascript" charset="utf-8" src="../assets/main.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready( function() {
+      $('#documentation pre').wrapInner('<code></code>');
+      hljs.tabReplace = '    ';
+      hljs.initHighlightingOnLoad('ruby');
+
+	    hookSourceViews();
+	    hookDebuggingToggle();
+	    hookQuickSearch();
+	    highlightLocationTarget();
+
+	    $('ul.link-list a').bind( "click", highlightClickTarget );
+    });
+  </script>
+</head>
+<body class="class">
+<div id="main">
+
+  <div class="head">
+    <h1>
+      
+        <img src="../assets/icon/class.png" align="absmiddle">&nbsp;
+      
+      <a href="../index.html">Roll</a>&nbsp;
+      <a href="/">Roll::Ledger</a>
+    </h1>
+  </div>
+
+  <div id="metadata">
+    <div id="project-metadata">
+
+      <div id="file-list-section" class="section">
+        <h3 class="section-header">In Files</h3>
+        <div class="section-body">
+          <ul>
+          
+            <li class="file"><a href="../lib/roll/ledger_rb.html?TB_iframe=true&amp;height=550&amp;width=785"
+              class="thickbox" title="lib/roll/ledger.rb">lib/roll/ledger.rb</a></li>
+          
+          </ul>
+        </div>
+      </div>
+
+      <!-- What about Git info, or Hg info? This seems almost silly, albeit kind of cool. -->
+      <!-- TODO: generalize this for all SCMs -->
+
+      
+    </div>
+
+    <div id="class-metadata">
+
+      <!-- Parent Class -->
+      
+      <div id="parent-class-section" class="section">
+        <h3 class="section-header">Parent</h3>
+        <ul>
+          
+          <li class="class">Object</li>
+          
+        </ul>
+      </div>
+      
+
+      <!-- Namespace Contents -->
+      
+
+      <!-- Method Quickref -->
+      
+      <div id="method-list-section" class="section">
+        <h3 class="section-header">Methods</h3>
+        <ul class="link-list">
+          
+            
+            <li class="singleton">
+              <a href="#method-c-new">::new</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-%5B%5D">#[]</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-%5B%5D%3D">#[]=</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-acquire">#acquire</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-clean_backtrace">#clean_backtrace</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-constrain">#constrain</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-each">#each</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-enironment">#enironment</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-include%3F">#include?</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-load">#load</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-load_monitor">#load_monitor</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-load_stack">#load_stack</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-match">#match</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-names">#names</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-require">#require</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-size">#size</a>
+            </li>
+          
+            
+            <li class="method">
+              <a href="#method-i-warn_multiples">#warn_multiples</a>
+            </li>
+          
+        </ul>
+      </div>
+      
+
+      <!-- Included Modules -->
+      
+      <div id="includes-section" class="section">
+        <h3 class="section-header">Included Modules</h3>
+        <ul class="link-list">
+        
+        
+          <li class="module"><span class="include">Enumerable</span></li>
+        
+        
+        </ul>
+      </div>
+      
+    </div>
+
+    <div id="project-metadata">
+      
+      
+      <div id="fileindex-section" class="section project-section">
+        <h3 class="section-header">Information</h3>
+        <ul>
+        
+          <li class="file"><a href="../SetupConfig.html">SetupConfig</a></li>
+        
+          <li class="file"><a href="../HISTORY.html">HISTORY</a></li>
+        
+          <li class="file"><a href="../COPYING.html">COPYING</a></li>
+        
+          <li class="file"><a href="../SetupReceipt.html">SetupReceipt</a></li>
+        
+          <li class="file"><a href="../README_rdoc.html">README.rdoc</a></li>
+        
+          <li class="file"><a href="../TODO.html">TODO</a></li>
+        
+        </ul>
+      </div>
+      
+
+      <div id="classindex-section" class="section project-section">
+        <h3 class="section-header">Class Index
+          <span class="search-toggle"><img src="../assets/icon/find.png"
+            height="16" width="16" alt="[+]"
+            title="show/hide quicksearch" /></span></h3>
+        <form action="#" method="get" accept-charset="utf-8" class="initially-hidden">
+        <fieldset>
+          <legend>Quicksearch</legend>
+          <input type="text" name="quicksearch" value=""
+            class="quicksearch-field" />
+        </fieldset>
+        </form>
+
+        <!-- classpage.html : classes -->
+        <ul class="link-list">
+        
+          <li class="module"><a href="../Roll.html">Roll</a></li>
+        
+          <li class="class"><a href="../Roll/Command.html">Roll::Command</a></li>
+        
+          <li class="class"><a href="../Roll/Environment.html">Roll::Environment</a></li>
+        
+          <li class="class"><a href="../Roll/Environment/Index.html">Roll::Environment::Index</a></li>
+        
+          <li class="class"><a href="../Roll/Environment/Lookup.html">Roll::Environment::Lookup</a></li>
+        
+          <li class="class"><a href="../Roll/Ledger.html">Roll::Ledger</a></li>
+        
+          <li class="class"><a href="../Roll/Library.html">Roll::Library</a></li>
+        
+          <li class="class"><a href="../Roll/Locals.html">Roll::Locals</a></li>
+        
+          <li class="class"><a href="../Roll/Metadata.html">Roll::Metadata</a></li>
+        
+          <li class="class"><a href="../Roll/Version.html">Roll::Version</a></li>
+        
+          <li class="module"><a href="../Config.html">Config</a></li>
+        
+          <li class="module"><a href="../Kernel.html">Kernel</a></li>
+        
+        </ul>
+        <div id="no-class-search-results" style="display: none;">No matching classes.</div>
+      </div>
+    </div>
+
+    <div id="validator-badges">
+      
+      <div style="float: right; margin-right: 5px;">
+        <a href="http://validator.w3.org/check/referer"><img src="../assets/icon/check.png" alt="[Validate]" height="16" width="16" /></a>
+      </div>
+      Generated with <a href="http://github.com/proutils/webri">WebRI Redfish</a> 1.2.1
+      <br/><br/>
+    </div>
+  </div>
+
+  <div id="documentation">
+
+    <div id="description">
+      
+
+      <h1><a href="Ledger.html">Ledger</a> class</h1>
+
+    </div>
+
+    <!-- Constants -->
+    
+
+    <!-- Attributes -->
+    
+
+    <!-- Methods -->
+    
+    <div id="public-class-method-details" class="method-section section">
+      <h3 class="section-header">Public Class Methods</h3>
+
+    
+      <div id="new-method" class="method-detail ">
+        <a name="method-c-new"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">new</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="new-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 13</span>
+13:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>
+14:       <span class="ruby-ivar">@index</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">h</span>,<span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>] = []}
+15: 
+16:       <span class="ruby-ivar">@environment</span> = <span class="ruby-constant">Environment</span>.<span class="ruby-identifier">new</span>
+17: 
+18:       <span class="ruby-ivar">@environment</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span>, <span class="ruby-identifier">paths</span><span class="ruby-operator">|</span>
+19:         <span class="ruby-identifier">paths</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">path</span><span class="ruby-operator">|</span>
+20:           <span class="ruby-keyword kw">unless</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">directory?</span>(<span class="ruby-identifier">path</span>)
+21:             <span class="ruby-identifier">warn</span> <span class="ruby-node">&quot;roll: invalid path for #{name} -- #{path}&quot;</span>
+22:             <span class="ruby-keyword kw">next</span>
+23:           <span class="ruby-keyword kw">end</span>
+24:           <span class="ruby-identifier">lib</span> = <span class="ruby-constant">Library</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">name</span>)
+25:           <span class="ruby-ivar">@index</span>[<span class="ruby-identifier">name</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">lib</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">active?</span>
+26:         <span class="ruby-keyword kw">end</span>
+27:       <span class="ruby-keyword kw">end</span>
+28: 
+29:       <span class="ruby-ivar">@load_stack</span>   = []
+30:       <span class="ruby-ivar">@load_monitor</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">h</span>,<span class="ruby-identifier">k</span><span class="ruby-operator">|</span> <span class="ruby-identifier">h</span>[<span class="ruby-identifier">k</span>]=[] }
+31:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+    <div id="public-instance-method-details" class="method-section section">
+      <h3 class="section-header">Public Instance Methods</h3>
+
+    
+      <div id="--method" class="method-detail ">
+        <a name="method-i-%5B%5D"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">[]</span><span
+            class="method-args">(name)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="--source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 39</span>
+39:     <span class="ruby-keyword kw">def</span> <span class="ruby-operator">[]</span>(<span class="ruby-identifier">name</span>)
+40:       <span class="ruby-ivar">@index</span>[<span class="ruby-identifier">name</span>]
+41:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="--method" class="method-detail ">
+        <a name="method-i-%5B%5D%3D"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">[]=</span><span
+            class="method-args">(name, value)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="--source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 44</span>
+44:     <span class="ruby-keyword kw">def</span> <span class="ruby-operator">[]=</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">value</span>)
+45:       <span class="ruby-ivar">@index</span>[<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">value</span>
+46:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="acquire-method" class="method-detail ">
+        <a name="method-i-acquire"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">acquire</span><span
+            class="method-args">(file, opts={})</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Use acquire to use Roll-style loading. This first looks for a specific
+library via &#8217;:&#8217;. If &#8217;:&#8217; is  not present it then
+tries the current library. Failing that it fallsback to Ruby itself.
+</p>
+<pre>
+  acquire('facets:string/margin')
+</pre>
+<p>
+To &#8220;load&#8221; the library, rather than &#8220;require&#8221; it set
+the <tt>:load</tt> option to true.
+</p>
+<pre>
+  acquire('facets:string/margin', :load=&gt;true)</pre>
+          
+
+          
+          <div class="method-source-code"
+            id="acquire-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 137</span>
+137:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">acquire</span>(<span class="ruby-identifier">file</span>, <span class="ruby-identifier">opts</span>={})
+138:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">file</span>.<span class="ruby-identifier">index</span>(<span class="ruby-value str">':'</span>) <span class="ruby-comment cmt"># a specific library</span>
+139:         <span class="ruby-identifier">name</span>, <span class="ruby-identifier">file</span> = <span class="ruby-identifier">file</span>.<span class="ruby-identifier">split</span>(<span class="ruby-value str">':'</span>)
+140:         <span class="ruby-identifier">lib</span> = <span class="ruby-constant">Library</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">name</span>)
+141:       <span class="ruby-keyword kw">else</span> <span class="ruby-comment cmt"># try the current library</span>
+142:         <span class="ruby-identifier">cur</span> = <span class="ruby-identifier">load_stack</span>.<span class="ruby-identifier">last</span>
+143:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cur</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">cur</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">file</span>)
+144:           <span class="ruby-identifier">lib</span> = <span class="ruby-identifier">cur</span>
+145:         <span class="ruby-keyword kw">elsif</span> <span class="ruby-operator">!</span><span class="ruby-identifier">file</span>.<span class="ruby-identifier">index</span>(<span class="ruby-value str">'/'</span>) <span class="ruby-comment cmt"># is this a library name?</span>
+146:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cur</span> = <span class="ruby-constant">Library</span>.<span class="ruby-identifier">instance</span>(<span class="ruby-identifier">file</span>)
+147:             <span class="ruby-identifier">lib</span>  = <span class="ruby-identifier">cur</span>
+148:             <span class="ruby-identifier">file</span> = <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">default</span> <span class="ruby-comment cmt"># default file to load</span>
+149:           <span class="ruby-keyword kw">end</span>
+150:         <span class="ruby-keyword kw">end</span>
+151:       <span class="ruby-keyword kw">end</span>
+152:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">opts</span>[<span class="ruby-value">:load</span>]
+153:         <span class="ruby-identifier">lib</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">load</span>(<span class="ruby-identifier">file</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">original_load</span>(<span class="ruby-identifier">file</span>)
+154:       <span class="ruby-keyword kw">else</span>
+155:         <span class="ruby-identifier">lib</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">require</span>(<span class="ruby-identifier">file</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">original_require</span>(<span class="ruby-identifier">file</span>)
+156:       <span class="ruby-keyword kw">end</span>
+157:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="constrain-method" class="method-detail ">
+        <a name="method-i-constrain"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">constrain</span><span
+            class="method-args">(lib)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="constrain-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 160</span>
+160:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">constrain</span>(<span class="ruby-identifier">lib</span>)
+161:       <span class="ruby-identifier">cmp</span> = <span class="ruby-keyword kw">self</span>[<span class="ruby-identifier">lib</span>.<span class="ruby-identifier">name</span>]
+162:       <span class="ruby-keyword kw">if</span> <span class="ruby-constant">Array</span> <span class="ruby-operator">===</span> <span class="ruby-identifier">cmp</span>
+163:         <span class="ruby-keyword kw">self</span>[<span class="ruby-identifier">lib</span>.<span class="ruby-identifier">name</span>] = <span class="ruby-identifier">lib</span>
+164:       <span class="ruby-keyword kw">else</span>
+165:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">version</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">cmp</span>.<span class="ruby-identifier">version</span>
+166:           <span class="ruby-identifier">raise</span> <span class="ruby-constant">VersionError</span>
+167:         <span class="ruby-keyword kw">end</span>
+168:       <span class="ruby-keyword kw">end</span>
+169:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="each-method" class="method-detail ">
+        <a name="method-i-each"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">each</span><span
+            class="method-args">(&block)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="each-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 59</span>
+59:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">each</span>(&amp;<span class="ruby-identifier">block</span>)
+60:       <span class="ruby-ivar">@index</span>.<span class="ruby-identifier">each</span>(&amp;<span class="ruby-identifier">block</span>)
+61:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="enironment-method" class="method-detail ">
+        <a name="method-i-enironment"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">enironment</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="enironment-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 34</span>
+34:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">enironment</span>
+35:       <span class="ruby-ivar">@environment</span>
+36:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="include--method" class="method-detail ">
+        <a name="method-i-include%3F"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">include?</span><span
+            class="method-args">(name)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="include--source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 49</span>
+49:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">include?</span>(<span class="ruby-identifier">name</span>)
+50:       <span class="ruby-ivar">@index</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">name</span>)
+51:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="load-method" class="method-detail ">
+        <a name="method-i-load"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">load</span><span
+            class="method-args">(path, wrap=nil)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="load-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 111</span>
+111:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">wrap</span>=<span class="ruby-keyword kw">nil</span>)
+112:       <span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span> = *<span class="ruby-identifier">match</span>(<span class="ruby-identifier">path</span>, <span class="ruby-keyword kw">false</span>)
+113:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">lib</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">file</span>
+114:         <span class="ruby-identifier">constrain</span>(<span class="ruby-identifier">lib</span>)
+115:         <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">load_absolute</span>(<span class="ruby-identifier">file</span>, <span class="ruby-identifier">wrap</span>)
+116:       <span class="ruby-keyword kw">else</span>
+117:         <span class="ruby-keyword kw">begin</span>
+118:           <span class="ruby-identifier">original_load</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">wrap</span>)
+119:         <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">LoadError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">load_error</span>
+120:           <span class="ruby-identifier">raise</span> <span class="ruby-identifier">clean_backtrace</span>(<span class="ruby-identifier">load_error</span>)
+121:         <span class="ruby-keyword kw">end</span>
+122:       <span class="ruby-keyword kw">end</span>
+123:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="load-monitor-method" class="method-detail ">
+        <a name="method-i-load_monitor"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">load_monitor</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+NOTE: Not used yet.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="load-monitor-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 74</span>
+74:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load_monitor</span>
+75:       <span class="ruby-ivar">@load_monitor</span>
+76:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="load-stack-method" class="method-detail ">
+        <a name="method-i-load_stack"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">load_stack</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="load-stack-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 69</span>
+69:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load_stack</span>
+70:       <span class="ruby-ivar">@load_stack</span>
+71:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="names-method" class="method-detail ">
+        <a name="method-i-names"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">names</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="names-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 54</span>
+54:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">names</span>
+55:       <span class="ruby-ivar">@index</span>.<span class="ruby-identifier">keys</span>
+56:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="require-method" class="method-detail ">
+        <a name="method-i-require"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">require</span><span
+            class="method-args">(path)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="require-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 84</span>
+ 84:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">require</span>(<span class="ruby-identifier">path</span>)
+ 85:       <span class="ruby-comment cmt">#begin</span>
+ 86:       <span class="ruby-comment cmt">#  original_require(path)</span>
+ 87:       <span class="ruby-comment cmt">#rescue LoadError =&gt; load_error</span>
+ 88:       <span class="ruby-comment cmt">#  lib, file = *match(path)</span>
+ 89:       <span class="ruby-comment cmt">#  if lib &amp;&amp; file</span>
+ 90:       <span class="ruby-comment cmt">#    constrain(lib)</span>
+ 91:       <span class="ruby-comment cmt">#    lib.require_absolute(file)</span>
+ 92:       <span class="ruby-comment cmt">#  else</span>
+ 93:       <span class="ruby-comment cmt">#    raise clean_backtrace(load_error)</span>
+ 94:       <span class="ruby-comment cmt">#  end</span>
+ 95:       <span class="ruby-comment cmt">#end</span>
+ 96:       <span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span> = *<span class="ruby-identifier">match</span>(<span class="ruby-identifier">path</span>)
+ 97:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">lib</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">file</span>
+ 98:         <span class="ruby-identifier">constrain</span>(<span class="ruby-identifier">lib</span>)
+ 99:         <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">require_absolute</span>(<span class="ruby-identifier">file</span>)
+100:       <span class="ruby-keyword kw">else</span>
+101:         <span class="ruby-keyword kw">begin</span>
+102:           <span class="ruby-identifier">original_require</span>(<span class="ruby-identifier">path</span>)
+103:         <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">LoadError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">load_error</span>
+104:           <span class="ruby-identifier">raise</span> <span class="ruby-identifier">clean_backtrace</span>(<span class="ruby-identifier">load_error</span>)
+105:         <span class="ruby-keyword kw">end</span>
+106:       <span class="ruby-keyword kw">end</span>
+107: 
+108:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="size-method" class="method-detail ">
+        <a name="method-i-size"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">size</span><span
+            class="method-args">()</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="size-source">
+<pre>
+    <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 64</span>
+64:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">size</span>
+65:       <span class="ruby-ivar">@index</span>.<span class="ruby-identifier">size</span>
+66:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+    <div id="private-instance-method-details" class="method-section section">
+      <h3 class="section-header">Private Instance Methods</h3>
+
+    
+      <div id="clean-backtrace-method" class="method-detail ">
+        <a name="method-i-clean_backtrace"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">clean_backtrace</span><span
+            class="method-args">(error)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="clean-backtrace-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 243</span>
+243:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">clean_backtrace</span>(<span class="ruby-identifier">error</span>)
+244:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">$DEBUG</span>
+245:         <span class="ruby-identifier">error</span>
+246:       <span class="ruby-keyword kw">else</span>
+247:         <span class="ruby-identifier">bt</span> = <span class="ruby-identifier">error</span>.<span class="ruby-identifier">backtrace</span>
+248:         <span class="ruby-identifier">bt</span> = <span class="ruby-identifier">bt</span>.<span class="ruby-identifier">reject</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-regexp re">/roll/</span> <span class="ruby-operator">=~</span> <span class="ruby-identifier">e</span> }
+249:         <span class="ruby-identifier">error</span>.<span class="ruby-identifier">set_backtrace</span>(<span class="ruby-identifier">bt</span>)
+250:         <span class="ruby-identifier">error</span>
+251:       <span class="ruby-keyword kw">end</span>
+252:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="match-method" class="method-detail ">
+        <a name="method-i-match"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">match</span><span
+            class="method-args">(path, suffix=true)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          <p>
+Find require matches.
+</p>
+          
+
+          
+          <div class="method-source-code"
+            id="match-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 174</span>
+174:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">match</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">suffix</span>=<span class="ruby-keyword kw">true</span>)
+175:       <span class="ruby-identifier">path</span> = <span class="ruby-identifier">path</span>.<span class="ruby-identifier">to_s</span>
+176: 
+177:       <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">nil</span> <span class="ruby-keyword kw">if</span> <span class="ruby-regexp re">/^\//</span> <span class="ruby-operator">=~</span> <span class="ruby-identifier">path</span>  <span class="ruby-comment cmt"># absolute path</span>
+178: 
+179:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">path</span>.<span class="ruby-identifier">index</span>(<span class="ruby-value str">':'</span>) <span class="ruby-comment cmt"># a specified library</span>
+180:         <span class="ruby-identifier">name</span>, <span class="ruby-identifier">path</span> = <span class="ruby-identifier">path</span>.<span class="ruby-identifier">split</span>(<span class="ruby-value str">':'</span>)
+181:         <span class="ruby-identifier">lib</span>  = <span class="ruby-constant">Library</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">name</span>)
+182:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">active?</span>
+183:           <span class="ruby-identifier">file</span> = <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">find</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">suffix</span>)
+184:           <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span>
+185:         <span class="ruby-keyword kw">end</span>
+186:       <span class="ruby-keyword kw">end</span>
+187: 
+188:       <span class="ruby-identifier">matches</span> = []
+189: 
+190:       <span class="ruby-comment cmt"># try the load stack first</span>
+191:       <span class="ruby-identifier">load_stack</span>.<span class="ruby-identifier">reverse_each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">lib</span><span class="ruby-operator">|</span>
+192:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">file</span> = <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">find</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">suffix</span>)
+193:           <span class="ruby-keyword kw">return</span> [<span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span>] <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">$VERBOSE</span>
+194:           <span class="ruby-identifier">matches</span> <span class="ruby-operator">&lt;&lt;</span> [<span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span>]
+195:         <span class="ruby-keyword kw">end</span>
+196:       <span class="ruby-keyword kw">end</span>
+197: 
+198:       <span class="ruby-comment cmt"># TODO: Perhaps the selected and unselected should be kept in separate lists?</span>
+199:       <span class="ruby-identifier">unselected</span>, <span class="ruby-identifier">selected</span> = *<span class="ruby-ivar">@index</span>.<span class="ruby-identifier">partition</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">name</span>, <span class="ruby-identifier">libs</span><span class="ruby-operator">|</span> <span class="ruby-constant">Array</span> <span class="ruby-operator">===</span> <span class="ruby-identifier">libs</span> }
+200: 
+201:       <span class="ruby-identifier">selected</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">lib</span>)<span class="ruby-operator">|</span>
+202:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">file</span> = <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">find</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">suffix</span>)
+203:           <span class="ruby-comment cmt">#matches &lt;&lt; [lib, file]</span>
+204:           <span class="ruby-comment cmt">#return matches.first unless $VERBOSE</span>
+205:           <span class="ruby-keyword kw">return</span> [<span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span>] <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">$VERBOSE</span>
+206:           <span class="ruby-identifier">matches</span> <span class="ruby-operator">&lt;&lt;</span> [<span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span>]
+207:         <span class="ruby-keyword kw">end</span>
+208:       <span class="ruby-keyword kw">end</span>
+209: 
+210:       <span class="ruby-identifier">unselected</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">libs</span>)<span class="ruby-operator">|</span>
+211:         <span class="ruby-identifier">pos</span> = []
+212:         <span class="ruby-identifier">libs</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">lib</span><span class="ruby-operator">|</span>
+213:           <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">file</span> = <span class="ruby-identifier">lib</span>.<span class="ruby-identifier">find</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">suffix</span>)
+214:             <span class="ruby-identifier">pos</span> <span class="ruby-operator">&lt;&lt;</span> [<span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span>]
+215:           <span class="ruby-keyword kw">end</span>
+216:         <span class="ruby-keyword kw">end</span>
+217:         <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">pos</span>.<span class="ruby-identifier">empty?</span>
+218:           <span class="ruby-identifier">latest</span> = <span class="ruby-identifier">pos</span>.<span class="ruby-identifier">sort</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">a</span>,<span class="ruby-identifier">b</span><span class="ruby-operator">|</span> <span class="ruby-identifier">b</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">version</span> <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">a</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">version</span> }.<span class="ruby-identifier">first</span>
+219:           <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">latest</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">$VERBOSE</span>
+220:           <span class="ruby-identifier">matches</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">latest</span>
+221:           <span class="ruby-comment cmt">#return matches.first unless $VERBOSE</span>
+222:         <span class="ruby-keyword kw">end</span>
+223:       <span class="ruby-keyword kw">end</span>
+224: 
+225:       <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">uniq!</span>
+226: 
+227:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">1</span>
+228:         <span class="ruby-identifier">warn_multiples</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">matches</span>)
+229:       <span class="ruby-keyword kw">end</span>
+230: 
+231:       <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">first</span>
+232:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+      <div id="warn-multiples-method" class="method-detail ">
+        <a name="method-i-warn_multiples"></a>
+
+        <div class="method-heading">
+        
+          <span class="method-name">warn_multiples</span><span
+            class="method-args">(path, matches)</span>
+          <span class="method-click-advice">click to toggle source</span>
+        
+        </div>
+
+        <div class="method-description">
+          
+          
+          
+
+          
+          <div class="method-source-code"
+            id="warn-multiples-source">
+<pre>
+     <span class="ruby-comment cmt"># File lib/roll/ledger.rb, line 235</span>
+235:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">warn_multiples</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">matches</span>)
+236:       <span class="ruby-identifier">warn</span> <span class="ruby-node">&quot;multiple matches for same request -- #{path}&quot;</span>
+237:       <span class="ruby-identifier">matches</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">lib</span>, <span class="ruby-identifier">file</span><span class="ruby-operator">|</span>
+238:         <span class="ruby-identifier">warn</span> <span class="ruby-node">&quot;  #{file}&quot;</span>
+239:       <span class="ruby-keyword kw">end</span>
+240:     <span class="ruby-keyword kw">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+      </div>
+
+    
+    </div>
+  
+
+  </div>
+
+
+  <div id="rdoc-debugging-section-dump" class="debugging-section">
+  
+    <p>Disabled; run with --debug to generate this.</p>
+  
+  </div>
+
+</main>
+</body>
+</html>
+
