@@ -1,4 +1,4 @@
-#!mast bin lib meta script test [A-Z]*
+#!mast -x S* bin lib meta script test [A-Z]*
 bin/roll
 lib/oll.rb
 lib/roll/command.rb
@@ -12,7 +12,6 @@ lib/roll/locals.rb
 lib/roll/metadata.rb
 lib/roll/original.rb
 lib/roll/version.rb
-lib/roll/xdg.rb
 lib/roll.rb
 meta/active
 meta/authors
@@ -20,6 +19,7 @@ meta/contact
 meta/created
 meta/description
 meta/homepage
+meta/maintainer
 meta/name
 meta/repository
 meta/ruby
@@ -27,28 +27,25 @@ meta/suite
 meta/summary
 meta/version
 script/rdoc
+script/setup
 script/test
 test/benchmarks/vsgems.rb
 test/benchmarks/vsgems_bm.rb
-test/case/version_case.rb
-test/demo/01_library.rdoc
-test/demo/04_version.rdoc
-test/fixture/env.list
-test/fixture/inspect.rb
-test/fixture/tryme/1.0/lib/tryme.rb
-test/fixture/tryme/1.0/meta/homepage
-test/fixture/tryme/1.0/meta/name
-test/fixture/tryme/1.0/meta/version
-test/fixture/tryme/1.1/lib/tryme.rb
-test/fixture/tryme/1.1/meta/homepage
-test/fixture/tryme/1.1/meta/name
-test/fixture/tryme/1.1/meta/version
+test/demonstrations/01_library.rdoc
+test/demonstrations/04_version.rdoc
+test/fixtures/env.list
+test/fixtures/inspect.rb
+test/fixtures/tryme/1.0/lib/tryme.rb
+test/fixtures/tryme/1.0/meta/homepage
+test/fixtures/tryme/1.0/meta/name
+test/fixtures/tryme/1.0/meta/version
+test/fixtures/tryme/1.1/lib/tryme.rb
+test/fixtures/tryme/1.1/meta/homepage
+test/fixtures/tryme/1.1/meta/name
+test/fixtures/tryme/1.1/meta/version
 test/unit/version_test.rb
+test/unitcases/version_case.rb
 TODO
 README.rdoc
 HISTORY
-InstalledFiles
-Syckfile
-SetupConfig
-VERSION
 COPYING
