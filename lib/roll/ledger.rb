@@ -173,9 +173,10 @@ module Roll
     # Find require matches.
     def match(path, suffix=true)
       path = path.to_s
-      matches = []
 
-      if path.index(':') # a specific library
+      return nil if /^\// =~ path  # absolute path
+
+      if path.index(':') # a specified library
         name, path = path.split(':')
         lib  = Library.open(name)
         if lib.active?
@@ -183,6 +184,8 @@ module Roll
           return lib, file
         end
       end
+
+      matches = []
 
       # try the load stack first
       load_stack.reverse_each do |lib|
@@ -218,6 +221,8 @@ module Roll
           #return matches.first unless $VERBOSE
         end
       end
+
+      matches.uniq!
 
       if matches.size > 1
         warn_multiples(path, matches)
