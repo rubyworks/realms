@@ -1,7 +1,7 @@
 require 'roll/kernel'
 
 module Roll
-  VERSION = "1.0.0"  #:till: VERSION = "<%= version %>"
+  #VERSION = "1.0.0"  #:till: VERSION = "<%= version %>"
 
   # Get environment.
 

@@ -1,76 +1,174 @@
 module Roll
+  require 'yaml'  # wish we did not need this
 
   #--
   # TODO: Use POM? If available?
   #--
   class Metadata
 
-    #TODO: hide most methods
+    #
+    def self.attr_accessor(name)
+      module_eval %{
+        def #{name}
+          @cache[:#{name}]
+        end
+        def #{name}=(x)
+          @cache[:#{name}] = x
+        end
+      }
+    end
 
     attr :location
+
+    attr_accessor :name
+
+    attr_accessor :major
+
+    attr_accessor :minor
+
+    attr_accessor :patch
+
+    attr_accessor :state
+
+    attr_accessor :build
+
+    attr_accessor :paths
+
+    attr_accessor :arch
+
+    attr_accessor :date
+
+    attr_accessor :omit
 
     #
     def initialize(location)
       @location = location
-      @cache = {}
+      @cache    = {}
+
+      if file
+        data = YAML.load(File.new(file))
+        if String === data
+          parse_string_version(data)
+        else
+          data.each do |k,v|
+            @cache[k.to_sym] = v
+          end
+        end
+      end
+
+      # override defaults
+      @cache[:paths]  ||= ['lib']
+
+      if String === @cache[:paths]
+        @cache[:paths] = @cache[:paths].strip.split(/(\s+|\s*[,;:]\s*)/)
+      end
     end
 
-    # Get library name.
-    def name
-      @cache[:name] ||= read('name')
+    # VERSION file.
+    def file
+      @file ||= Dir[File.join(location, "{VERSION,Version.version}{,.yaml,yml}")].first
     end
 
     # Get library version. 
-    #--
-    # TODO: handle VERSION file
-    # TODO: handle YAML
-    #++
     def version
-      @cache[:version] ||= Version.new(read(:version))
-    end
-
-    # Get library active state.
-    def active
-      return @cache[:active] if @cache.key?(:active)
-      @cache[:active] = (
-        case read(:active).to_s.downcase
-        when 'false', 'no'
-          false
-        else
-          true
-        end
+      @version ||= (
+        string = [major, minor, patch, state, build].compact.join('.')
+        Version.new(string)
       )
     end
 
     # Get library release date. 
     #--
-    # TODO: default date to what?
+    # TODO: convert to date object
     #++
     def released
-      @cache[:released] ||= read(:released) || "1900-01-01"
+      date
     end
 
     # Get library loadpath.
     def loadpath
-      @cache[:loadpath] ||= (
-        val = read(:loadpath).to_s.strip.split(/\s*\n/)  # TODO: handle YAML
-        val = ['lib'] if val.empty?
-        val
-      )
+      paths
     end
 
-    #
+    # Is active, i.e. not omitted.
+    def active  ; !omit ; end
+
+    # Is active, i.e. not omitted.
+    def active? ; !omit ; end
+
+    # TODO: Improve! Should this be here?
     def requires
-      @cache[:requires] ||= (
-        if entry = read(:requires)
-          entry.strip.split("\n").map do |line|
-            line.strip.split(/\s+/)
-          end
+      @requires = (
+        glob = File.join(location, "{REQUEST,Reqfile}")
+        file = Dir[glob].first
+        if file
+          data = YAML.load(File.new(file))
+          data['production']['requires']
         else
           []
         end
       )
     end
+
+    private
+
+    #
+    def parse_string_version(data)
+      data = data.strip
+
+      # name
+      if md = /^(\w+)/.match(data)
+        @name = md[1]
+      else
+        name = File.basename(File.dirname(location))
+        if md = /^(\w+)/.match(data)
+          @name = md[1]
+        else
+          raise "name needed for #{location}"
+        end
+      end
+
+      # version
+      if md = /(\d+\.)+(\w+\.)?(\d+)/.match(data)
+        ver = md[0].split('.')
+        case ver.size
+        when 5
+          @cache[:major], @cache[:minor], @cache[:patch], @cache[:state], @cache[:build] = *ver[0,5]
+        else
+          @cache[:major], @cache[:minor], @cache[:patch], @cache[:build] = *ver[0,4]
+        end
+      end
+
+      # date
+      if md = /\d\d\d\d-\d\d-\d\d/.match(data)
+        @date = md[0] # TODO: convert to date
+      end
+    end
+
+=begin
+
+    ## Special writer for paths.
+    #def paths=(x)
+    #  case x
+    #  when String       def #{name}
+    #    @paths = x.strip.split(/(\s+|\s*[,;:]\s*)/)
+    #  else
+    #    @paths = x
+    #  end
+    #end
+
+    ## Get library active state.
+    #def active
+    #  return @cache[:active] if @cache.key?(:active)
+    #  @cache[:active] = (
+    #    case read(:active).to_s.downcase
+    #    when 'false', 'no'
+    #      false
+    #    else
+    #      true
+    #    end
+    #  )
+    #end
 
     #
     def method_missing(name, *args)
@@ -106,6 +204,8 @@ module Roll
         true
       )
     end
+=end
+
   end
 
 end
