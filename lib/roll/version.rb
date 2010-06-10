@@ -48,6 +48,7 @@ module Roll
 
   private
 
+    # TODO: deal with string portions of version number
     def initialize(*args)
       args = args.join('.').split(/\W+/)
       @tuple = args.collect { |i| i.to_i }
