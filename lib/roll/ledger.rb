@@ -18,7 +18,7 @@ module Roll
       @environment.each do |name, paths|
         paths.each do |path|
           unless File.directory?(path)
-            warn "roll: invalid path for #{name} -- #{path}"
+            warn "invalid path for #{name} -- #{path}"
             next
           end
           lib = Library.new(path, name)
@@ -237,6 +237,11 @@ module Roll
       matches.each do |lib, file|
         warn "  #{file}"
       end
+    end
+
+    #
+    def warn(message)
+      $stderr.puts("roll: #{message}") if $DEBUG || $VERBOSE
     end
 
     #
