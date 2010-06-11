@@ -7,60 +7,19 @@ module Roll
   class Metadata
 
     #
-    def self.attr_accessor(name)
-      module_eval %{
-        def #{name}
-          @cache[:#{name}]
-        end
-        def #{name}=(x)
-          @cache[:#{name}] = x
-        end
-      }
-    end
-
-    attr :location
-
-    attr_accessor :name
-
-    attr_accessor :major
-
-    attr_accessor :minor
-
-    attr_accessor :patch
-
-    attr_accessor :state
-
-    attr_accessor :build
-
-    attr_accessor :paths
-
-    attr_accessor :arch
-
-    attr_accessor :date
-
-    attr_accessor :omit
-
-    #
     def initialize(location)
       @location = location
-      @cache    = {}
+
+      # override defaults
+      @loadpath = ['lib']
 
       if file
         data = YAML.load(File.new(file))
         if String === data
           parse_string_version(data)
         else
-          data.each do |k,v|
-            @cache[k.to_sym] = v
-          end
+          parse_hash_version(data)
         end
-      end
-
-      # override defaults
-      @cache[:paths]  ||= ['lib']
-
-      if String === @cache[:paths]
-        @cache[:paths] = @cache[:paths].strip.split(/(\s+|\s*[,;:]\s*)/)
       end
     end
 
@@ -69,12 +28,42 @@ module Roll
       @file ||= Dir[File.join(location, "{VERSION,Version.version}{,.yaml,yml}")].first
     end
 
-    # Get library version. 
-    def version
-      @version ||= (
-        string = [major, minor, patch, state, build].compact.join('.')
-        Version.new(string)
-      )
+    # Location of library.
+    attr :location
+
+    # Name of library.
+    attr_accessor :name
+
+    # Version number.
+    attr_accessor :version
+
+    # Release date.
+    attr_accessor :date
+
+    # Version code name, e.g. "Hardy Haron"
+    attr_accessor :codename
+
+    # Local load paths.
+    attr_reader :loadpath
+
+    #
+    def loadpath=(path)
+      case path
+      when nil
+        @loadpath = ['lib']
+      when String
+        @loadpath = path.strip.split(/(\s+|\s*[,;:]\s*)/)
+      else
+        @loadpath = path
+      end
+    end
+
+    # Major version number.
+    attr_reader :version
+
+    # Set version, converts string into Version number class.
+    def version=(string)
+      @version = Version.new(string)
     end
 
     # Get library release date. 
@@ -85,72 +74,91 @@ module Roll
       date
     end
 
-    # Get library loadpath.
-    def loadpath
-      paths
-    end
-
-    # Is active, i.e. not omitted.
-    def active  ; !omit ; end
-
-    # Is active, i.e. not omitted.
-    def active? ; !omit ; end
-
-    # TODO: Improve! Should this be here?
+    # TODO: Improve! Is this even needed?
     def requires
       @requires = (
-        glob = File.join(location, "{REQUEST,Reqfile}")
+        glob = File.join(location, "{REQUIRE,.require}{,.yml,.yaml}", File::FNM_CASEFOLD)
         file = Dir[glob].first
         if file
           data = YAML.load(File.new(file))
-          data['production']['requires']
+          data['runtime'] + data['production']
         else
           []
         end
       )
     end
 
-    private
+    # TODO: find a different way for a lib to be manually ommited.
+
+    # Is active, i.e. not omitted.
+    def active  ; true ; end
+
+    # Is active, i.e. not omitted.
+    def active? ; true ; end
+
+  private
 
     #
+    def parse_hash_version(data)
+      data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
+
+      self.name = data[:name]
+      self.date = data[:date]
+
+      # jeweler
+      if data[:major]
+        @version = data.values_at(:major, :minor, :patch, :state, :build).compact.join('.')
+      else
+        vers = data[:vers] || data[:version]
+        self.version = (Array === vers ? vers.join('.') : vers)
+      end
+
+      self.codename = data[:code]
+      self.loadpath = data[:paths]
+    end
+
+    # Parse string-based VERSION file accoring to Ruby POM standard.
     def parse_string_version(data)
       data = data.strip
 
       # name
-      if md = /^(\w+)/.match(data)
-        @name = md[1]
+      if md = /^(\w+)(\-\d|\ )/.match(data)
+        self.name = md[1]
       else
-        name = File.basename(File.dirname(location))
-        if md = /^(\w+)/.match(data)
-          @name = md[1]
+        fname = File.basename(File.dirname(location))
+        if /^(\w+)(\-\d|\ )/.match(fname)
+          self.name = md[1]
         else
-          raise "name needed for #{location}"
+          raise "roll: name needed for #{location}"
         end
       end
 
       # version
       if md = /(\d+\.)+(\w+\.)?(\d+)/.match(data)
-        ver = md[0].split('.')
-        case ver.size
-        when 5
-          @cache[:major], @cache[:minor], @cache[:patch], @cache[:state], @cache[:build] = *ver[0,5]
-        else
-          @cache[:major], @cache[:minor], @cache[:patch], @cache[:build] = *ver[0,4]
-        end
+        self.version = md[0]
       end
 
       # date
+      # TODO: convert to date/time
       if md = /\d\d\d\d-\d\d-\d\d/.match(data)
-        @date = md[0] # TODO: convert to date
+        self.date = md[0]
       end
+
+      # loadpath
+      path = []
+      data.scan(/\ (\S+\/)\ /) do |path|
+        path << path.chomp('/')
+      end
+      self.loadpath = path unless path.empty?
     end
 
-=begin
 
+
+=begin
     ## Special writer for paths.
     #def paths=(x)
     #  case x
-    #  when String       def #{name}
+    #  when String
     #    @paths = x.strip.split(/(\s+|\s*[,;:]\s*)/)
     #  else
     #    @paths = x
