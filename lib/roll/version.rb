@@ -1,9 +1,6 @@
 module Roll
 
-  # = Version
-  #
-  # VersionNumber is a simplified form of a Tuple class
-  # desgined specifically for dealing with version numbers.
+  # = Version Number
   #
   class Version #< Tuple
 

@@ -13,7 +13,6 @@ module Roll
     #DLEXT = '.' + ::Config::CONFIG['DLEXT']
 
     #
-    #SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
     SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
 
     #
@@ -153,8 +152,7 @@ module Roll
     # of the file is returned.
     #
     # Unlike #find, this also matches within the library directory
-    # itself, eg. <tt>lib/foo/*</tt>. It is used by #aquire.
-    #
+    # itself, eg. <tt>lib/foo/*</tt>. It is used by #acquire.
     def include?(file, suffix=true)
       if suffix
         SUFFIXES.each do |ext|

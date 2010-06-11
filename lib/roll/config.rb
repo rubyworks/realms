@@ -11,7 +11,7 @@ module ::Config
   CONFIG_DIRS = (
     dirs = ENV['XDG_CONFIG_DIRS'].to_s.split(/[:;]/)
     if dirs.empty?
-      dirs = File.join(Config::CONFIG['sysconfdir'], 'xdg')
+      dirs = [File.join(Config::CONFIG['sysconfdir'], 'xdg')]
     end
     dirs.collect{ |d| File.expand_path(d) }
   )
