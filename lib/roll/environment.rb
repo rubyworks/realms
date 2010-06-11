@@ -2,6 +2,7 @@ require 'yaml'
 require 'fileutils'
 #require 'roll/xdg'
 require 'roll/config'
+require 'roll/metadata'
 
 module Roll
 
@@ -72,7 +73,6 @@ module Roll
       end
       str
     end
-
 
     # Index tracks the name and location of each library
     # in an environment.
@@ -272,7 +272,7 @@ module Roll
       def index
         set = Hash.new{ |h,k| h[k] = [] }
         locate.each do |path|
-          name = load_name(path)
+          name = name(path)
           #vers = load_version(path)
           if name #&& vers
             set[name] << path
@@ -281,7 +281,7 @@ module Roll
         set
       end
 
-      #
+      # Locate projects.
       def locate
         locs = []
         each do |dir, depth|
@@ -292,21 +292,31 @@ module Roll
 
       # Search a given directory for projects upto a given depth.
       # Projects directories are determined by containing a
-      # 'meta' or '.meta' directory.
+      # 'VERSION' file.
       def find_projects(dir, depth=3)
         depth = Integer(depth || 3)
         depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
-        glob = File.join(dir, "{#{depth}}", "{.meta,meta}")
-        meta_locations = Dir[glob]
-        meta_locations.map{ |d| d.chomp('/meta').chomp('/.meta') }
+        find = File.join(dir, "{#{depth}}", "VERSION{,.yml,.yaml,.txt}")
+        locations = Dir.glob(find, File::FNM_CASEFOLD)
+        locations.map{ |d| File.dirname(d) }
       end
 
-      # Get library name.
-      def load_name(path)
-        file = Dir[File.join(path, '{,.}meta', 'name')].first
-        if file
-          File.read(file).strip  # TODO: handle YAML
-        end
+      ## Get library name.
+      #def load_name(path)
+      #  file = Dir[File.join(path, '{,.}meta', 'name')].first
+      #  if file
+      #    File.read(file).strip  # TODO: handle YAML
+      #  end
+      #end
+
+      #
+      def metadata(path)
+        @metadata[path] ||= Metadata.new(path)
+      end
+
+      #
+      def name(path)
+        metadata(path).name
       end
 
     end#class Lookup
