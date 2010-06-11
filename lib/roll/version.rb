@@ -2,7 +2,8 @@ module Roll
 
   # = Version Number
   #
-  class Version #< Tuple
+  # Essentially a tuple (immutable array).
+  class Version
 
     #include Enumerable
     include Comparable

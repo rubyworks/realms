@@ -1,7 +1,6 @@
-#require 'rbconfig'
+require 'yaml'  # for metadata
 require 'roll/version'
-require 'roll/metadata'
-require 'roll/errors'
+require 'roll/environment'
 
 module Roll
 
@@ -110,7 +109,7 @@ module Roll
       @released ||= metadata.released
     end
 
-    #
+    # TODO
     def verify
       requires.each do |(name, constraint)|
         Library.open(name, constraint)
@@ -199,7 +198,7 @@ module Roll
       #Library.load_monitor[file] << caller if $LOAD_MONITOR
       Library.load_stack << self
       begin
-        success = original_require(file)
+        success = roll_original_require(file)
       #rescue LoadError => load_error
       #  raise clean_backtrace(load_error)
       ensure
@@ -223,7 +222,7 @@ module Roll
       #Library.load_monitor[file] << caller if $LOAD_MONITOR
       Library.load_stack << self
       begin
-        success = original_load(file, wrap)
+        success = roll_original_load(file, wrap)
       #rescue LoadError => load_error
       #  raise clean_backtrace(load_error)
       ensure
@@ -234,7 +233,7 @@ module Roll
 
     # Inspection.
     def inspect
-      if @version
+      if version
         %[#<Library #{name}/#{@version} @location="#{location}">]
       else
         %[#<Library #{name} @location="#{location}">]
@@ -310,6 +309,564 @@ module Roll
       end
     end
 
+  end
+
+  #= Library Metadata
+  #--
+  # TODO: Use POM? If available?
+  #--
+  class Metadata
+
+    #
+    def initialize(location)
+      @location = location
+
+      # override defaults
+      @loadpath = ['lib']
+
+      if file
+        data = YAML.load(File.new(file))
+        if String === data
+          parse_string_version(data)
+        else
+          parse_hash_version(data)
+        end
+      else
+
+      end
+    end
+
+    # VERSION file.
+    def file
+      @file ||= Dir[File.join(location, "{VERSION,Version.version}{,.yaml,yml}")].first
+    end
+
+    # Location of library.
+    attr :location
+
+    # Name of library.
+    attr_accessor :name
+
+    # Version number.
+    attr_accessor :version
+
+    # Release date.
+    attr_accessor :date
+
+    # Version code name, e.g. "Hardy Haron"
+    attr_accessor :codename
+
+    # Local load paths.
+    attr_reader :loadpath
+
+    #
+    def loadpath=(path)
+      case path
+      when nil
+        path = ['lib']
+      when String
+        path = path.strip.split(/(\s+|\s*[,;:]\s*)/)
+      end
+      @loadpath = path
+    end
+
+    ## Special writer for paths.
+    #def paths=(x)
+    #  case x
+    #  when String
+    #    @paths = x.strip.split(/(\s+|\s*[,;:]\s*)/)
+    #  else
+    #    @paths = x
+    #  end
+    #end
+
+    # Version number.
+    #
+    # Technically, a library should not appear in a ledger list
+    # if it lacks a VERSION file. However, just in case this
+    # occurs (say by a hnad edited environment) we fallback
+    # to a version of '0.0.0'.
+    def version
+      @version ||= Version.new('0.0.0')
+    end
+
+    # Set version, converts string into Version number class.
+    def version=(string)
+      @version = Version.new(string)
+    end
+
+    # Get library release date.
+    #--
+    # TODO: convert to date object
+    #++
+    def released
+      date
+    end
+
+    # TODO: Improve! Is this even needed?
+    def requires
+      @requires = (
+        glob = File.join(location, "{REQUIRE,.require}{,.yml,.yaml}", File::FNM_CASEFOLD)
+        file = Dir[glob].first
+        if file
+          data = YAML.load(File.new(file))
+          data['runtime'] + data['production']
+        else
+          []
+        end
+      )
+    end
+
+    # TODO: find a different way for a lib to be manually ommited.
+
+    # Is active, i.e. not omitted.
+    def active  ; true ; end
+
+    # Is active, i.e. not omitted.
+    def active? ; true ; end
+
+  private
+
+    #
+    def parse_hash_version(data)
+      data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
+
+      self.name = data[:name]
+      self.date = data[:date]
+
+      # jeweler
+      if data[:major]
+        @version = data.values_at(:major, :minor, :patch, :state, :build).compact.join('.')
+      else
+        vers = data[:vers] || data[:version]
+        self.version = (Array === vers ? vers.join('.') : vers)
+      end
+
+      self.codename = data[:code]
+      self.loadpath = data[:paths]
+    end
+
+    # Parse string-based VERSION file accoring to Ruby POM standard.
+    def parse_string_version(data)
+      data = data.strip
+
+      # name
+      if md = /^(\w+)(\-\d|\ )/.match(data)
+        self.name = md[1]
+      else
+        fname = File.basename(File.dirname(location))
+        if /^(\w+)(\-\d|\ )/.match(fname)
+          self.name = md[1]
+        else
+          raise "roll: name needed for #{location}"
+        end
+      end
+
+      # version
+      if md = /(\d+\.)+(\w+\.)?(\d+)/.match(data)
+        self.version = md[0]
+      end
+
+      # date
+      # TODO: convert to date/time
+      if md = /\d\d\d\d-\d\d-\d\d/.match(data)
+        self.date = md[0]
+      end
+
+      # loadpath
+      path = []
+      data.scan(/\ (\S+\/)\ /) do |path|
+        path << path.chomp('/')
+      end
+      self.loadpath = path unless path.empty?
+    end
+
+=begin
+    ## Get library active state.
+    #def active
+    #  return @cache[:active] if @cache.key?(:active)
+    #  @cache[:active] = (
+    #    case read(:active).to_s.downcase
+    #    when 'false', 'no'
+    #      false
+    #    else
+    #      true
+    #    end
+    #  )
+    #end
+
+    #
+    def method_missing(name, *args)
+      if @cache.key?(name)
+        @cache[name]
+      else
+        @cache[name] = read(name)
+      end
+    end
+
+  private
+
+    #
+    def read(name)
+      file = Dir[File.join(location, "{meta,.meta}", name.to_s)].first
+      if file
+        text = File.read(file)
+        if text =~ /^---/
+          require_yaml
+          YAML.load(text)
+        else
+          text.strip
+        end
+      else
+        nil
+      end
+    end
+
+    #
+    def require_yaml
+      @require_yaml ||=(
+        require 'yaml'
+        true
+      )
+    end
+=end
+
+  end
+
+  #--
+  # Ledger augments the Library metaclass.
+  #++
+  class << Library
+
+    #
+    def ledger
+      @ledger ||= Ledger.new
+    end
+
+    # Current environment
+    def environment
+      ledger.environment
+    end
+
+    # List of library names.
+    def list
+      ledger.names
+    end
+
+    #
+    def require(path)
+      ledger.require(path)
+    end
+
+    #
+    def load(path, wrap=nil)
+      ledger.load(path, wrap)
+    end
+
+    #
+    def acquire(path, opts={})
+      ledger.acquire(path, opts)
+    end
+
+    #
+    def load_stack
+      ledger.load_stack
+    end
+
+    #
+    def load_index
+      ledger.load_index
+    end
+
+    ## NOTE: Not used yet.
+    #def load_monitor
+    #  ledger.load_monitor
+    #end
+
+  end
+
+  # = Ledger class
+  #
+  class Ledger
+
+    include Enumerable
+
+    #
+    def initialize
+      @index = Hash.new{|h,k| h[k] = []}
+
+      @environment = Environment.new
+
+      @environment.each do |name, paths|
+        paths.each do |path|
+          unless File.directory?(path)
+            warn "invalid path for #{name} -- #{path}"
+            next
+          end
+          lib = Library.new(path, name)
+          @index[name] << lib if lib.active?
+        end
+      end
+
+      @load_stack = []
+      @load_index = {}
+      #@load_monitor = Hash.new{ |h,k| h[k]=[] }
+    end
+
+    #
+    def enironment
+      @environment
+    end
+
+    #
+    def [](name)
+      @index[name]
+    end
+
+    #
+    def []=(name, value)
+      @index[name] = value
+    end
+
+    #
+    def include?(name)
+      @index.include?(name)
+    end
+
+    #
+    def names
+      @index.keys
+    end
+
+    #
+    def each(&block)
+      @index.each(&block)
+    end
+
+    #
+    def size
+      @index.size
+    end
+
+    #
+    def load_stack
+      @load_stack
+    end
+
+    # NOTE: Not used yet.
+    def load_index
+      @load_index
+    end
+
+    ## NOTE: Not used yet.
+    #def load_monitor
+    #  @load_monitor
+    #end
+
+    #--
+    # TODO: Should Ruby's underlying require be tried first,
+    # then fallback to Rolls. Or vice-versa?
+    #++
+
+    #
+    def require(path)
+      return if load_index.key?(path)
+      #begin
+      #  original_require(path)
+      #rescue LoadError => load_error
+      #  lib, file = *match(path)
+      #  if lib && file
+      #    constrain(lib)
+      #    lib.require_absolute(file)
+      #  else
+      #    raise clean_backtrace(load_error)
+      #  end
+      #end
+      lib, file = *match(path)
+      if lib && file
+        constrain(lib)
+        lib.require_absolute(file)
+      else
+        begin
+          roll_original_require(path)
+        rescue LoadError => load_error
+          raise clean_backtrace(load_error)
+        end
+      end
+
+    end
+
+    #
+    def load(path, wrap=nil)
+      lib, file = *match(path, false)
+      if lib && file
+        constrain(lib)
+        lib.load_absolute(file, wrap)
+      else
+        begin
+          roll_original_load(path, wrap)
+        rescue LoadError => load_error
+          raise clean_backtrace(load_error)
+        end
+      end
+    end
+
+    # Acquire is pure Roll-style loading. First it
+    # looks for a specific library via ':'. If ':' is
+    # not present it then tries the current library.
+    # Failing that it fallsback to Ruby itself.
+    #
+    #   acquire('facets:string/margin')
+    #
+    # To "load" the library, rather than "require" it set
+    # the +:load+ option to true.
+    #
+    #   acquire('facets:string/margin', :load=>true)
+    #
+    def acquire(file, opts={})
+      if file.index(':') # a specific library
+        name, file = file.split(':')
+        lib = Library.open(name)
+      else # try the current library
+        cur = load_stack.last
+        if cur && cur.include?(file)
+          lib = cur
+        elsif !file.index('/') # is this a library name?
+          if cur = Library.instance(file)
+            lib  = cur
+            file = lib.default # default file to load
+          end
+        end
+      end
+      if opts[:load]
+        lib ? lib.load(file) : roll_original_load(file)
+      else
+        lib ? lib.require(file) : roll_original_require(file)
+      end
+    end
+
+    #
+    def constrain(lib)
+      cmp = self[lib.name]
+      if Array === cmp
+        self[lib.name] = lib
+      else
+        if lib.version != cmp.version
+          raise VersionError
+        end
+      end
+    end
+
+  private
+
+    # Find require matches.
+    def match(path, suffix=true)
+      path = path.to_s
+
+      return nil if /^\// =~ path  # absolute path
+
+      if path.index(':') # a specified library
+        name, path = path.split(':')
+        lib = Library.open(name)
+        if lib.active?
+          #file = lib.find(File.join(name,path), suffix)
+          file = lib.include?(path, suffix)
+          return lib, file
+        end
+      end
+
+      matches = []
+
+      # try the load stack first
+      load_stack.reverse_each do |lib|
+        if file = lib.find(path, suffix)
+          return [lib, file] unless $VERBOSE
+          matches << [lib, file]
+        end
+      end
+
+      # if the head of the path is the library
+      name, *_ = path.split(/\/|\\/)
+      lib = Library[name]
+      if lib && lib.active?
+        if file = lib.find(path, suffix)
+          return [lib, file] unless $VERBOSE
+          matches << [lib, file]
+        end
+      end
+
+      # TODO: Perhaps the selected and unselected should be kept in separate lists?
+      unselected, selected = *@index.partition{ |name, libs| Array === libs }
+
+      # broad search pre-selected libraries
+      selected.each do |(name, lib)|
+        if file = lib.find(path, suffix)
+          #matches << [lib, file]
+          #return matches.first unless $VERBOSE
+          return [lib, file] unless $VERBOSE
+          matches << [lib, file]
+        end
+      end
+
+      # finally try a broad search on unselected libraries
+      unselected.each do |(name, libs)|
+        pos = []
+        libs.each do |lib|
+          if file = lib.find(path, suffix)
+            pos << [lib, file]
+          end
+        end
+        unless pos.empty?
+          latest = pos.sort{ |a,b| b[0].version <=> a[0].version }.first
+          return latest unless $VERBOSE
+          matches << latest
+          #return matches.first unless $VERBOSE
+        end
+      end
+
+      matches.uniq!
+
+      if matches.size > 1
+        warn_multiples(path, matches)
+      end
+
+      matches.first
+    end
+
+    #
+    def warn_multiples(path, matches)
+      warn "multiple matches for same request -- #{path}"
+      matches.each do |lib, file|
+        warn "  #{file}"
+      end
+    end
+
+    #
+    def warn(message)
+      $stderr.puts("roll: #{message}") if $DEBUG || $VERBOSE
+    end
+
+    #
+    def clean_backtrace(error)
+      if $DEBUG
+        error
+      else
+        bt = error.backtrace
+        bt = bt.reject{ |e| /roll/ =~ e }
+        error.set_backtrace(bt)
+        error
+      end
+    end
+
+  end#class Ledger
+
+  # VersionError is raised when a requested version cannot be found.
+  class VersionError < ::RangeError  # :nodoc:
+  end
+
+  # VersionConflict is raised when selecting another version
+  # of a library when a previous version has already been selected.
+  class VersionConflict < ::LoadError  # :nodoc:
   end
 
 end

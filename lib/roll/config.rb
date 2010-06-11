@@ -2,6 +2,8 @@ require 'rbconfig'
 
 module ::Config
 
+  # TODO: use "XDG-lite" rather than XDG.
+
   HOME = File.expand_path('~') # ENV['HOME']
 
   # Location of user's personal config directory.

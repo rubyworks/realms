@@ -1,8 +1,6 @@
 require 'yaml'
 require 'fileutils'
-#require 'roll/xdg'
 require 'roll/config'
-require 'roll/metadata'
 
 module Roll
 
@@ -17,16 +15,30 @@ module Roll
     #--
     # Perhaps combine all enrtries instead?
     #++
-    DIRS = ::Config.find_config('roll')
+    DIRS = ::Config.find_config('roll', 'environments')
+
+    #
+    HOME_ENV_DIR = File.join(::Config::CONFIG_HOME, 'roll', 'environments')
+
+    # File that stores the name of the current environment.
+    CURRENT_FILE = File.join(::Config::CONFIG_HOME, 'roll', 'current')
 
     # Current environment name.
     def self.current
-      ENV['RUBYENV'] || DEFAULT
+      @current ||= (
+        if File.exist?(CURRENT_FILE)
+          env = File.read(CURRENT_FILE).strip
+        else
+          env = ENV['RUBYENV'] || DEFAULT
+        end
+        #warn "#{env} is not a valid environment" unless list.include?(env)
+        env
+      )
     end
 
     # List of available environments.
     def self.list
-      Dir[File.join(DIR, '*')].map do |file|
+      Dir[File.join('{'+DIRS.join(',')+'}', '*')].map do |file|
         File.basename(file)
       end
     end
@@ -96,7 +108,7 @@ module Roll
 
       # Environment file (full-path).
       def file
-        @file ||= ::Config.find_config('roll', name, 'index').first
+        @file ||= ::Config.find_config('roll', 'environments', name, 'index').first
       end
 
       # Load the environment file.
@@ -152,7 +164,7 @@ module Roll
         #    out << "%-#{max}s %s\n" % [name, path]
         #  end
         #end
-        file = File.join(::Config::CONFIG_HOME, 'roll', name, 'index')
+        file = File.join(HOME_ENV_DIR, name, 'index')
         if File.exist?(file)
           data = File.read(file)
           if out != data
@@ -173,16 +185,14 @@ module Roll
         @file = file
       end
 
-=begin
-    # Get library version.
-    # TODO: handle VERSION file
-    def load_version(path)
-      file = Dir[File.join(path, '{,.}meta', 'version')].first
-      if file
-        File.read(file).strip  # TODO: handle YAML ?
-      end
-    end
-=end
+      # Get library version.
+      # TODO: handle VERSION file
+      #def load_version(path)
+      #  file = Dir[File.join(path, '{,.}meta', 'version')].first
+      #  if file
+      #    File.read(file).strip  # TODO: handle YAML ?
+      #  end
+      #end
 
     end
 
@@ -209,7 +219,7 @@ module Roll
 
       #
       def file
-        @file ||= ::Config.find_config('roll', name, 'lookup').first
+        @file ||= ::Config.find_config('roll', 'environments', name, 'lookup').first
       end
 
       #
@@ -256,7 +266,7 @@ module Roll
 
       #
       def save
-        file = File.join(::Config::CONFIG_HOME, 'roll', name, 'lookup')
+        file = File.join(HOME_ENV_DIR, name, 'lookup')
         out = @table.map do |(path, depth)|
           "#{path}   #{depth}"
         end
@@ -272,7 +282,7 @@ module Roll
       def index
         set = Hash.new{ |h,k| h[k] = [] }
         locate.each do |path|
-          name = name(path)
+          name = libname(path)
           #vers = load_version(path)
           if name #&& vers
             set[name] << path
@@ -301,6 +311,16 @@ module Roll
         locations.map{ |d| File.dirname(d) }
       end
 
+      #
+      def metadata(path)
+        @metadata[path] ||= Metadata.new(path)
+      end
+
+      #
+      def libname(path)
+        metadata(path).name
+      end
+
       ## Get library name.
       #def load_name(path)
       #  file = Dir[File.join(path, '{,.}meta', 'name')].first
@@ -308,16 +328,6 @@ module Roll
       #    File.read(file).strip  # TODO: handle YAML
       #  end
       #end
-
-      #
-      def metadata(path)
-        @metadata[path] ||= Metadata.new(path)
-      end
-
-      #
-      def name(path)
-        metadata(path).name
-      end
 
     end#class Lookup
 

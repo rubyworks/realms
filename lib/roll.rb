@@ -1,4 +1,8 @@
-require 'roll/kernel'
+require 'roll/config'
+require 'roll/library'
+require 'roll/kernel' # require last
+
+Roll::Library.load_index['roll'] = __FILE__
 
 module Roll
   VERSION = "2.0.0"
@@ -79,9 +83,17 @@ module Roll
   #--
   # TODO: Instead of Dir.pwd, lookup project root.
   #++
-  def self.verify(root=Dir.pwd)   
+  def self.verify(root=Dir.pwd)
     Library.new(root).verify
   end
 
-end
+  # VersionError is raised when a requested version cannot be found.
+  class VersionError < ::RangeError  # :nodoc:
+  end
 
+  # VersionConflict is raised when selecting another version
+  # of a library when a previous version has already been selected.
+  class VersionConflict < ::LoadError  # :nodoc:
+  end
+
+end
