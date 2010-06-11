@@ -122,7 +122,7 @@ module Roll
       end
     end
 
-    # Use acquire to use Roll-style loading. This first
+    # Acquire is pure Roll-style loading. First it
     # looks for a specific library via ':'. If ':' is 
     # not present it then tries the current library.
     # Failing that it fallsback to Ruby itself.
@@ -178,9 +178,10 @@ module Roll
 
       if path.index(':') # a specified library
         name, path = path.split(':')
-        lib  = Library.open(name)
+        lib = Library.open(name)
         if lib.active?
-          file = lib.find(path, suffix)
+          #file = lib.find(File.join(name,path), suffix)
+          file = lib.include?(path, suffix)
           return lib, file
         end
       end
@@ -195,9 +196,20 @@ module Roll
         end
       end
 
+      # if the head of the path is the library
+      name, *_ = path.split(/\/|\\/)
+      lib = Library[name]
+      if lib && lib.active?
+        if file = lib.find(path, suffix)
+          return [lib, file] unless $VERBOSE
+          matches << [lib, file]
+        end
+      end
+
       # TODO: Perhaps the selected and unselected should be kept in separate lists?
       unselected, selected = *@index.partition{ |name, libs| Array === libs }
 
+      # broad search pre-selected libraries
       selected.each do |(name, lib)|
         if file = lib.find(path, suffix)
           #matches << [lib, file]
@@ -207,6 +219,7 @@ module Roll
         end
       end
 
+      # finally try a broad search on unselected libraries
       unselected.each do |(name, libs)|
         pos = []
         libs.each do |lib|
@@ -286,6 +299,11 @@ module Roll
     #
     def load(path, wrap=nil)
       ledger.load(path, wrap)
+    end
+
+    #
+    def acquire(path, opts={})
+      ledger.acquire(path, opts)
     end
 
     #
