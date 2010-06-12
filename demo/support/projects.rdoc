@@ -1,0 +1,37 @@
+= Basic Set of Projects
+
+Given a project directory "tryme/1.0".
+
+With a file "VERSION" containing...
+
+  name: tryme
+  vers: 1.0
+
+With a file "PROFILE" containing...
+
+  title   : TryMe
+  author  : Thomas Sawyer
+  homepage: http://tryme.foo
+
+With a file "lib/tryme.rb" containing...
+
+  $tryme_message = "Try Me v1.0"
+
+Given a project directory "tryme/1.1".
+
+With a file "VERSION" containing...
+
+  name: tryme
+  vers: 1.1
+
+With a file "PROFILE" containing...
+
+  title   : TryMe
+  author  : Thomas Sawyer
+  homepage: http://tryme.foo
+
+With a file "lib/tryme.rb" containing...
+
+  $tryme_message = "Try Me v1.1"
+
+
