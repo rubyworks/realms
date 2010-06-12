@@ -1,6 +1,8 @@
+#require File.dirname(__FILE__) + '/config.rb'
+require 'roll/config'
+
 require 'yaml'
 require 'fileutils'
-require 'roll/config'
 
 module Roll
 
@@ -193,13 +195,14 @@ module Roll
       #    File.read(file).strip  # TODO: handle YAML ?
       #  end
       #end
-
     end
 
     # The Lookup class provides a table of paths which
     # make it easy to quickly populate and refresh the
     # environment index.
-
+    #
+    # TODO: Provide a way to specifically exclude a location.
+    # Probaby recognize a path with a '-' prefix.
     class Lookup
       include Enumerable
 

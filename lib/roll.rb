@@ -1,8 +1,9 @@
+#require File.dirname(__FILE__) + '/roll/config.rb'
+#require File.dirname(__FILE__) + '/roll/library.rb'
+#require File.dirname(__FILE__) + '/roll/kernel.rb'  # require last
 require 'roll/config'
 require 'roll/library'
-require 'roll/kernel' # require last
-
-Roll::Library.load_index['roll'] = __FILE__
+require 'roll/kernel'  # require last
 
 module Roll
   VERSION = "2.0.0"

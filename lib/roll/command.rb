@@ -1,6 +1,5 @@
+#require File.dirname(File.dirname(__FILE__)) + '/roll.rb'
 require 'roll'
-
-Roll::Library.load_index['roll/command'] = __FILE__
 
 module Roll
 

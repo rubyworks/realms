@@ -7,8 +7,8 @@ module ::Kernel
   alias_method :roll_original_require, :require
   alias_method :roll_original_load, :load
 
-  alias_method :gem_original_require, :require
-  alias_method :gem_original_load, :load
+  #alias_method :gem_original_require, :require
+  #alias_method :gem_original_load, :load
 
   # In which library is the current file participating?
   def __LIBRARY__

@@ -1,6 +1,9 @@
-require 'yaml'  # for metadata
+#require File.dirname(__FILE__) + '/version.rb'
+#require File.dirname(__FILE__) + '/environment.rb'
 require 'roll/version'
 require 'roll/environment'
+
+require 'yaml'
 
 module Roll
 
@@ -77,6 +80,11 @@ module Roll
     #
     def location
       @location
+    end
+
+    # Access to metadata.
+    def metadata
+      @metadata ||= Metadata.new(location)
     end
 
     #
@@ -275,7 +283,7 @@ module Roll
     # This is alwasy the <tt>etc/</tt> directory.
     def confdir ; File.join(location, 'etc') ; end
 
-    # Is there a <tt>etc/</tt> location?metadata.name
+    # Is there a <tt>etc/</tt> location?
     def confdir? ; File.exist?(confdir) ; end
 
     # Location of library shared data directory.
@@ -284,11 +292,6 @@ module Roll
 
     # Is there a <tt>data/</tt> location?
     def datadir? ; File.exist?(datadir) ; end
-
-    # Access to secondary metadata.
-    def metadata
-      @metadata ||= Metadata.new(location)
-    end
 
   private
 
@@ -309,6 +312,48 @@ module Roll
       end
     end
 
+    # Ledger augments the Library metaclass.
+    class << self
+      # Instance of Ledger class.
+      def ledger
+        @ledger ||= Ledger.new
+      end
+
+      # Current environment
+      def environment
+        ledger.environment
+      end
+
+      # List of library names.
+      def list
+        ledger.names
+      end
+
+      #
+      def require(path)
+        ledger.require(path)
+      end
+
+      #
+      def load(path, wrap=nil)
+        ledger.load(path, wrap)
+      end
+
+      #
+      def acquire(path, opts={})
+        ledger.acquire(path, opts)
+      end
+
+      #
+      def load_stack
+        ledger.load_stack
+      end
+
+      ## NOTE: Not used yet.
+      #def load_monitor
+      #  ledger.load_monitor
+      #end
+    end
   end
 
   #= Library Metadata
@@ -417,7 +462,7 @@ module Roll
       )
     end
 
-    # TODO: find a different way for a lib to be manually ommited.
+    # TODO: Deprecate active, if you don't want it exclude from environment.
 
     # Is active, i.e. not omitted.
     def active  ; true ; end
@@ -521,67 +566,7 @@ module Roll
         nil
       end
     end
-
-    #
-    def require_yaml
-      @require_yaml ||=(
-        require 'yaml'
-        true
-      )
-    end
 =end
-
-  end
-
-  #--
-  # Ledger augments the Library metaclass.
-  #++
-  class << Library
-
-    #
-    def ledger
-      @ledger ||= Ledger.new
-    end
-
-    # Current environment
-    def environment
-      ledger.environment
-    end
-
-    # List of library names.
-    def list
-      ledger.names
-    end
-
-    #
-    def require(path)
-      ledger.require(path)
-    end
-
-    #
-    def load(path, wrap=nil)
-      ledger.load(path, wrap)
-    end
-
-    #
-    def acquire(path, opts={})
-      ledger.acquire(path, opts)
-    end
-
-    #
-    def load_stack
-      ledger.load_stack
-    end
-
-    #
-    def load_index
-      ledger.load_index
-    end
-
-    ## NOTE: Not used yet.
-    #def load_monitor
-    #  ledger.load_monitor
-    #end
 
   end
 
@@ -609,7 +594,6 @@ module Roll
       end
 
       @load_stack = []
-      @load_index = {}
       #@load_monitor = Hash.new{ |h,k| h[k]=[] }
     end
 
@@ -653,35 +637,33 @@ module Roll
       @load_stack
     end
 
-    # NOTE: Not used yet.
-    def load_index
-      @load_index
-    end
-
     ## NOTE: Not used yet.
     #def load_monitor
     #  @load_monitor
     #end
 
     #--
-    # TODO: Should Ruby's underlying require be tried first,
-    # then fallback to Rolls. Or vice-versa?
+    # The BIG QUESTION: Should Ruby's underlying require
+    # be tried first then fallback to Rolls. Or vice-versa?
+    #
+    #  begin
+    #    original_require(path)
+    #  rescue LoadError => load_error
+    #    lib, file = *match(path)
+    #    if lib && file
+    #      constrain(lib)
+    #      lib.require_absolute(file)
+    #    else
+    #      raise clean_backtrace(load_error)
+    #    end
+    #  end
     #++
 
     #
     def require(path)
-      return if load_index.key?(path)
-      #begin
-      #  original_require(path)
-      #rescue LoadError => load_error
-      #  lib, file = *match(path)
-      #  if lib && file
-      #    constrain(lib)
-      #    lib.require_absolute(file)
-      #  else
-      #    raise clean_backtrace(load_error)
-      #  end
-      #end
+      #return if $".include?(path)
+      #return if $".include?(path+'.rb')
+
       lib, file = *match(path)
       if lib && file
         constrain(lib)
