@@ -34,14 +34,9 @@ variable.
 
   $ export RUBYOPT="-roll"
 
-I suspect you will be using RubyGems too, in which case, depending on the
-precedence you want, do:
+I suspect you will be using RubyGems too, in which case do:
 
   $ export RUBYOPT="-roll -rubygems"
-
-or
-
-  $ export RUBYOPT="-rubygems -roll"
 
 To support executables you will also need to add a line to your startup
 .bashrc (or equivalent) file.
