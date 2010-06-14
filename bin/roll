@@ -1,3 +1,9 @@
 #!/usr/bin/env ruby
 require 'roll/command'
-Roll::Command.main(*ARGV)
+begin
+  Roll::Command.main(*ARGV)
+rescue => err
+  raise err if $DEBUG
+  $stderr.puts(err.message)
+end
+
