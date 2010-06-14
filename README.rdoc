@@ -52,11 +52,20 @@ b/c it has some shortcomings.)
 === Preparing your Projects
 
 For your projects to be detected by Rolls they must conform to a
-minimal POM[http://proutils.github.com/pom] setup. In particular
-the project must contain a +VERSION+ file with a +name+ and +version+
-entry. That is the bare minimum for a project to to be loadable via
-Rolls. Optionally you may provide a +path+ entry if the loadpath 
-is not the +lib+ default, as well as a release +date+ entry.
+minimal POM[http://proutils.github.com/pom] setup. Specifically
+the project must have a  <code>lib/*.rb</code> file. In addition
+is should have a <code>VERSION</code> file, optimally with a
+<code>name</code> entry. As a fallback, for the name and version,
+if for some reason you can not use the VERSION file accroding
+to the POM specification, you can place the entries in
+<code>.meta/name</code> and <code>.meta/version</code>.
+That is the bare minimum for a project to to be loadable via
+Rolls.
+
+Optionally you may provide a <code>.meta/loadpath</code> file if
+the loadpath is not the default <code>lib/</code>. However
+<code>lib</code> is always expected to be one of your loadpath.
+
 See POM[http://proutils.github.com/pom] for more information.
 
 === Library Management
@@ -84,7 +93,7 @@ up to a depth of three sub-directories. That's suitable for
 most needs. You can specify the the depth explicitly with the 
 <tt>--depth</tt> or <tt>-d</tt> option. You can roll in the 
 current working directory by leaving off the path argument. 
-If the current directory has a VERSION+ file, a depth of +1+
+If the current directory has a +VERSION+ file, a depth of +1+
 will automatically be used.
 
   $ roll in
@@ -106,18 +115,18 @@ it fullest extent, please visit http://proutils.github.org/roll/.
 First you need a copy of the roll tarball (or zip) archive.
 You will find them here[http://github.com/proutils/roll/download].
 
-  $ tar -xvzf roll-1.0.0
+  $ tar -xvzf roll-2.0.0
 
 If you already have Ruby Setup installed on your system you can
 use it to install Rolls (See: http://setup.rubyforge.org). 
 
-  $ cd roll-1.0.0
+  $ cd roll-2.0.0
   $ sudo setup.rb
 
 Otherwise, Rolls includes a copy of Ruby Setup that you can
 use.
 
-  $ cd roll-1.0.0
+  $ cd roll-2.0.0
   $ sudo script/setup.
 
 On Windows, this last line needs to be 'ruby script/setup'.
