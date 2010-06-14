@@ -1,15 +1,11 @@
-#require File.dirname(__FILE__) + '/roll/config.rb'
-#require File.dirname(__FILE__) + '/roll/library.rb'
-#require File.dirname(__FILE__) + '/roll/kernel.rb'  # require last
 require 'roll/config'
 require 'roll/library'
 require 'roll/kernel'  # require last
 
 module Roll
-  VERSION = "2.0.0"
+  VERSION = "2.0.0"  # TODO: make verison reference dynamic
 
   # Get environment.
-
   def self.env(name=nil)
     if name
       env = Environment.new(name)
@@ -19,6 +15,17 @@ module Roll
     env
   end
 
+  # Change current environment.
+  def self.use(name)
+    Environment.save(name)
+  end
+
+  # Return Array of environment names.
+  def self.list
+    Environment.list
+  end
+
+  #
   def self.index(name=nil)
     #if name
     #  env = Environment.new(name)
@@ -30,7 +37,6 @@ module Roll
 
   # Synchronize an environment by +name+. If a +name+
   # is not given the current environment is synchronized.
-
   def self.sync(name=nil)
     env = env(name)
     env.sync
@@ -38,7 +44,6 @@ module Roll
   end
 
   # Add path to current environment.
-
   def self.in(path, depth=3)
     env = Environment.new
 
@@ -53,7 +58,6 @@ module Roll
   end
 
   # Remove path from current environment.
-
   def self.out(path)
     env = Environment.new
 
@@ -68,7 +72,6 @@ module Roll
   end
 
   # Go thru each roll lib and collect bin paths.
-
   def self.path
     binpaths = []
     Library.list.each do |name|
@@ -84,8 +87,12 @@ module Roll
   #--
   # TODO: Instead of Dir.pwd, lookup project root.
   #++
-  def self.verify(root=Dir.pwd)
-    Library.new(root).verify
+  def self.verify(name=nil)
+    if name
+      Library.open(name).verify
+    else
+      Library.new(root).verify
+    end
   end
 
   # VersionError is raised when a requested version cannot be found.
@@ -98,3 +105,4 @@ module Roll
   end
 
 end
+
