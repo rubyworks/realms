@@ -1,9 +1,6 @@
-#require File.dirname(__FILE__) + '/version.rb'
-#require File.dirname(__FILE__) + '/environment.rb'
 require 'roll/version'
+require 'roll/metadata'
 require 'roll/environment'
-
-require 'yaml'
 
 module Roll
 
@@ -99,7 +96,7 @@ module Roll
 
     #
     def active?
-      @active ||= metadata.active
+      true #@active ||= metadata.active
     end
 
     #
@@ -139,15 +136,16 @@ module Roll
     # Standard loadpath search.
     #
     def find(file, suffix=true)
+      lp = loadpath
       if suffix
         SUFFIXES.each do |ext|
-          loadpath.each do |lpath|
+          lp.each do |lpath|
             f = File.join(location, lpath, file + ext)
             return f if File.file?(f)
           end
         end
       else
-        loadpath.each do |lpath|
+        lp.each do |lpath|
           f = File.join(location, lpath, file)
           return f if File.file?(f)
         end
@@ -161,9 +159,10 @@ module Roll
     # Unlike #find, this also matches within the library directory
     # itself, eg. <tt>lib/foo/*</tt>. It is used by #acquire.
     def include?(file, suffix=true)
+      lp = loadpath
       if suffix
         SUFFIXES.each do |ext|
-          loadpath.each do |lpath|
+          lp.each do |lpath|
             f = File.join(location, lpath, name, file + ext)
             return f if File.file?(f)
             f = File.join(location, lpath, file + ext)
@@ -171,7 +170,7 @@ module Roll
           end
         end
       else
-        loadpath.each do |lpath|
+        lp.each do |lpath|
           f = File.join(location, lpath, name, file)
           return f if File.file?(f)
           f = File.join(location, lpath, file)
@@ -354,220 +353,6 @@ module Roll
       #  ledger.load_monitor
       #end
     end
-  end
-
-  #= Library Metadata
-  #--
-  # TODO: Use POM? If available?
-  #--
-  class Metadata
-
-    #
-    def initialize(location)
-      @location = location
-
-      # override defaults
-      @loadpath = ['lib']
-
-      if file
-        data = YAML.load(File.new(file))
-        if String === data
-          parse_string_version(data)
-        else
-          parse_hash_version(data)
-        end
-      else
-
-      end
-    end
-
-    # VERSION file.
-    def file
-      @file ||= Dir[File.join(location, "{VERSION,Version.version}{,.yaml,yml}")].first
-    end
-
-    # Location of library.
-    attr :location
-
-    # Name of library.
-    attr_accessor :name
-
-    # Version number.
-    attr_accessor :version
-
-    # Release date.
-    attr_accessor :date
-
-    # Version code name, e.g. "Hardy Haron"
-    attr_accessor :codename
-
-    # Local load paths.
-    attr_reader :loadpath
-
-    #
-    def loadpath=(path)
-      case path
-      when nil
-        path = ['lib']
-      when String
-        path = path.strip.split(/(\s+|\s*[,;:]\s*)/)
-      end
-      @loadpath = path
-    end
-
-    ## Special writer for paths.
-    #def paths=(x)
-    #  case x
-    #  when String
-    #    @paths = x.strip.split(/(\s+|\s*[,;:]\s*)/)
-    #  else
-    #    @paths = x
-    #  end
-    #end
-
-    # Version number.
-    #
-    # Technically, a library should not appear in a ledger list
-    # if it lacks a VERSION file. However, just in case this
-    # occurs (say by a hnad edited environment) we fallback
-    # to a version of '0.0.0'.
-    def version
-      @version ||= Version.new('0.0.0')
-    end
-
-    # Set version, converts string into Version number class.
-    def version=(string)
-      @version = Version.new(string)
-    end
-
-    # Get library release date.
-    #--
-    # TODO: convert to date object
-    #++
-    def released
-      date
-    end
-
-    # TODO: Improve! Is this even needed?
-    def requires
-      @requires = (
-        glob = File.join(location, "{REQUIRE,.require}{,.yml,.yaml}", File::FNM_CASEFOLD)
-        file = Dir[glob].first
-        if file
-          data = YAML.load(File.new(file))
-          data['runtime'] + data['production']
-        else
-          []
-        end
-      )
-    end
-
-    # TODO: Deprecate active, if you don't want it exclude from environment.
-
-    # Is active, i.e. not omitted.
-    def active  ; true ; end
-
-    # Is active, i.e. not omitted.
-    def active? ; true ; end
-
-  private
-
-    #
-    def parse_hash_version(data)
-      data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
-
-      self.name = data[:name]
-      self.date = data[:date]
-
-      # jeweler
-      if data[:major]
-        @version = data.values_at(:major, :minor, :patch, :state, :build).compact.join('.')
-      else
-        vers = data[:vers] || data[:version]
-        self.version = (Array === vers ? vers.join('.') : vers)
-      end
-
-      self.codename = data[:code]
-      self.loadpath = data[:paths]
-    end
-
-    # Parse string-based VERSION file accoring to Ruby POM standard.
-    def parse_string_version(data)
-      data = data.strip
-
-      # name
-      if md = /^(\w+)(\-\d|\ )/.match(data)
-        self.name = md[1]
-      else
-        fname = File.basename(File.dirname(location))
-        if /^(\w+)(\-\d|\ )/.match(fname)
-          self.name = md[1]
-        else
-          raise "roll: name needed for #{location}"
-        end
-      end
-
-      # version
-      if md = /(\d+\.)+(\w+\.)?(\d+)/.match(data)
-        self.version = md[0]
-      end
-
-      # date
-      # TODO: convert to date/time
-      if md = /\d\d\d\d-\d\d-\d\d/.match(data)
-        self.date = md[0]
-      end
-
-      # loadpath
-      path = []
-      data.scan(/\ (\S+\/)\ /) do |path|
-        path << path.chomp('/')
-      end
-      self.loadpath = path unless path.empty?
-    end
-
-=begin
-    ## Get library active state.
-    #def active
-    #  return @cache[:active] if @cache.key?(:active)
-    #  @cache[:active] = (
-    #    case read(:active).to_s.downcase
-    #    when 'false', 'no'
-    #      false
-    #    else
-    #      true
-    #    end
-    #  )
-    #end
-
-    #
-    def method_missing(name, *args)
-      if @cache.key?(name)
-        @cache[name]
-      else
-        @cache[name] = read(name)
-      end
-    end
-
-  private
-
-    #
-    def read(name)
-      file = Dir[File.join(location, "{meta,.meta}", name.to_s)].first
-      if file
-        text = File.read(file)
-        if text =~ /^---/
-          require_yaml
-          YAML.load(text)
-        else
-          text.strip
-        end
-      else
-        nil
-      end
-    end
-=end
-
   end
 
   # = Ledger class
