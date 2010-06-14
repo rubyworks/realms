@@ -2,8 +2,7 @@
 title: Roll
 suite: proutils
 summary: Ruby Object-Oriented Library Ledger
-contact: http://groups.google.com/group/proutils
-maintainer: 7rans <transfire@gmail.com>
+contact: Trans <transfire@gmail.com>
 authors: Thomas Sawyer
 created: 2006-12-10
 
@@ -14,7 +13,10 @@ description:
   Ruby package management.
 
 resources:
-  homepage: http://proutils.github.com/roll
-  repository: git://github.com/proutils/roll.git
+  home: http://proutils.github.com/roll
+  repo: git://github.com/proutils/roll.git
+  mail: http://groups.google.com/group/proutils
 
+copyright:
+  Copyright (c) 2006 Thomas Sawyer
 
