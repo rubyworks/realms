@@ -1,6 +1,6 @@
 module Roll
 
-  # Show/Change current environment.
+  # Show environment.
   class CommandEnv < Command
 
     #
@@ -11,9 +11,14 @@ module Roll
 
     #
     def call
-      puts Roll.env(*args)
+      env = Roll.env(*args)
+      puts env.name + ':'
+      env.lookup.each do |(path, depth)|
+        puts "- #{path} #{depth}"
+      end
     end
 
   end
 
 end
+

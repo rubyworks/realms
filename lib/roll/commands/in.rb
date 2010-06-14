@@ -8,8 +8,8 @@ module Roll
       op.banner = "Usage: roll in [PATH]"
       op.separator "Insert path into current environment."
       op.separator "Options:"
-      op.on("--depth", "-d [INTEGER]") do |int|
-        options[:depth] = int
+      op.on("--depth", "-d INTEGER") do |int|
+        opts[:depth] = int
       end
     end
 
