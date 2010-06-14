@@ -4,6 +4,7 @@ module ::Config
 
   # TODO: use "XDG-lite" rather than XDG.
 
+  #
   HOME = File.expand_path('~') # ENV['HOME']
 
   # Location of user's personal config directory.
@@ -18,6 +19,7 @@ module ::Config
     dirs.collect{ |d| File.expand_path(d) }
   )
 
+  #
   WIN_PATTERNS = [
     /bccwin/i,
     /cygwin/i,
@@ -43,16 +45,18 @@ module ::Config
   # versioned data directories.
   #++
 
+  #
   def self.datadir(name, versionless=false)
     if lib = Roll::Library.instance(name)
       lib.datadir(versionless)
+    elsif defined?(super)
+      super(name)
     else
       File.join(CONFIG['datadir'], name)
     end
   end
 
   # Return the path to the configuration directory.
-
   def self.confdir(name)
     if lib = Roll::Library.instance(name)
       lib.confdir
@@ -62,7 +66,6 @@ module ::Config
   end
 
   # Lookup configuration file.
-
   def self.find_config(*glob)
     flag = 0
     flag = (flag | glob.pop) while Fixnum === glob.last

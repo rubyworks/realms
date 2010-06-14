@@ -45,6 +45,20 @@ module Roll
       end
     end
 
+    # Change environment to given +name+.
+    #
+    # TODO: should only last a long as the shell session,
+    # not change it perminently.
+    #
+    def self.save(name)
+      if name == 'system'
+        FileUtils.rm(CURRENT_FILE)
+      else
+        File.open(CURRENT_FILE,'w'){|f| f << name.to_s}
+      end
+      CURRENT_FILE
+    end
+
     # Environment name.
     attr :name
 
@@ -74,7 +88,9 @@ module Roll
     end
 
     #
-    def each(&block) ; index.each(&block) ; end
+    def each(&block)
+      index.each(&block)
+    end
 
     #
     def size ; index.size ; end
@@ -147,14 +163,14 @@ module Roll
 
       #
       def to_s
-        out = ""
+        out = []
         max = @table.map{ |name, paths| name.size }.max
         @table.map do |name, paths|
           paths.each do |path|
-            out << "%-#{max}s %s\n" % [name, path]
+            out << "%-#{max}s %s" % [name, path]
           end
         end
-        out
+        out.sort.join("\n")
       end
 
       # Save environment file.
@@ -272,7 +288,7 @@ module Roll
         file = File.join(HOME_ENV_DIR, name, 'lookup')
         out = @table.map do |(path, depth)|
           "#{path}   #{depth}"
-        end
+        end.sort
         dir = File.dirname(file)
         FileUtils.mkdir_p(dir) unless File.exist?(dir)
         File.open(file, 'w') do |f|
@@ -283,12 +299,14 @@ module Roll
 
       # Generate index from lookup list.
       def index
-        set = Hash.new{ |h,k| h[k] = [] }
+        set = Hash.new{|h,k| h[k]=[]}
         locate.each do |path|
           name = libname(path)
           #vers = load_version(path)
           if name #&& vers
             set[name] << path
+          else
+            warn "omitting: #{path}"
           end
         end
         set
@@ -303,19 +321,19 @@ module Roll
         locs.flatten
       end
 
-      # Search a given directory for projects upto a given depth.
-      # Projects directories are determined by containing a
-      # 'VERSION' file.
+      # Search a given directory for projects upto a given depth. Projects
+      # directories are determined by containing a lib/*.rb file.
       def find_projects(dir, depth=3)
         depth = Integer(depth || 3)
         depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
-        find = File.join(dir, "{#{depth}}", "VERSION{,.yml,.yaml,.txt}")
-        locations = Dir.glob(find, File::FNM_CASEFOLD)
-        locations.map{ |d| File.dirname(d) }
+        find = File.join(dir, "{#{depth}}", "lib/*.rb")
+        locals = Dir.glob(find)
+        locals.map{|d| File.dirname(File.dirname(d)) }.uniq
       end
 
       #
       def metadata(path)
+        @metadata ||= {}
         @metadata[path] ||= Metadata.new(path)
       end
 

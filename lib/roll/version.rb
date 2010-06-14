@@ -98,7 +98,7 @@ module Roll
 
     # Teeny is third number in the version series.
 
-    def teeny ; @tuple[2] || 0 ; end
+    def patch ; @tuple[2] || 0 ; end
 
     # Delegate to the array.
 
