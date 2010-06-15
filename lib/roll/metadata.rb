@@ -305,38 +305,6 @@ module Roll
     end
 =end
 
-    # Ecapsulate the fake parsing of a gemspec.
-    module FakeGem
-      module Gem #:nodoc:
-        class Specification #:nodoc:
-          attr :fake_options
-          def initialize(&block)
-            @fake_options = {}
-            yield(self)
-          end
-          def method_missing(sym, *args)
-            name = sym.to_s
-            case name
-            when /=$/
-              @fake_options[name.chomp('=')] = args.first
-            else
-              @fake_options[name]
-            end
-          end
-        end
-        class Requirement
-          def initialize(*a)
-          end
-        end
-      end
-      #
-      def self.load(file)
-        text = File.read(file)
-        fake_spec = eval(text, binding)
-        fake_spec
-      end
-    end
-
   end
 
 end

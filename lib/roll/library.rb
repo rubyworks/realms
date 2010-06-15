@@ -369,12 +369,12 @@ module Roll
       @environment = Environment.new
 
       @environment.each do |name, paths|
-        paths.each do |path|
+        paths.each do |path, loadpath|
           unless File.directory?(path)
             warn "invalid path for #{name} -- #{path}"
             next
           end
-          lib = Library.new(path, name)
+          lib = Library.new(path, name, :loadpath=>loadpath)
           @index[name] << lib if lib.active?
         end
       end

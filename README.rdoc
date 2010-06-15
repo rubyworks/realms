@@ -61,8 +61,8 @@ To support executables you will also need to add a line to your startup
 This will add the +bin+ locations of the programs encompassed by your
 current roll environment.
 
-(NOTE: The way bin paths are handled will probably change in the future
-b/c it has some shortcomings.)
+(NOTE: The way bin paths are handled might change to a symlink directory
+in the future if limitations of long environment variables prove problematic.)
 
 === Preparing your Projects
 
@@ -73,10 +73,8 @@ have at least one <code>lib/*.rb</code> file. In the future this
 should become a little more flexible, but that is the bare minimum
 for a project to to be loadable via Rolls as of v1.2. The only
 exception is for Gem stores. If you point Rolls torwards a gems/
-location it will attempt to parse the name and version from a
-library's directory name (e.g. facets-2.8.4/). It does not read
-the gemspec (that would be slow). So alternate loadpaths are not
-supported for Gem stores at this time.
+location it will attempt to parse the name, version and loadpath
+from the gem's gemspec.
 
 Also, note that #autoload will not work with Rolls. Ruby has a bug
 that prevents #autoload from using any custom defined #require method.

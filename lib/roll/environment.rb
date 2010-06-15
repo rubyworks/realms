@@ -135,8 +135,8 @@ module Roll
           File.readlines(file).each do |line|
             line = line.strip
             next if line.empty?
-            name, path = *line.split(/\s+/)
-            @table[name.strip] << path.strip
+            name, path, *loadpath = *line.split(/\s+/)
+            @table[name.strip] << [path.strip, loadpath]
           end
         end
       end
@@ -166,8 +166,8 @@ module Roll
         out = []
         max = @table.map{ |name, paths| name.size }.max
         @table.map do |name, paths|
-          paths.each do |path|
-            out << "%-#{max}s %s" % [name, path]
+          paths.each do |path, loadpath|
+            out << ("%-#{max}s %s" % [name, path]) + ' ' + loadpath.join(' ')
           end
         end
         out.sort.join("\n")
@@ -301,11 +301,11 @@ module Roll
       def index
         set = Hash.new{|h,k| h[k]=[]}
         locate.each do |path|
-          name = libname(path)
+          name, loadpath = libdata(path)
           next if name == 'roll' # NEVER INCLUDE ROLL ITSELF!!!
           #vers = load_version(path)
           if name #&& vers
-            set[name] << path
+            set[name] << [path, loadpath]
           else
             warn "omitting: #{path}"
           end
@@ -338,9 +338,26 @@ module Roll
         @metadata[path] ||= Metadata.new(path)
       end
 
+      # TODO: if a gems location, use gemspec
+      def libdata(path)
+        if specfile = gemspec?(path)
+          fakegem = FakeGem.load(specfile)
+          return fakegem.name, fakegem.require_paths  #fakegem.version
+        else
+          data = metadata(path)
+          return data.name, data.loadpath
+        end
+      end
+
       #
-      def libname(path)
-        metadata(path).name
+      def gemspec?(path)
+        pkgname = File.basename(path)
+        gemsdir = File.dirname(path)
+        specdir = File.join(File.dirname(gemsdir), 'specifications')
+        return false unless File.directory?(specdir)
+        gemspec = File.join(specdir, pkgname + '.gemspec')
+        return false unless File.exist?(gemspec)
+        return gemspec
       end
 
       ## Get library name.
@@ -352,6 +369,39 @@ module Roll
       #end
 
     end#class Lookup
+
+    # Ecapsulates the fake parsing of a gemspec.
+    #
+    module FakeGem
+      module Gem #:nodoc:
+        class Specification #:nodoc:
+          attr :fake_options
+          def initialize(&block)
+            @fake_options = {}
+            yield(self)
+          end
+          def method_missing(sym, *args)
+            name = sym.to_s
+            case name
+            when /=$/
+              @fake_options[name.chomp('=')] = args.first
+            else
+              @fake_options[name]
+            end
+          end
+        end
+        class Requirement
+          def initialize(*a)
+          end
+        end
+      end
+      #
+      def self.load(file)
+        text = File.read(file)
+        fake_spec = eval(text, binding)
+        fake_spec
+      end
+    end
 
   end#class Environment
 
