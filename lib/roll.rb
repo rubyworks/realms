@@ -3,7 +3,7 @@ require 'roll/library'
 require 'roll/kernel'  # require last
 
 module Roll
-  VERSION = "2.0.0"  # TODO: make verison reference dynamic
+  VERSION = "1.2.0"  # TODO: make verison reference dynamic
 
   # Get environment.
   def self.env(name=nil)
