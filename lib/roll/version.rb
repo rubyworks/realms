@@ -71,7 +71,7 @@ module Roll
     def <=>(other)
       #other = other.to_t
       [@tuple.size, other.size].max.times do |i|
-        c = @tuple[i] <=> other[i]
+        c = (@tuple[i] || 0) <=> (other[i] || 0)
         return c if c != 0
       end
       0
