@@ -15,6 +15,7 @@
                   """"........
 
 * home: http://proutils.github.com/roll
+* worl: http://github.com/protuils/roll
 
 
 == DESCRIPTION
@@ -22,7 +23,21 @@
 Roll is a library manager for Ruby. With Rolls developers can run their
 programs in real time --no install phase is required for one program
 to depend on another. This makes it very easy to work on a set of
-interdependent projects.
+interdependent projects --without vendering. It also makes easy to
+create isolated library environments. Yet Rolls does so efficiently
+--there need only be a single copy of any given version of a library
+on disc. And libraries can be stored anywhere. There is no special place
+they must all reside. You simple tell Rolls where they are.
+
+== STATUS
+
+Rolls works fairly well. I have used it for development for years, so
+on the whole it stays in working order. However it is still under
+heavy development, so configuration is still subject to a fair bit
+of change. The loading heuristics are quite advanced, which accounts
+for the speed, but as a trade-off the first library that is not found
+"early" can initilially slow the system as all of an environments
+metadata if loaded.
 
 
 == HOW TO USE
@@ -51,22 +66,25 @@ b/c it has some shortcomings.)
 
 === Preparing your Projects
 
-For your projects to be detected by Rolls they must conform to a
+For a project to be detected by Rolls it must conform to a
 minimal POM[http://proutils.github.com/pom] setup. Specifically
-the project must have a  <code>lib/*.rb</code> file. In addition
-is should have a <code>VERSION</code> file, optimally with a
-<code>name</code> entry. As a fallback, for the name and version,
-if for some reason you can not use the VERSION file accroding
-to the POM specification, you can place the entries in
-<code>.meta/name</code> and <code>.meta/version</code>.
-That is the bare minimum for a project to to be loadable via
-Rolls.
+the project must have a <code>PACKAGE</code> file and it must
+have at least one <code>lib/*.rb</code> file. In the future this
+should become a little more flexible, but that is the bare minimum
+for a project to to be loadable via Rolls as of v1.2. The only
+exception is for Gem stores. If you point Rolls torwards a gems/
+location it will attempt to parse the name and version from a
+library's directory name (e.g. facets-2.8.4/). It does not read
+the gemspec (that would be slow). So alternate loadpaths are not
+supported for Gem stores at this time.
 
-Optionally you may provide a <code>.meta/loadpath</code> file if
-the loadpath is not the default <code>lib/</code>. However
-<code>lib</code> is always expected to be one of your loadpath.
+Also, note that #autoload will not work with Rolls. Ruby has a bug
+that prevents #autoload from using any custom defined #require method.
+(Why this has never been fixed is both annoying and frustrating
+to say the least.)
 
-See POM[http://proutils.github.com/pom] for more information.
+See POM[http://proutils.github.com/pom] for more information about
+the POM standard.
 
 === Library Management
 
@@ -115,18 +133,18 @@ it fullest extent, please visit http://proutils.github.org/roll/.
 First you need a copy of the roll tarball (or zip) archive.
 You will find them here[http://github.com/proutils/roll/download].
 
-  $ tar -xvzf roll-2.0.0
+  $ tar -xvzf roll-1.0.0
 
 If you already have Ruby Setup installed on your system you can
 use it to install Rolls (See: http://setup.rubyforge.org). 
 
-  $ cd roll-2.0.0
+  $ cd roll-1.0.0
   $ sudo setup.rb
 
 Otherwise, Rolls includes a copy of Ruby Setup that you can
 use.
 
-  $ cd roll-2.0.0
+  $ cd roll-1.0.0
   $ sudo script/setup.
 
 On Windows, this last line needs to be 'ruby script/setup'.

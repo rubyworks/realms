@@ -1,11 +1,35 @@
 = RELEASE HISTORY
 
+== 1.2.0 / 2010-06-15
+
+This release gets roll command working and improves
+the reliability of the system as a whole, including making
+metadata lookup more consistant (hint: you want a PACKAGE file).
+It is even partially compatible with Gem stores now (exceptions
+being loadpaths other than lib/ and the use of autoload).
+
+Changes:
+
+* Reworked metadata system (in line with evolving POM).
+* Improved search heuristics (usually much faster now).
+
+
+== 1.1.0 / 2010-03-01
+
+This release fix a few bugs and makes a few adjustments,
+but mostly cleans up code behind the scenes.
+
+Changes:
+
+* Fix incorrect multi-match and absolute path lookup
+* Support for Rubinius RUBY_IGNORE_CALLERS
+
+
 == 1.0.0 / 2010-02-11
 
-Roll is finally ready for the masses. This release overhauls
-the underlying system, which is now blazing fast, supports
-customizable library environments, and banashes all traces
-of package management to the domain of other tools.
+This release overhauls the underlying system, which is now very
+fast. It supports customizable library environments, and banashes
+all traces of package management to the domain of other tools.
 
 Changes:
 

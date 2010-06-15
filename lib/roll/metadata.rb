@@ -12,10 +12,11 @@ module Roll
   class Metadata
 
     # New metadata object.
-    def initialize(location, name=nil)
+    def initialize(location, name=nil, options={})
       @location = location
       @name     = name
-      @version  = nil
+      @version  = options[:version]
+      @loadpath = options[:loadpath]
       #load_metadata
     end
 
@@ -28,12 +29,15 @@ module Roll
     # Alias for release date.
     alias_method :released, :date
 
-    # Version code name, e.g. "Hardy Haron"
+    # In code name, e.g. "ActiveRecord"
     attr_accessor :codename
 
     # Local load paths.
     def loadpath
-      @loadpath || load_loadpath
+      @loadpath ||= (
+        load_metadata
+        @loadpath || ['lib']
+      )
     end
 
     #
@@ -49,7 +53,14 @@ module Roll
 
     # Name of library.
     def name
-      @name || load_name
+      @name || (
+        if @loaded
+          nil
+        else
+          load_metadata
+          @name
+        end
+      )
     end
 
     # Set name.
@@ -64,7 +75,10 @@ module Roll
     # occurs (say by a hand edited environment) we fallback
     # to a version of '0.0.0'.
     def version
-      @version || load_version
+      @version ||= (
+        load_metadata
+        @version || Version.new('0.0.0')
+      )
     end
 
     # Set version, converts string into Version number class.
@@ -75,12 +89,14 @@ module Roll
     # TODO: Improve. Is this even needed?
     def requires
       @requires ||= (
+        req = []
         if file = require_file
           data = YAML.load(File.new(file))
-          data['runtime'] + data['production']
-        else
-          []
+          data.each do |name, list|
+            req.concat(list || [])
+          end
         end
+        req
       )
     end
 
@@ -88,7 +104,7 @@ module Roll
     def require_file
       @require_file ||= (
         pattern = File.join(location, "{REQUIRE,.require}{,.yml,.yaml}")
-        File.glob(pattern, File::FNM_CASEFOLD).first
+        Dir.glob(pattern, File::FNM_CASEFOLD).first
       )
     end
 
@@ -100,38 +116,99 @@ module Roll
 
   private
 
+    # Package file path.
+    def package_file
+      @package_file ||= (
+        paths = Dir.glob(File.join(location, "{,.}{package}{.yml,.yaml,}"), File::FNM_CASEFOLD)
+        paths.select{ |f| File.file?(f) }.first
+      )
+    end
+
+    # Version file path.
+    def version_file
+      @version_file ||= (
+        paths = Dir.glob(File.join(location, "{VERSION}{,.txt,.yml,.yaml}"), File::FNM_CASEFOLD)
+        paths.select{ |f| File.file?(f) }.first
+      )
+    end
+
     #
     def load_metadata
-      load_loadpath
-      load_version
-      load_name
+      @loaded = true
+      load_package || load_fallback
     end
 
     #
-    def load_loadpath
-      self.loadpath = meta('loadpath') || ['lib']
-      @loadpath
-    end
-
-    #
-    def load_name
-      # first try version b/c it might have the name
-      version; return @name if @name # version file had the name
-      if val = meta('name')
-        self.name = val
+    def load_package
+      if package_file
+        data = YAML.load(File.new(package_file))
+        data = data.inject({}){|h,(k,v)| h[k.to_s] = v; h}
+        self.name     = data['name']
+        self.version  = data['vers'] || data['version']
+        self.loadpath = data['path'] || data['loadpath']
+        self.codename = data['code'] || data['codename']
+        true
       else
-        #libs = loadpath.map{ |lp| Dir.glob(File.join(lp,'*.rb')) }.flatten
-        libs = Dir.glob(File.join(location, 'lib', '*.rb'))
-        if libs.empty?
-          self.name = File.basename(location).sub(/\-\d.*?$/, '')
-        else
-          self.name = File.basename(libs.first).chomp('.rb')
-        end
+        false
+      end
+    end
+
+    # TODO: Instead of supporting gemspecs as is, create a tool
+    # that will add a .package file to each one.
+
+    #
+    #def load_gemspec
+    #  return false unless File.basename(File.dirname(location)) == 'gems'
+    #  specfile = File.join(location, '..', '..', 'specifications', File.basename(location) + '.gemspec')
+    #  if File.exist?(specfile)
+    #    fakegem = FakeGem.load(specfile)
+    #    self.name     = fakegem.name
+    #    self.version  = fakegem.version
+    #    self.loadpath = fakegem.require_paths
+    #    true
+    #  else
+    #    false
+    #  end 
+    #end
+
+    # THINK: Is this reliable enough?
+    def load_fallback
+      load_location
+      load_version unless @version
+      if not @version
+        self.version = '0.0.0'
       end
       @name
     end
 
     #
+    def load_location
+      fname = File.basename(location)
+      if /\-\d/ =~ fname
+        i = fname.rindex('-')
+        name, vers = fname[0...i], fname[i+1..-1]
+        self.name    = name
+        self.version = vers
+      else
+        self.name = fname
+      end
+    end
+
+    # Try to determine name from lib/*.rb file.
+    # Ideally this would work, but there are too many projects that do not
+    # follow best practices, so currently THIS IS NOT USED.
+    def load_loadpath
+      #libs = loadpath.map{ |lp| Dir.glob(File.join(lp,'*.rb')) }.flatten
+      libs = Dir.glob(File.join(location, 'lib', '*.rb'))
+      if !libs.empty?
+        self.name = File.basename(libs.first).chomp('.rb')
+        true
+      else
+        false
+      end
+    end
+
+    # Load VERSION file, if it exists.
     def load_version
       if version_file
         ext = File.extname(version_file)
@@ -140,37 +217,24 @@ module Roll
           parse_version_hash(data)
         else
           text = File.read(version_file).strip
-          if text[0..3] == '---'
+          if text[0..3] == '---' or text.index('major:')
             data = YAML.load(text)
             parse_version_hash(data)
           else
             parse_version_string(text)
           end
         end
+        true if @version
       else
-        fname = File.basename(File.dirname(location))
-        if md = /\-(\d.*?)$/.match(fname)
-          self.version = md[1]
-        end
+        false
       end
-      if not @version
-        self.version = meta('version') || '0.0.0'
-      end
-      @version
-    end
-
-    # Version file path.
-    def version_file
-      @version_file ||= Dir.glob(File.join(location, "{VERSION}{,.txt,.yml,.yaml}"), File::FNM_CASEFOLD).first
     end
 
     # Parse hash-based VERSION file.
     def parse_version_hash(data)
       data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
-
       self.name = data[:name] if data[:name]
       self.date = data[:date] if data[:date]
-
       # jeweler
       if data[:major]
         self.version = data.values_at(:major, :minor, :patch, :build).compact.join('.')
@@ -178,31 +242,20 @@ module Roll
         vers = data[:vers] || data[:version]
         self.version = (Array === vers ? vers.join('.') : vers)
       end
-
       self.codename = data.values_at(:code, :codename).compact.first
     end
 
     # Parse string-based VERSION file.
     def parse_version_string(text)
       text = text.strip
-
       # name
       if md = /^(\w+)(\-\d|\ )/.match(text)
         self.name = md[1]
-      else
-        fname = File.basename(File.dirname(location))
-        if md = /^(\w+)(\-\d|$)/.match(fname)
-          self.name = md[1]
-        else
-          raise "roll: name needed for #{location}"
-        end
       end
-
       # version
       if md = /(\d+\.)+(\w+\.)?(\d+)/.match(text)
         self.version = md[0]
       end
-
       # date
       # TODO: convert to date/time
       if md = /\d\d\d\d-\d\d-\d\d/.match(text)
@@ -234,8 +287,7 @@ module Roll
     end
 =end
 
-  private
-
+=begin
     # Retrieve entry from meta directory.
     def meta(name)
       file = Dir[File.join(location, "{meta,.meta}", name.to_s)].first
@@ -251,7 +303,41 @@ module Roll
         nil
       end
     end
+=end
+
+    # Ecapsulate the fake parsing of a gemspec.
+    module FakeGem
+      module Gem #:nodoc:
+        class Specification #:nodoc:
+          attr :fake_options
+          def initialize(&block)
+            @fake_options = {}
+            yield(self)
+          end
+          def method_missing(sym, *args)
+            name = sym.to_s
+            case name
+            when /=$/
+              @fake_options[name.chomp('=')] = args.first
+            else
+              @fake_options[name]
+            end
+          end
+        end
+        class Requirement
+          def initialize(*a)
+          end
+        end
+      end
+      #
+      def self.load(file)
+        text = File.read(file)
+        fake_spec = eval(text, binding)
+        fake_spec
+      end
+    end
 
   end
 
 end
+

@@ -91,7 +91,7 @@ module Roll
     if name
       Library.open(name).verify
     else
-      Library.new(root).verify
+      Library.new(Dir.pwd).verify
     end
   end
 

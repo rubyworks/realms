@@ -69,9 +69,10 @@ module Roll
     end
 
     #
-    def initialize(location, name=nil)
+    def initialize(location, name=nil, options={})
       @location = location
       @name     = name
+      @options  = options
     end
 
     #
@@ -81,7 +82,7 @@ module Roll
 
     # Access to metadata.
     def metadata
-      @metadata ||= Metadata.new(location)
+      @metadata ||= Metadata.new(location, name, @options)
     end
 
     #
@@ -530,7 +531,11 @@ module Roll
     def match(path, suffix=true)
       path = path.to_s
 
-      return nil if /^\// =~ path  # absolute path
+      # Ruby appears to have a special exception for enumerator.
+      return nil if path == 'enumerator' 
+
+      # absolute path
+      return nil if /^\// =~ path
 
       if path.index(':') # a specified library
         name, path = path.split(':')
@@ -561,6 +566,18 @@ module Roll
           matches << [lib, file]
         end
       end
+
+      # standard ruby locations
+      return nil if $LOAD_PATH.find do |lp|
+        if suffix
+          Library::SUFFIXES.find do |s|
+            File.exist?(File.join(lp, path + s))
+          end
+        else
+          File.exist?(File.join(lp, path))
+        end
+      end
+
 
       # TODO: Perhaps the selected and unselected should be kept in separate lists?
       unselected, selected = *@index.partition{ |name, libs| Array === libs }

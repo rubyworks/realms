@@ -302,6 +302,7 @@ module Roll
         set = Hash.new{|h,k| h[k]=[]}
         locate.each do |path|
           name = libname(path)
+          next if name == 'roll' # NEVER INCLUDE ROLL ITSELF!!!
           #vers = load_version(path)
           if name #&& vers
             set[name] << path
