@@ -34,9 +34,9 @@ module Roll
 
     # Local load paths.
     def loadpath
-      @loadpath ||= (
+      @loadpath || (
         load_metadata
-        @loadpath || ['lib']
+        @loadpath ||= ['lib']
       )
     end
 
@@ -75,9 +75,9 @@ module Roll
     # occurs (say by a hand edited environment) we fallback
     # to a version of '0.0.0'.
     def version
-      @version ||= (
+      @version || (
         load_metadata
-        @version || Version.new('0.0.0')
+        @version ||= Version.new('0.0.0')
       )
     end
 
