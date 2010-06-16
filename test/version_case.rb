@@ -55,9 +55,9 @@ Case Roll::Version do
     v.minor.assert == 2
   end
 
-  Unit :teeny do
+  Unit :patch do
     v = Roll::Version.new('1.2.3')
-    v.teeny.assert == v.teeny
+    v.patch.assert == 3
   end
 
   Unit :parse_constraint do
