@@ -1,14 +1,12 @@
-# Rubinius standard
-RUBY_IGNORE_CALLERS = [] unless defined? RUBY_IGNORE_CALLERS
-RUBY_IGNORE_CALLERS << %r{roll/kernel\.rb$}
-RUBY_IGNORE_CALLERS << %r{roll/original\.rb$}
+require 'roll/original'
+## Rubinius standard
+#RUBY_IGNORE_CALLERS = [] unless defined? RUBY_IGNORE_CALLERS
+#RUBY_IGNORE_CALLERS << %r{roll/kernel\.rb$}
+#RUBY_IGNORE_CALLERS << %r{roll/original\.rb$}
 
 module ::Kernel
-  alias_method :roll_original_require, :require
-  alias_method :roll_original_load, :load
-
-  #alias_method :gem_original_require, :require
-  #alias_method :gem_original_load, :load
+  #alias_method :roll_original_require, :require
+  #alias_method :roll_original_load, :load
 
   # In which library is the current file participating?
   def __LIBRARY__
