@@ -2,30 +2,26 @@ module Roll
 
   # = Version Number
   #
-  # Essentially a tuple (immutable array).
+  # Essentially a tuple (immutable array) with special
+  # comparision opperators.
   class Version
 
-    #include Enumerable
     include Comparable
+    include Enumerable
 
-  # metaclass
-  class << self
     # Convenience alias for ::new.
-
-    def [](*args)
+    def self.[](*args)
       new(*args)
     end
 
     # Parses a string constraint returning the operation as a lambda.
-
-    def constraint_lambda(constraint)
+    def self.constraint_lambda(constraint)
       op, val = *parse_constraint(constraint)
       lambda{ |t| t.send(op, val) }
     end
 
     # Converts a constraint into an operator and value.
-
-    def parse_constraint(constraint)
+    def self.parse_constraint(constraint)
       constraint = constraint.strip
       re = %r{^(=~|~>|<=|>=|==|=|<|>)?\s*(\d+(:?[-.]\d+)*)$}
       if md = re.match(constraint)
@@ -42,43 +38,42 @@ module Roll
       end
       return op, val
     end
-  end
 
-  private
-
-    # TODO: deal with string portions of version number
+    # New version number.
     def initialize(*args)
-      args = args.join('.').split(/\W+/)
-      @tuple = args.collect { |i| i.to_i }
-      #@tuple.extend(Comparable)
+      args   = args.flatten.compact
+      args   = args.join('.').split(/\W+/)
+      @tuple = args.map{ |i| /^\d+$/ =~ i.to_s ? i.to_i : i }
     end
 
-  public
-
-    def to_s ; @tuple.join('.') ; end
+    # Returns string representation of version, e.g. "1.0.0".
+    def to_s
+      @tuple.compact.join('.')
+    end
 
     # This is here only becuase File.join calls it instead of to_s.
-    def to_str ; @tuple.join('.') ; end
+    def to_str
+      @tuple.compact.join('.')
+    end
 
     #def inspect; to_s; end
 
+    # Access indexed segment of version number.
+    # Returns 0 if index is non-existant.
     def [](i)
       @tuple.fetch(i,0)
     end
 
     # "Spaceship" comparsion operator.
-
     def <=>(other)
-      #other = other.to_t
-      [@tuple.size, other.size].max.times do |i|
-        c = (@tuple[i] || 0) <=> (other[i] || 0)
+      [size, other.size].max.times do |i|
+        c = self[i] <=> (other[i] || 0)
         return c if c != 0
       end
       0
     end
 
-    # For pessimistic constraint (like '~>' in gems).
-
+    # Pessimistic constraint (like '~>' in gems).
     def =~(other)
       #other = other.to_t
       upver = other.tuple.dup
@@ -89,28 +84,39 @@ module Roll
     end
 
     # Major is the first number in the version series.
-
     def major ; @tuple[0] ; end
 
     # Minor is the second number in the version series.
-
     def minor ; @tuple[1] || 0 ; end
 
-    # Teeny is third number in the version series.
-
+    # Patch is third number in the version series.
     def patch ; @tuple[2] || 0 ; end
 
-    # Delegate to the array.
-
-    def method_missing(sym, *args, &blk)
-      @tuple.send(sym, *args, &blk) rescue super
+    # Build returns the remaining portions of the version
+    # tuple after +patch+ joined by '.'.
+    def build
+      @tuple[3..-1].join('.')
     end
 
-  protected
+    # Iterate over each version segment.
+    def each(&block)
+      @tuple.each(&block)
+    end
+
+    # Size of version tuple.
+    def size
+      @tuple.size
+    end
+
+    # Delegate to the array.
+    #def method_missing(sym, *args, &blk)
+    #  @tuple.__send__(sym, *args, &blk) rescue super
+    #end
+
+    protected
 
     def tuple ; @tuple ; end
 
   end
 
 end
-
