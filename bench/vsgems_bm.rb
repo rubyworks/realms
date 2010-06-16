@@ -17,7 +17,6 @@ Benchmark.bm(25) do |x|
   x.report("  Require Gems:          "){ run %[export RUBYOPT=""; ruby -rubygems -e'nil'] }
   x.report("  Require Facets:        "){ run %[export RUBYOPT=""; ruby -rubygems -e'require "facets"'] }
   x.report("  Require Nokogiri:      "){ run %[export RUBYOPT=""; ruby -rubygems -e'require "nokogiri"'] }
-  x.report("  Require ActiveSupport: "){ run %[export RUBYOPT=""; ruby -rubygems -e'require "active_support"'] }
 end
 
 puts
@@ -27,7 +26,6 @@ Benchmark.bm(25) do |x|
   x.report("  Reqiure Roll:          "){ run %[export RUBYOPT=""; ruby -roll -e'nil'] }
   x.report("  Require Facets:        "){ run %[export RUBYOPT=""; ruby -roll -e'require "facets"'] }
   x.report("  Require Nokogiri:      "){ run %[export RUBYOPT=""; ruby -roll -e'require "nokogiri"'] }
-  x.report("  Require ActiveSupport: "){ run %[export RUBYOPT=""; ruby -roll -e'require "active_support"'] }
 end
 
 puts
