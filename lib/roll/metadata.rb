@@ -2,13 +2,16 @@ require 'yaml'
 
 module Roll
 
-  #= Library Metadata
-  #--
-  # TODO: Use POM? If available?
+  # The Metadata call encapsulates a library's package,
+  # profile and requirements information.
+  # 
+  # TODO: Use POM library if installed (?)
   #
   # TODO: Improve loading and parsing of metadata.
   # We want this to be as fast and as lazy as possible.
-  #--
+  #
+  # TODO: If method is missing delegate to PROFILE fetch.
+  #
   class Metadata
 
     # New metadata object.
@@ -86,7 +89,7 @@ module Roll
       @version = Version.new(string) if string
     end
 
-    # TODO: Improve. Is this even needed?
+    # TODO: Improve.
     def requires
       @requires ||= (
         req = []
@@ -103,7 +106,7 @@ module Roll
     #
     def require_file
       @require_file ||= (
-        pattern = File.join(location, "{REQUIRE,.require}{,.yml,.yaml}")
+        pattern = File.join(location, "{REQUIRE,.require}{.yml,.yaml,}")
         Dir.glob(pattern, File::FNM_CASEFOLD).first
       )
     end
@@ -113,8 +116,6 @@ module Roll
     #def active  ; true ; end
     # Is active, i.e. not omitted.
     #def active? ; true ; end
-
-  private
 
     # Package file path.
     def package_file
@@ -127,18 +128,28 @@ module Roll
     # Version file path.
     def version_file
       @version_file ||= (
-        paths = Dir.glob(File.join(location, "{VERSION}{,.txt,.yml,.yaml}"), File::FNM_CASEFOLD)
+        paths = Dir.glob(File.join(location, "version{.txt,.yml,.yaml,}"), File::FNM_CASEFOLD)
         paths.select{ |f| File.file?(f) }.first
       )
     end
 
-    #
+    # Profile file path.
+    def profile_file
+      @profile_file ||= (
+        paths = Dir.glob(File.join(location, "{,.}profile{.yml,.yaml,}"), File::FNM_CASEFOLD)
+        paths.select{ |f| File.file?(f) }.first
+      )
+    end
+
+    ;; private
+
+    # Load metadata.
     def load_metadata
       @loaded = true
       load_package || load_fallback
     end
 
-    #
+    # Load metadata form PACKAGE file.
     def load_package
       if package_file
         data = YAML.load(File.new(package_file))
@@ -173,7 +184,7 @@ module Roll
 
     # THINK: Is this reliable enough?
     def load_fallback
-      load_location
+      load_name_from_loadpath
       load_version unless @version
       if not @version
         self.version = '0.0.0'
@@ -182,22 +193,26 @@ module Roll
     end
 
     #
-    def load_location
-      fname = File.basename(location)
-      if /\-\d/ =~ fname
-        i = fname.rindex('-')
-        name, vers = fname[0...i], fname[i+1..-1]
-        self.name    = name
-        self.version = vers
-      else
-        self.name = fname
-      end
-    end
+    #def load_name_from_location
+    #  fname = File.basename(location)
+    #  if /\-\d/ =~ fname
+    #    i = fname.rindex('-')
+    #    name, vers = fname[0...i], fname[i+1..-1]
+    #    self.name    = name
+    #    self.version = vers
+    #  else
+    #    self.name = fname
+    #  end
+    #end
 
     # Try to determine name from lib/*.rb file.
-    # Ideally this would work, but there are too many projects that do not
-    # follow best practices, so currently THIS IS NOT USED.
-    def load_loadpath
+    #
+    # Ideally this will work, but there are many projects that do not
+    # follow best practices, so it not always effective.
+    #
+    # TODO: Search loadpath not just lib/, but search lib first if present.
+    # Eiether that or require that lib/ alwasy be in the loadpath. 
+    def load_name_from_loadpath
       #libs = loadpath.map{ |lp| Dir.glob(File.join(lp,'*.rb')) }.flatten
       libs = Dir.glob(File.join(location, 'lib', '*.rb'))
       if !libs.empty?
