@@ -11,7 +11,8 @@ module Roll
     # Dynamic link extension.
     #DLEXT = '.' + ::Config::CONFIG['DLEXT']
 
-    #
+    # TODO: Some extensions are platform specific --only
+    # add the ones needed for the current platform.
     SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
 
     #
@@ -20,7 +21,6 @@ module Roll
     # Get an instance of a library by name, or name and version.
     # Libraries are singleton, so once loaded the same object is
     # always returned.
-
     def self.instance(name, constraint=nil)
       name = name.to_s
       #raise "no library -- #{name}" unless ledger.include?(name)
@@ -51,7 +51,6 @@ module Roll
     end
 
     # A shortcut for #instance.
-
     def self.[](name, constraint=nil)
       instance(name, constraint)
     end
@@ -68,31 +67,21 @@ module Roll
       lib
     end
 
-    #
+    # New library.
     def initialize(location, name=nil, options={})
       @location = location
       @name     = name
       @options  = options
     end
 
-    #
+    # Location of library files on disc.
     def location
       @location
     end
 
     # Access to metadata.
     def metadata
-      @metadata ||= Metadata.new(location, name, @options)
-    end
-
-    #
-    def name
-      @name ||= metadata.name
-    end
-
-    #
-    def version
-      @version ||= metadata.version
+      @metadata ||= Metadata.new(@location, @name, @options)
     end
 
     #
@@ -100,22 +89,34 @@ module Roll
       true #@active ||= metadata.active
     end
 
-    #
+    # Library's "unixname".
+    def name
+      @name ||= metadata.name
+    end
+
+    # Library's version number.
+    def version
+      metadata.version
+    end
+
+    # Library's internal load path(s).
     def loadpath
-      @loadpath ||= metadata.loadpath
+      metadata.loadpath
     end
 
-    #
-    def requires
-      @requires ||= metadata.requires
-    end
-
-    #
+    # Release date.
     def released
-      @released ||= metadata.released
+      metadata.released
     end
 
-    # TODO
+    # List of dependencies take from a REQUIRE file, if it exists.
+    # This ncludes both neccessary and optional dependencies.
+    def requires
+      metadata.requires
+    end
+
+    # Take each project dependency and open it.
+    # This will reveal any version conflicts.
     def verify
       requires.each do |(name, constraint)|
         Library.open(name, constraint)
@@ -135,7 +136,6 @@ module Roll
     #end
 
     # Standard loadpath search.
-    #
     def find(file, suffix=true)
       lp = loadpath
       if suffix
@@ -358,6 +358,8 @@ module Roll
 
   # = Ledger class
   #
+  # The ledger encapsulates the behaviors of Library's metaclass.
+  #
   class Ledger
 
     include Enumerable
@@ -531,7 +533,7 @@ module Roll
     def match(path, suffix=true)
       path = path.to_s
 
-      # Ruby appears to have a special exception for enumerator.
+      # Ruby appears to have a special exception for enumerator!!!
       return nil if path == 'enumerator' 
 
       # absolute path
@@ -577,7 +579,6 @@ module Roll
           File.exist?(File.join(lp, path))
         end
       end
-
 
       # TODO: Perhaps the selected and unselected should be kept in separate lists?
       unselected, selected = *@index.partition{ |name, libs| Array === libs }
