@@ -1,11 +1,9 @@
-require 'yaml'
+#require 'yaml'
 
 module Roll
 
   # The Metadata call encapsulates a library's package,
   # profile and requirements information.
-  # 
-  # TODO: Use POM library if installed (?)
   #
   # TODO: Improve loading and parsing of metadata.
   # We want this to be as fast and as lazy as possible.
@@ -13,6 +11,9 @@ module Roll
   # TODO: If method is missing delegate to PROFILE fetch.
   #
   class Metadata
+
+    require 'roll/metadata/pom'
+    require 'roll/metadata/gem'
 
     # New metadata object.
     def initialize(location, name=nil, options={})
@@ -71,12 +72,9 @@ module Roll
       @name = string if string
     end
 
-    # Version number.
-    #
-    # Technically, a library should not appear in a ledger list
-    # if it lacks a VERSION file. However, just in case this
-    # occurs (say by a hand edited environment) we fallback
-    # to a version of '0.0.0'.
+    # Version number. Technically, a library should not appear in a ledger
+    # list if it lacks a VERSION file. However, just in case this occurs
+    # (say by a hand edited environment) we fallback to a version of '0.0.0'.
     def version
       @version || (
         load_metadata
@@ -89,42 +87,63 @@ module Roll
       @version = Version.new(string) if string
     end
 
-    # TODO: Improve.
-    def requires
-      @requires ||= (
-        req = []
-        if file = require_file
-          data = YAML.load(File.new(file))
-          data.each do |name, list|
-            req.concat(list || [])
-          end
-        end
-        req
-      )
-    end
-
-    #
-    def require_file
-      @require_file ||= (
-        pattern = File.join(location, "{REQUIRE,.require}{.yml,.yaml,}")
-        Dir.glob(pattern, File::FNM_CASEFOLD).first
-      )
-    end
-
     # TODO: Deprecate active, if you don't want it exclude from environment.
     # Is active, i.e. not omitted.
     #def active  ; true ; end
     # Is active, i.e. not omitted.
     #def active? ; true ; end
 
-    # Package file path.
-    def package_file
-      @package_file ||= (
-        paths = Dir.glob(File.join(location, "{,.}{package}{.yml,.yaml,}"), File::FNM_CASEFOLD)
-        paths.select{ |f| File.file?(f) }.first
+    #
+    def dot_ruby?
+      @dot_ruby ||= File.exist?(File.join(location, '.ruby'))
+    end
+
+    # Access to additonal metadata outside of the .ruby directory.
+    def extended_metadata
+      @extended_method ||= (
+        type = [POM, Gem].find{ |m| m.match?(location) }
+        if type
+          type.new(location)
+        else
+          Object.new #?
+        end
       )
     end
 
+    private #------------------------------------------------------------------
+
+    # Load metadata.
+    def load_metadata
+      @loaded = true
+
+      #dot_ruby! if !dot_ruby?
+
+      self.name     = load_dot_ruby_file('name')
+      self.version  = load_dot_ruby_file('version') #, '0.0.0')
+      self.loadpath = load_dot_ruby_file('loadpath', ['lib'])
+    end
+
+    #
+    def load_dot_ruby_file(name, default=nil)
+      file = File.join(location, '.ruby', name)
+      if File.exist?(file)
+        File.read(file).strip
+      else
+        default
+      end
+    end
+
+    #
+    def save_dot_ruby
+      require 'fileutils'
+      dir = File.join(location, '.ruby')
+      FileUtils.mkdir(dir)
+      File.open(File.join(dir, 'name'), 'w'){ |f| f << name }
+      File.open(File.join(dir, 'version'), 'w'){ |f| f << version.to_s }
+      File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
+    end
+
+=begin
     # Version file path.
     def version_file
       @version_file ||= (
@@ -132,97 +151,9 @@ module Roll
         paths.select{ |f| File.file?(f) }.first
       )
     end
+=end
 
-    # Profile file path.
-    def profile_file
-      @profile_file ||= (
-        paths = Dir.glob(File.join(location, "{,.}profile{.yml,.yaml,}"), File::FNM_CASEFOLD)
-        paths.select{ |f| File.file?(f) }.first
-      )
-    end
-
-    ;; private
-
-    # Load metadata.
-    def load_metadata
-      @loaded = true
-      load_package || load_fallback
-    end
-
-    # Load metadata form PACKAGE file.
-    def load_package
-      if package_file
-        data = YAML.load(File.new(package_file))
-        data = data.inject({}){|h,(k,v)| h[k.to_s] = v; h}
-        self.name     = data['name']
-        self.version  = data['vers'] || data['version']
-        self.loadpath = data['path'] || data['loadpath']
-        self.codename = data['code'] || data['codename']
-        true
-      else
-        false
-      end
-    end
-
-    # TODO: Instead of supporting gemspecs as is, create a tool
-    # that will add a .package file to each one.
-
-    #
-    #def load_gemspec
-    #  return false unless File.basename(File.dirname(location)) == 'gems'
-    #  specfile = File.join(location, '..', '..', 'specifications', File.basename(location) + '.gemspec')
-    #  if File.exist?(specfile)
-    #    fakegem = FakeGem.load(specfile)
-    #    self.name     = fakegem.name
-    #    self.version  = fakegem.version
-    #    self.loadpath = fakegem.require_paths
-    #    true
-    #  else
-    #    false
-    #  end 
-    #end
-
-    # THINK: Is this reliable enough?
-    def load_fallback
-      load_name_from_loadpath
-      load_version unless @version
-      if not @version
-        self.version = '0.0.0'
-      end
-      @name
-    end
-
-    #
-    #def load_name_from_location
-    #  fname = File.basename(location)
-    #  if /\-\d/ =~ fname
-    #    i = fname.rindex('-')
-    #    name, vers = fname[0...i], fname[i+1..-1]
-    #    self.name    = name
-    #    self.version = vers
-    #  else
-    #    self.name = fname
-    #  end
-    #end
-
-    # Try to determine name from lib/*.rb file.
-    #
-    # Ideally this will work, but there are many projects that do not
-    # follow best practices, so it not always effective.
-    #
-    # TODO: Search loadpath not just lib/, but search lib first if present.
-    # Eiether that or require that lib/ alwasy be in the loadpath. 
-    def load_name_from_loadpath
-      #libs = loadpath.map{ |lp| Dir.glob(File.join(lp,'*.rb')) }.flatten
-      libs = Dir.glob(File.join(location, 'lib', '*.rb'))
-      if !libs.empty?
-        self.name = File.basename(libs.first).chomp('.rb')
-        true
-      else
-        false
-      end
-    end
-
+=begin
     # Load VERSION file, if it exists.
     def load_version
       if version_file
@@ -277,6 +208,7 @@ module Roll
         self.date = md[0]
       end
     end
+=end
 
 =begin
     ## Get library active state.

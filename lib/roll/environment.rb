@@ -146,6 +146,16 @@ module Roll
         @table = index
       end
 
+      #
+      def [](name)
+        @table[name.to_s]
+      end
+
+      #
+      def key?(name)
+        @table.key?(name.to_s)
+      end
+
       # Look through the environment table.
       def each(&block)
         @table.each(&block)
@@ -170,7 +180,7 @@ module Roll
             out << ("%-#{max}s %s" % [name, path]) + ' ' + loadpath.join(' ')
           end
         end
-        out.sort.join("\n")
+        out.sort.reverse.join("\n")
       end
 
       # Save environment file.
@@ -323,13 +333,31 @@ module Roll
       end
 
       # Search a given directory for projects upto a given depth. Projects
-      # directories are determined by containing a lib/*.rb file.
+      # directories are determined by containing a .ruby directory or a
+      # lib directory.
+      # 
+      # NOTE: relying on lib/ is not a reliable as would be prefered.
+      # I am hoping that .ruby/ directory will eventually become a 
+      # standard.
       def find_projects(dir, depth=3)
         depth = Integer(depth || 3)
         depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
-        find = File.join(dir, "{#{depth}}", "lib/*.rb")
-        locals = Dir.glob(find)
-        locals.map{|d| File.dirname(File.dirname(d)) }.uniq
+
+        libs = []
+
+        find = File.join(dir, "{#{depth}}", ".ruby/")
+        dirs = Dir.glob(find)
+        libs += dirs.map{|d| File.dirname(d) }.uniq
+
+        #find = File.join(dir, "{#{depth}}", "lib/*.rb")
+        #locals = Dir.glob(find)
+        #locals.concat(locals.map{|d| File.dirname(File.dirname(d)) }.uniq)
+
+        find = File.join(dir, "{#{depth}}", "lib/")
+        dirs = Dir.glob(find)
+        libs += dirs.map{|d| File.dirname(d) }.uniq
+
+        libs.uniq
       end
 
       #
@@ -338,26 +366,51 @@ module Roll
         @metadata[path] ||= Metadata.new(path)
       end
 
-      # TODO: if a gems location, use gemspec
+      #
       def libdata(path)
-        if specfile = gemspec?(path)
-          fakegem = FakeGem.load(specfile)
-          return fakegem.name, fakegem.require_paths  #fakegem.version
+        data = metadata(path)
+
+        if !dot_ruby?(path)
+          name     = data.extended_metadata.name
+          version  = data.extended_metadata.version
+          loadpath = data.extended_metadata.loadpath || ['lib']
+
+          dot_ruby!(path, name, version, loadpath)
+
+          #if gemspec?(path)
+          #  name, version, loadpath = geminfo(path)
+          #  dot_ruby!(path, name, version, loadpath)
+          #  #fakegem = FakeGem.load(specfile)
+          #  #return fakegem.name, fakegem.require_paths  #fakegem.version
+          #  return name, loadpath #, version ?
+          #elsif pom?(path)
+          #  data.dot_ruby! unless data.dot_ruby?
+          #else
+          #end
         else
-          data = metadata(path)
-          return data.name, data.loadpath
+          name     = data.name
+          version  = data.version
+          loadpath = data.loadpath
         end
+
+        return name, loadpath
       end
 
       #
-      def gemspec?(path)
-        pkgname = File.basename(path)
-        gemsdir = File.dirname(path)
-        specdir = File.join(File.dirname(gemsdir), 'specifications')
-        return false unless File.directory?(specdir)
-        gemspec = File.join(specdir, pkgname + '.gemspec')
-        return false unless File.exist?(gemspec)
-        return gemspec
+      def dot_ruby?(location)
+        dir = File.join(location, '.ruby')
+        return false unless File.directory?(dir)
+        return true
+      end
+
+      #
+      def dot_ruby!(location, name, version, loadpath)
+        require 'fileutils'
+        dir = File.join(location, '.ruby')
+        FileUtils.mkdir(dir)
+        File.open(File.join(dir, 'name'), 'w'){ |f| f << name }
+        File.open(File.join(dir, 'version'), 'w'){ |f| f << version.to_s }
+        File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
       end
 
       ## Get library name.
@@ -369,39 +422,6 @@ module Roll
       #end
 
     end#class Lookup
-
-    # Ecapsulates the fake parsing of a gemspec.
-    #
-    module FakeGem
-      module Gem #:nodoc:
-        class Specification #:nodoc:
-          attr :fake_options
-          def initialize(&block)
-            @fake_options = {}
-            yield(self)
-          end
-          def method_missing(sym, *args)
-            name = sym.to_s
-            case name
-            when /=$/
-              @fake_options[name.chomp('=')] = args.first
-            else
-              @fake_options[name]
-            end
-          end
-        end
-        class Requirement
-          def initialize(*a)
-          end
-        end
-      end
-      #
-      def self.load(file)
-        text = File.read(file)
-        fake_spec = eval(text, binding)
-        fake_spec
-      end
-    end
 
   end#class Environment
 

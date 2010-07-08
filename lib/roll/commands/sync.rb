@@ -6,7 +6,7 @@ module Roll
     #
     def setup
       op.banner = "Usage: roll sync [NAME]"
-      op.separator "Synchronize ledger(s) to their respective environment(s)."
+      op.separator "Synchronize index to environment."
     end
 
     # Synchronize ledgers.

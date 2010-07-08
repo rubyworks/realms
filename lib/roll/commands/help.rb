@@ -9,6 +9,8 @@ module Roll
                   "Use 'roll <COMMAND> --help' for command details."
       op.separator " "
       op.separator "COMMANDS:"
+      op.separator "    use NAME  " + (" " * 23) + "Change current environment."
+      op.separator "    list      " + (" " * 23) + "List available environments."
       op.separator "    in  [DIR] " + (" " * 23) + "Roll directory into current environment."
       op.separator "    out [DIR] " + (" " * 23) + "Remove directory from current environment."
       op.separator "    env       " + (" " * 23) + "Show current environment."

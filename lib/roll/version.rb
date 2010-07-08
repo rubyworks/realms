@@ -40,6 +40,8 @@ module Roll
     end
 
     # New version number.
+    #
+    # TODO: parse YAML style versions
     def initialize(*args)
       args   = args.flatten.compact
       args   = args.join('.').split(/\W+/)
@@ -116,6 +118,23 @@ module Roll
     protected
 
     def tuple ; @tuple ; end
+
+    # Parse YAML-based VERSION.
+    def parse_version_yaml(yaml)
+      require 'yaml'
+      data = YAML.load(yaml)
+      data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
+      self.name = data[:name] if data[:name]
+      self.date = data[:date] if data[:date]
+      # jeweler
+      if data[:major]
+        self.version = data.values_at(:major, :minor, :patch, :build).compact.join('.')
+      else
+        vers = data[:vers] || data[:version]
+        self.version = (Array === vers ? vers.join('.') : vers)
+      end
+      self.codename = data.values_at(:code, :codename).compact.first
+    end
 
   end
 

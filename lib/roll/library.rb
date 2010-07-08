@@ -109,8 +109,8 @@ module Roll
       metadata.released
     end
 
-    # List of dependencies take from a REQUIRE file, if it exists.
-    # This ncludes both neccessary and optional dependencies.
+    # List of dependencies taken from a REQUIRE file, if it exists.
+    # This includes both neccessary and optional dependencies.
     def requires
       metadata.requires
     end
@@ -242,7 +242,7 @@ module Roll
     # Inspection.
     def inspect
       if version
-        %[#<Library #{name}/#{@version} @location="#{location}">]
+        %[#<Library #{name}/#{version} @location="#{location}">]
       else
         %[#<Library #{name} @location="#{location}">]
       end
@@ -255,6 +255,11 @@ module Roll
     # Compare by version.
     def <=>(other)
       version <=> other.version
+    end
+
+    #
+    def default
+      @default ||= include?(name)
     end
 
 #    # List of subdirectories that are searched when loading.
@@ -368,6 +373,8 @@ module Roll
     def initialize
       @index = Hash.new{|h,k| h[k] = []}
 
+      @index['ruby'] = RubyLibrary.new
+
       @environment = Environment.new
 
       @environment.each do |name, paths|
@@ -382,13 +389,20 @@ module Roll
       end
 
       @load_stack = []
+      @load_cache = {}
       #@load_monitor = Hash.new{ |h,k| h[k]=[] }
     end
 
     #
-    def enironment
+    def environment
       @environment
     end
+
+    #
+    def index
+      @index
+    end
+
 
     #
     def [](name)
@@ -425,6 +439,11 @@ module Roll
       @load_stack
     end
 
+    #
+    def load_cache
+      @load_cache
+    end
+
     ## NOTE: Not used yet.
     #def load_monitor
     #  @load_monitor
@@ -449,13 +468,14 @@ module Roll
 
     #
     def require(path)
-      #return if $".include?(path)
-      #return if $".include?(path+'.rb')
+      return false if load_cache[path]
 
       lib, file = *match(path)
       if lib && file
         constrain(lib)
-        lib.require_absolute(file)
+        success = lib.require_absolute(file)
+        load_cache[path] = [lib, file]
+        success
       else
         begin
           roll_original_require(path)
@@ -463,11 +483,13 @@ module Roll
           raise clean_backtrace(load_error)
         end
       end
-
     end
 
     #
     def load(path, wrap=nil)
+      lib, file = load_cache[path]
+      return lib.load_absolute(file, wrap) if lib
+
       lib, file = *match(path, false)
       if lib && file
         constrain(lib)
@@ -497,21 +519,22 @@ module Roll
       if file.index(':') # a specific library
         name, file = file.split(':')
         lib = Library.open(name)
+        abs = lib.include?(file)
       else # try the current library
         cur = load_stack.last
-        if cur && cur.include?(file)
+        if cur && abs = cur.include?(file)
           lib = cur
         elsif !file.index('/') # is this a library name?
           if cur = Library.instance(file)
-            lib  = cur
-            file = lib.default # default file to load
+            lib = cur
+            abs = lib.default # default file to load
           end
         end
       end
       if opts[:load]
-        lib ? lib.load(file) : roll_original_load(file)
+        lib ? lib.load_absolute(abs) : roll_original_load(file)
       else
-        lib ? lib.require(file) : roll_original_require(file)
+        lib ? lib.require_absolute(abs) : roll_original_require(file)
       end
     end
 
@@ -569,15 +592,11 @@ module Roll
         end
       end
 
-      # standard ruby locations
-      return nil if $LOAD_PATH.find do |lp|
-        if suffix
-          Library::SUFFIXES.find do |s|
-            File.exist?(File.join(lp, path + s))
-          end
-        else
-          File.exist?(File.join(lp, path))
-        end
+      # try ruby
+      lib = Library['ruby']
+      if file = lib.find(path, suffix)
+        return [lib, file] unless $VERBOSE
+        matches << [lib, file]
       end
 
       # TODO: Perhaps the selected and unselected should be kept in separate lists?
