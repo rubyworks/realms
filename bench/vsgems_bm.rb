@@ -2,6 +2,7 @@ require 'open3'
 require 'benchmark'
 
 def run(cmd)
+  cmd = %[export RUBYENV="rubygems"; export RUBYOPT=""; ] + cmd 
   Open3.popen3(cmd) do |stdin, stdout, stderr|  
     out = stdout.read
     err = stderr.read
@@ -14,18 +15,18 @@ puts
 puts "RubyGems"
 
 Benchmark.bm(25) do |x|
-  x.report("  Require Gems:          "){ run %[export RUBYOPT=""; ruby -rubygems -e'nil'] }
-  x.report("  Require Facets:        "){ run %[export RUBYOPT=""; ruby -rubygems -e'require "facets"'] }
-  x.report("  Require Nokogiri:      "){ run %[export RUBYOPT=""; ruby -rubygems -e'require "nokogiri"'] }
+  x.report("  Require Gems:          "){ run %[ruby -rubygems -e'nil'] }
+  x.report("  Require Facets:        "){ run %[ruby -rubygems -e'require "facets"'] }
+  x.report("  Require Nokogiri:      "){ run %[ruby -rubygems -e'require "nokogiri"'] }
 end
 
 puts
 puts "Ruby Roll"
 
 Benchmark.bm(25) do |x|
-  x.report("  Reqiure Roll:          "){ run %[export RUBYOPT=""; ruby -roll -e'nil'] }
-  x.report("  Require Facets:        "){ run %[export RUBYOPT=""; ruby -roll -e'require "facets"'] }
-  x.report("  Require Nokogiri:      "){ run %[export RUBYOPT=""; ruby -roll -e'require "nokogiri"'] }
+  x.report("  Reqiure Roll:          "){ run %[ruby -roll -e'nil'] }
+  x.report("  Require Facets:        "){ run %[ruby -roll -e'require "facets"'] }
+  x.report("  Require Nokogiri:      "){ run %[ruby -roll -e'require "nokogiri"'] }
 end
 
 puts
