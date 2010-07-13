@@ -35,9 +35,7 @@ Rolls works fairly well. I have used it for development for years, so
 on the whole it stays in working order. However it is still under
 heavy development, so configuration is still subject to a fair bit
 of change. The loading heuristics are quite advanced, which accounts
-for the speed, but as a trade-off the first library that is not found
-"early" can initilially slow the system as all of an environments
-metadata if loaded.
+for the speed, but as a trade-off the loading procedure is more complex.
 
 
 == HOW TO USE
@@ -67,22 +65,26 @@ in the future if limitations of long environment variables prove problematic.)
 === Preparing your Projects
 
 For a project to be detected by Rolls it must conform to a
-minimal POM[http://proutils.github.com/pom] setup. Specifically
-the project must have a <code>PACKAGE</code> file and it must
-have at least one <code>lib/*.rb</code> file. In the future this
-should become a little more flexible, but that is the bare minimum
-for a project to to be loadable via Rolls as of v1.2. The only
-exception is for Gem stores. If you point Rolls torwards a gems/
-location it will attempt to parse the name, version and loadpath
-from the gem's gemspec.
+minimal POM[http://proutils.github.com/pom] setup. Specifically,
+the project must have <code>.ruby/</code> entries. That is the bare
+minimum for a project to to be loadable via Rolls as of v1.3.
 
-Also, note that #autoload will not work with Rolls. Ruby has a bug
-that prevents #autoload from using any custom defined #require method.
-(Why this has never been fixed is both annoying and frustrating
-to say the least.)
+The only exception is for Gem stores. If you point Rolls torwards
+a <code>gems/<code> location it will attempt to parse the name,
+version and loadpath from the gem's path and/or gemspec. It will
+then save this information to under <code>.ruby/</code> in the
+project's folder --so +sudo+ may be necessary when first adding
+a system-wide gem location.
 
-See POM[http://proutils.github.com/pom] for more information about
-the POM standard.
+Also, note that #autoload is bypassed by Rolls. Ruby has a bug
+that is preventing #autoload from using custom defined #require
+methods. (Why this has never been fixed is beyond me, and is both
+annoying and frustrating to say the least.) In any case, Rolls simply
+loads any autoloads upfront. So everything should will still work. There
+simply won't be any lazy loading benefit.
+
+See POM[http://wiki.github.com/pom/proutils] for more information about
+the <code>.ruby/</code> directory.
 
 === Library Management
 
@@ -109,12 +111,17 @@ up to a depth of three sub-directories. That's suitable for
 most needs. You can specify the the depth explicitly with the 
 <tt>--depth</tt> or <tt>-d</tt> option. You can roll in the 
 current working directory by leaving off the path argument. 
-If the current directory has a +VERSION+ file, a depth of +1+
+If the current directory has a +.ruby+ directory, a depth of +1+
 will automatically be used.
 
-  $ roll in
+The +use+ command stores the current environment name until the
+end of the bash session. To set it perminently, adjust the RUBYENV
+environment variable or write the fallback default in the 
+<code>$HOME/.config/roll/default</code> file.
 
-So that's it. You are *READY-TO-ROLL*!
+For see the rest of the +roll+ commands, use <code>roll help</code>.
+
+Now you are *read to roll*! 
 
 
 == LEARNING MORE
@@ -130,6 +137,7 @@ it fullest extent, please visit http://proutils.github.org/roll/.
 
 First you need a copy of the roll tarball (or zip) archive.
 You will find them here[http://github.com/proutils/roll/download].
+You will of course need to unpack the file. For example,
 
   $ tar -xvzf roll-1.0.0
 
@@ -145,13 +153,14 @@ use.
   $ cd roll-1.0.0
   $ sudo script/setup.
 
-On Windows, this last line needs to be 'ruby script/setup'.
+On Windows, this last line will need to be 'ruby script/setup'.
 
 === RubyGems Installation
 
-We strongly recommend installing Rolls manually b/c
-Rolls is a peer to RubyGems. However, you can use Gems to
-install it; and this is a convenient way to try it out.
+We strongly recommend installing Rolls manually b/c Rolls is a
+peer to RubyGems. However, the last we tested it, Rolls could
+be install via Gems as a means of trying it out --though you won't
+get the full benefits of the system.
 
   gem install roll
 
