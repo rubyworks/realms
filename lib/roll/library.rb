@@ -1,9 +1,8 @@
 require 'roll/version'
 require 'roll/metadata'
 require 'roll/environment'
-#require 'roll/ledger'
 
-$MONITOR = ENV['ROLL_MONITOR']
+#$MONITOR = ENV['ROLL_MONITOR']
 
 module Roll
 
@@ -18,58 +17,8 @@ module Roll
     # add the ones needed for the current platform.
     SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar', '']
 
-    #
+    # Extensions glob, joins extensions with comma and wrap in curly brackets.
     SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
-
-=begin
-    # Ledger augments the Library metaclass.
-    class << self
-      # Instance of Ledger class.
-      def ledger
-        @ledger ||= Ledger.new
-      end
-
-      # Current environment
-      def environment
-        ledger.environment
-      end
-
-      # List of library names.
-      def list
-        ledger.names
-      end
-
-      #
-      def require(path)
-        ledger.require(path)
-      end
-
-      #
-      def load(path, wrap=nil)
-        ledger.load(path, wrap)
-      end
-
-      #
-      def acquire(path, opts={})
-        ledger.acquire(path, opts)
-      end
-
-      #
-      def autoload(constant, path)
-        ledger.autoload(constant, path)
-      end
-
-      #
-      def load_stack
-        ledger.load_stack
-      end
-
-      ## NOTE: Not used yet.
-      #def load_monitor
-      #  ledger.load_monitor
-      #end
-    end
-=end
 
     # Get an instance of a library by name, or name and version.
     # Libraries are singleton, so once loaded the same object is
@@ -110,7 +59,6 @@ module Roll
 
     # Same as #instance but will raise and error if the library is
     # not found. This can also take a block to yield on the library.
-
     def self.open(name, constraint=nil) #:yield:
       lib = instance(name, constraint)
       unless lib
@@ -120,7 +68,7 @@ module Roll
       lib
     end
 
-    # New library.
+    # New Library object.
     def initialize(location, name=nil, options={})
       @location = location
       @name     = name
@@ -137,9 +85,11 @@ module Roll
       @metadata ||= Metadata.new(@location, @name, @options)
     end
 
+    # Is the library active?
     #
+    # NOTE: Presently this is always +true+.
     def active?
-      true #@active ||= metadata.active
+      @active ||= metadata.active?
     end
 
     # Library's "unixname".
@@ -152,43 +102,40 @@ module Roll
       metadata.version
     end
 
-    # Library's internal load path(s).
+    # Library's internal load path(s). This will default to `['lib']`
+    # not otherwise given.
     def loadpath
       metadata.loadpath
     end
 
     # Release date.
-    def released
-      metadata.released
+    def date
+      metadata.date
     end
+
+    # Alias for +#date+.
+    alias_method :released, :date
 
     # List of dependencies taken from a REQUIRE file, if it exists.
     # This includes both neccessary and optional dependencies.
+    #
+    # FIXME: Currently this returns and empty array. To fix either add to the
+    # Metadata class or create a new class that can parse the requirements
+    # listed ina REQUIRE file, .gemspec, and/or Gemfile.
     def requires
-      metadata.requires
+      []
     end
 
-    # Take each project dependency and open it.
-    # This will reveal any version conflicts.
+    # Take each project dependency and open it. This will help reveal any
+    # version conflicts or missing dependencies.
     def verify
       requires.each do |(name, constraint)|
         Library.open(name, constraint)
       end
     end
 
-    # Find first matching +file+.
-
-    #def find(file, suffix=true)
-    #  case File.extname(file)
-    #  when *SUFFIXES
-    #    find = File.join(lookup_glob, file)
-    #  else
-    #    find = File.join(lookup_glob, file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
-    #  end
-    #  Dir[find].first
-    #end
-
-    # Standard loadpath search.
+    # Standard loadpath search for the first matching +file+.
+    # Set +suffix+ to false to prevent automatic extension matching.
     def find(file, suffix=true)
       lp = loadpath
       if suffix
@@ -211,12 +158,12 @@ module Roll
       nil
     end
 
-    #
+    # Create a new LibFile object from +lpath+, +file+ and +ext+.
     def libfile(lpath, file, ext)
       LibFile.new(self, lpath, file, ext) 
     end
 
-    #
+    # LibFile class represents a single file in a library.
     class LibFile
       attr_reader :library, :loadpath, :filename, :extension
       def initialize(library, loadpath, filename, extension=nil)
@@ -253,10 +200,9 @@ module Roll
       end
     end
 
-    # Does this library have a matching +file+?
-    #
-    # Unlike #find, this also matches within the library directory
-    # itself, eg. <tt>lib/foo/*</tt>. It is used by #acquire.
+    # Does this library have a matching +file+? This is almost the same
+    # as #find, but unlike #find, this also matches within the library
+    # directory itself, e.g. `lib/foo/*`. This method is used by #acquire.
     def include?(file, suffix=true)
       lp = loadpath
       if suffix
@@ -286,16 +232,6 @@ module Roll
       end
       nil
     end
-
-    #def include?(file)
-    #  case File.extname(file)
-    #  when *SUFFIXES
-    #    find = File.join(lookup_glob, "{#{name}/,}" + file)
-    #  else
-    #    find = File.join(lookup_glob, "{#{name}/,}" + file + SUFFIX_PATTERN) #'{' + ".rb,#{DLEXT}" + '}')
-    #   end
-    #  Dir[find].first
-    #end
 
     #
     def require(file)
@@ -354,6 +290,7 @@ module Roll
       end
     end
 
+    # Same as #inspect.
     def to_s
       inspect
     end
@@ -363,25 +300,28 @@ module Roll
       version <=> other.version
     end
 
-    #
+    # Return default file. This is the file that has same name as the
+    # library itself.
     def default
       @default ||= include?(name)
     end
 
-#    # List of subdirectories that are searched when loading.
-#    #--
-#    # This defualts to ['lib/{name}', 'lib']. The first entry is
-#    # usually proper location; the latter is added for default
-#    # compatability with the traditional require system.
-#    #++
-#    def libdir
-#      loadpath.map{ |path| File.join(location, path) }
-#    end
-#
-#    # Does the library have any lib directories?
-#    def libdir?
-#      lib.any?{ |d| File.directory?(d) }
-#    end
+    #--
+    #    # List of subdirectories that are searched when loading.
+    #    #--
+    #    # This defualts to ['lib/{name}', 'lib']. The first entry is
+    #    # usually proper location; the latter is added for default
+    #    # compatability with the traditional require system.
+    #    #++
+    #    def libdir
+    #      loadpath.map{ |path| File.join(location, path) }
+    #    end
+    #
+    #    # Does the library have any lib directories?
+    #    def libdir?
+    #      lib.any?{ |d| File.directory?(d) }
+    #    end
+    #++
 
     # Location of executable. This is alwasy bin/. This is a fixed
     # convention, unlike lib/ which needs to be more flexable.
@@ -406,12 +346,8 @@ module Roll
 
   private
 
-    #
-    #def lookup_glob
-    #  @lookup_glob ||= File.join(location, '{' + loadpath.join(',') + '}')
-    #end
-
-    #
+    # Take an +error+ and remove any mention of 'roll' from it's backtrace.
+    # Will leave the backtrace untouched if $DEBUG is set to true.
     def clean_backtrace(error)
       if $DEBUG
         error
@@ -425,20 +361,14 @@ module Roll
 
   end
 
-  # VersionError is raised when a requested version cannot be found.
-  class VersionError < ::RangeError  # :nodoc:
-  end
-
-  # VersionConflict is raised when selecting another version
-  # of a library when a previous version has already been selected.
-  class VersionConflict < ::LoadError  # :nodoc:
-  end
-
+  # Library metaclass acts as the library ledger, keeping track the
+  # environment and disptching the roll calls.
   class << Library
-
     include Enumerable
 
+    # Setup if the library ledger.
     #
+    # TODO: Rename this method.
     def initialize
       roll_original_require 'roll/ruby'
 
@@ -467,26 +397,15 @@ module Roll
       @autoload_paths = []
     end
 
-    #
+    # Returns the current instance of the Environment class.
     def environment
       @environment
     end
 
-    #
+    # Returns an hash of `name => library` or `name => [ libvN, libv2, ...]`.
     def index
       @index
     end
-
-
-    #
-    #def [](name)
-    #  @index[name]
-    #end
-
-    #
-    #def []=(name, value)
-    #  @index[name] = value
-    #end
 
     #
     def include?(name)
@@ -627,7 +546,9 @@ module Roll
 
   private
 
-    # Find require matches.
+    # Find matching libary files. This is the "mac daddy" method used by
+    # the #require and #load methods to find the sepcified +path+ among
+    # the various libraries and their loadpaths.
     def match(path, suffix=true)
       path = path.to_s
 
@@ -730,12 +651,13 @@ module Roll
       end
     end
 
-    #
+    # Issue a warning form rolls.
     def warn(message)
       $stderr.puts("roll: #{message}") if $DEBUG || $VERBOSE
     end
 
-    #
+    # Take an +error+ and remove any mention of 'roll' from it's backtrace.
+    # Will leave the backtrace untouched if $DEBUG is set to true.
     def clean_backtrace(error)
       if $DEBUG
         error
@@ -747,9 +669,9 @@ module Roll
       end
     end
 
-    # T O O L S
-
   public
+
+    # -- T O O L S --
 
     # Get environment.
     def env(name=nil)

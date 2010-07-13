@@ -8,8 +8,6 @@ module Roll
   # TODO: Improve loading and parsing of metadata.
   # We want this to be as fast and as lazy as possible.
   #
-  # TODO: If method is missing delegate to PROFILE fetch.
-  #
   class Metadata
 
     #require 'roll/metadata/pom'
@@ -45,7 +43,7 @@ module Roll
       )
     end
 
-    #
+    # Set the loadpath.
     def loadpath=(path)
       case path
       when nil
@@ -60,7 +58,7 @@ module Roll
     def name
       @name || (
         if @loaded
-          nil
+          nil # TODO: raise error here?
         else
           load_metadata
           @name
@@ -88,20 +86,23 @@ module Roll
       @version = Version.new(string) if string
     end
 
-    # TODO: Deprecate active, if you don't want it exclude from environment.
     # Is active, i.e. not omitted.
-    #def active  ; true ; end
-    # Is active, i.e. not omitted.
-    #def active? ; true ; end
-
     #
+    # TODO: Should we support +active+ setting, or should we add a way to 
+    # exclude loctions from from the environment?
+    def active?
+      true
+    end
+
+    # Does this location have .ruby entries?
     def dotruby?
       @dot_ruby ||= File.exist?(File.join(location, '.ruby'))
     end
 
-    # Access to additonal metadata outside of the .ruby directory.
+    # Access to additonal metadata outside of the .ruby/ directory.
     #
-    # TODO: Make this information more uniform.
+    # TODO: Make this information more uniform beteen POM PROFILE and
+    # RubyGems GEM::Specification; and think of a shorter name.
     def extended_metadata
       @extended_method ||= (
         profile = Dir.glob(File.join(location, 'PROFILE'), File::FNM_CASEFOLD).first
@@ -115,17 +116,19 @@ module Roll
           require 'ostruct'
           OpenStruct.new
         end
-
-        #type = [POM, Gem].find{ |m| m.match?(location) }
-        #if type
-        #  type.new(location)
-        #else
-        #  Object.new #?
-        #end
       )
     end
 
+    # Ensure there is a set of dotruby entries. Presently this just checks to
+    # see if there are .ruby/ entries. If not and it is a gem location, it will
+    # use the gem's information to write the .ruby entries.
     #
+    # NOTE: There is no further fallback, as there does not seem to be any other
+    # reliable means for determining the minimum information (though Bundler
+    # is pushing the version.rb file, but I am suspect of this design).
+    # There is also the possible VERSION file, but there are at least three
+    # differnt formats for this file in common use --I am not sure it's worth
+    # the coding effort. Just add the .ruby entires already!
     def dotruby_ensure
       return location if dotruby?
       if gemspec?
@@ -137,7 +140,8 @@ module Roll
       end
     end
 
-    #
+    # Deterime if the location if a gem location. If does this by looking
+    # for the corresponding `gems/specification/*.gemspec` file.
     def gemspec?
       #return true if Dir[File.join(location, '*.gemspec')].first
       pkgname = File.basename(location)
@@ -151,7 +155,6 @@ module Roll
     # Load metadata.
     def load_metadata
       @loaded = true
-
       if dotruby?
         self.name     = dotruby_load_file('name')
         self.version  = dotruby_load_file('version') #, '0.0.0')
@@ -161,7 +164,7 @@ module Roll
       end
     end
 
-    #
+    # Load `.ruby/<name>` file and strip whitespace.
     def dotruby_load_file(name, default=nil)
       file = File.join(location, '.ruby', name)
       if File.exist?(file)
@@ -171,7 +174,7 @@ module Roll
       end
     end
 
-    #
+    # Save minimal `.ruby` entries.
     def dotruby_save
       require 'fileutils'
       dir = File.join(location, '.ruby')
@@ -181,19 +184,9 @@ module Roll
       File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
     end
 
-    #def gemspec_parse
-    #  if !gemspec_local_file
-    #    gemspec_parse_location
-    #  else
-    #    @name     = gem.name
-    #    @version  = gem.version.to_s
-    #    @loadpath = gem.require_paths
-    #    #@date     = gem.date
-    #  end
-    #end
-
-    # This depends on the the locations basename and the presence
-    # of `.require_paths`.
+    # Extract the minimal metadata from a gem location. This does not parse
+    # the actual gemspec, but parses the gem locations basename and looks for
+    # the presence of a `.require_paths` file. This is much more efficient.
     def gemspec_parse
       pkgname = File.basename(location)
       if md = /^(.*?)\-(\d+.*?)$/.match(pkgname)
@@ -206,10 +199,23 @@ module Roll
       if File.exist?(file)
         text = File.read(file)
         self.loadpath = text.strip.split(/\s*\n/)
-      #else
-      #  @loadpath = ['lib'] # TODO: also ,'bin'] ?
+      else
+        self.loadpath = ['lib'] # TODO: also ,'bin'] ?
       end
     end
+
+    #--
+    #def gemspec_parse
+    #  if !gemspec_local_file
+    #    gemspec_parse_location
+    #  else
+    #    @name     = gem.name
+    #    @version  = gem.version.to_s
+    #    @loadpath = gem.require_paths
+    #    #@date     = gem.date
+    #  end
+    #end
+    #++
 
     # Access to complete gemspec. This is for use with extended metadata.
     def gemspec
@@ -219,16 +225,19 @@ module Roll
       )
     end
 
-    #
+    # Returns the path to the .gemspec file.
     def gemspec_file
-      gemspec_local_file || gemspec_system_file
+      gemspec_system_file || gemspec_local_file
     end
 
-    #
+    # Returns the path to a gemspec file located in the project location,
+    # if it exists. Otherwise returns +nil+.
     def gemspec_local_file
       @_local__gemspec_file ||= Dir[File.join(location, '*.gemspec')].first
     end
 
+    # Returns the path to a gemspec file located in the gems/specifications
+    # directory, if it exists. Otherwise returns +nil+.
     def gemspec_system_file
       @_gemspec_system_file ||= (
         pkgname = File.basename(location)
@@ -309,48 +318,6 @@ end
       # TODO: convert to date/time
       if md = /\d\d\d\d-\d\d-\d\d/.match(text)
         self.date = md[0]
-      end
-    end
-=end
-
-=begin
-    ## Get library active state.
-    #def active
-    #  return @cache[:active] if @cache.key?(:active)
-    #  @cache[:active] = (
-    #    case read(:active).to_s.downcase
-    #    when 'false', 'no'
-    #      false
-    #    else
-    #      true
-    #    end
-    #  )
-    #end
-
-    #
-    def method_missing(name, *args)
-      if @cache.key?(name)
-        @cache[name]
-      else
-        @cache[name] = read(name)
-      end
-    end
-=end
-
-=begin
-    # Retrieve entry from meta directory.
-    def meta(name)
-      file = Dir[File.join(location, "{meta,.meta}", name.to_s)].first
-      if file
-        text = File.read(file)
-        if text =~ /^---/
-          require_yaml
-          YAML.load(text)
-        else
-          text.strip
-        end
-      else
-        nil
       end
     end
 =end

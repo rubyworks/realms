@@ -1,13 +1,6 @@
 require 'roll/original'
-## Rubinius standard
-#RUBY_IGNORE_CALLERS = [] unless defined? RUBY_IGNORE_CALLERS
-#RUBY_IGNORE_CALLERS << %r{roll/kernel\.rb$}
-#RUBY_IGNORE_CALLERS << %r{roll/original\.rb$}
 
 module ::Kernel
-  #alias_method :roll_original_require, :require
-  #alias_method :roll_original_load, :load
-
   # In which library is the current file participating?
   def __LIBRARY__
     Roll::Library.load_stack.last
@@ -41,6 +34,7 @@ module ::Kernel
 
   module_function :load
 
+  # Autoload script (Note that rolls neuters this functionality).
   def autoload(constant, fname)
     Roll::Library.autoload(constant, fname)
   end
@@ -55,10 +49,12 @@ module ::Kernel
 end
 
 class Module
+  # Autoload script (Note that rolls neuters this functionality).
   def autoload(constant, fname)
     Roll::Library.autoload(constant, fname)
   end
 
+  # Autoload script (Note that rolls neuters this functionality).
   def self.autoload(constant, fname)
     Roll::Library.autoload(constant, fname)
   end

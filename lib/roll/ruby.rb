@@ -1,6 +1,13 @@
 module Roll
 
+  # RubyLibrary is a specialized subclass of Library specifically designed
+  # to sever Ruby's standard library. It is used to speed up load times for
+  # for library files that are standard Ruby scripts and should never be
+  # overriden by any 3rd party libraries. Good examples are 'ostruct' and
+  # 'optparse'.
   #
+  # This class is in the proccess of being refined to exclude certian 3rd
+  # party redistributions, such RDoc and Soap4r.
   class RubyLibrary < Library
 
     # New library.
@@ -77,20 +84,37 @@ module Roll
       File.exist?(datadir)
     end
 
+    # Require library +file+ given as a LibFile instance.
     #
+    # file - Instance of LibFile.
+    #
+    # Returns Boolean success of requiring the file.
     def require_absolute(file)
       return false if $".include?(file.localname)  # ruby 1.8 does not use absolutes
       success = super(file)
       $" << file.localname # ruby 1.8 does not use absolutes
+      $".uniq!
       success
     end
 
+    # Load library +file+ given as a LibFile instance.
     #
+    # file - Instance of LibFile.
+    #
+    # Returns Boolean success of loading the file.
+    def load_absolute(file, wrap=nil)
+      success = super(file, wrap)
+      $" << file.localname # ruby 1.8 does not use absolutes
+      $".uniq!
+      success
+    end
+
+    # The loadpath sorted by largest path first.
     def loadpath_sorted
       loadpath.sort{ |a,b| b.size <=> a.size }
     end
 
-    #
+    # Construct a LibFile match.
     def libfile(lpath, file, ext)
       LibFile.new(self, lpath, file, ext) 
     end

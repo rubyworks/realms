@@ -2,8 +2,9 @@ module Roll
 
   # = Version Number
   #
-  # Essentially a tuple (immutable array) with special
-  # comparision opperators.
+  # The Version class is essentially a tuple (immutable array) with special
+  # comparision operators.
+  #
   class Version
 
     include Comparable
@@ -136,6 +137,15 @@ module Roll
       self.codename = data.values_at(:code, :codename).compact.first
     end
 
+  end
+
+  # VersionError is raised when a requested version cannot be found.
+  class VersionError < ::RangeError  # :nodoc:
+  end
+
+  # VersionConflict is raised when selecting another version
+  # of a library when a previous version has already been selected.
+  class VersionConflict < ::LoadError  # :nodoc:
   end
 
 end

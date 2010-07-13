@@ -2,16 +2,16 @@ require 'rbconfig'
 
 module ::Config
 
-  # TODO: use "XDG-lite" rather than XDG.
+  # TODO: use "XDG-lite" rather than XDG ?
 
-  #
+  # User's home directory.
   HOME = File.expand_path('~') # ENV['HOME']
 
   # Location of user's personal config directory.
   CONFIG_HOME = File.expand_path(ENV['XDG_CONFIG_HOME'] || File.join(HOME, '.config'))
 
-  #
-  CACHE_HOME  = File.expand_path(ENV['XDG_CACHE_HOME']  || File.join(HOME, '.cache'))
+  # Location of user's personal temporary directory.
+  CACHE_HOME  = File.expand_path(ENV['XDG_CACHE_HOME'] || File.join(HOME, '.cache'))
 
   # List of user shared system config directories.
   CONFIG_DIRS = (
@@ -22,7 +22,7 @@ module ::Config
     dirs.collect{ |d| File.expand_path(d) }
   )
 
-  #
+  # Patterns used to identiy a Windows platform.
   WIN_PATTERNS = [
     /bccwin/i,
     /cygwin/i,
@@ -32,7 +32,8 @@ module ::Config
     /wince/i,
   ]
 
-  # Is this a windows platform?
+  # Is this a windows platform? This method compares the entires
+  # in +WIN_PATTERNS+ against +RUBY_PLATFORM+.
   def self.win_platform?
     @win_platform ||= (
       !!WIN_PATTERNS.find{ |r| RUBY_PLATFORM =~ r }
@@ -41,14 +42,13 @@ module ::Config
 
   # Return the path to the data directory associated with the given
   # library name.
-  #--
-  #Normally this is just
-  # "#{Config::CONFIG['datadir']}/#{name}", but may be
-  # modified by packages like RubyGems and Rolls to handle
-  # versioned data directories.
-  #++
-
   #
+  # Normally this is just:
+  #
+  #   "#{Config::CONFIG['datadir']}/#{name}"
+  #
+  # But it may be modified by packages like RubyGems and Rolls to handle
+  # versioned data directories.
   def self.datadir(name, versionless=false)
     if lib = Roll::Library.instance(name)
       lib.datadir(versionless)
