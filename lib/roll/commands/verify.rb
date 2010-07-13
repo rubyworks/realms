@@ -11,7 +11,7 @@ module Roll
 
     #
     def call
-      list = Roll.verify
+      list = Roll::Library.verify
       list.each do |(name, constraint)|
         puts "#{name} #{constraint}"
       end

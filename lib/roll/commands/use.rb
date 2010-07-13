@@ -15,8 +15,9 @@ module Roll
     #
     def call
       name = args.first
-      file = Roll.use(name)
+      file = Roll::Library.use(name)
       puts "Roll environment is now '#{File.read(file).strip}'."
+      #puts %Q[export RUBYENV="#{name}"]
     end
 
   end

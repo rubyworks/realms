@@ -15,7 +15,7 @@ module Roll
       name = args.first
       list = name ? [name] : Environment.list
       list.each do |name|
-        result = Roll.sync(name)
+        result = Roll::Library.sync(name)
         if result
           puts "   saved #{name}"
         else

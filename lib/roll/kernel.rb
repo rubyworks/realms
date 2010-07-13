@@ -32,6 +32,12 @@ module ::Kernel
     Roll::Library.require(file)
   end
 
+  # Require script.
+  def self.require(file)
+    Roll::Library.require(file)
+  end
+
+
   # Load script.
   def load(file, wrap=false)
     Roll::Library.load(file, wrap)
@@ -42,5 +48,14 @@ module ::Kernel
     Roll::Library.acquire(file, opts)
   end
 
+  def autoload(constant, fname)
+    Roll::Library.autoload(constant, fname)
+  end
+end
+
+class Module
+  def autoload(constant, fname)
+    Roll::Library.autoload(constant, fname)
+  end
 end
 

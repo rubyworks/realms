@@ -11,8 +11,8 @@ module Roll
 
     #
     def call
-      curr = Roll.env.name
-      envs = Roll.list.sort #(*args)
+      curr = Roll::Library.env.name
+      envs = Roll::Library.environments.sort
       if envs.empty?
         puts "No environments."        
       else

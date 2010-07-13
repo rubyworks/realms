@@ -17,7 +17,7 @@ module Roll
     def call
       path  = File.expand_path(args.first || Dir.pwd)
       depth = opts[:depth]
-      path, file = *Roll.in(path, depth)
+      path, file = *Roll::Library.in(path, depth)
       puts "#{path}"
       puts "  '-> #{file}"
     end

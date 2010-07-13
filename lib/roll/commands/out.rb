@@ -12,7 +12,7 @@ module Roll
     #
     def call
       path = File.expand_path(args.first || Dir.pwd)
-      path, file = *Roll.out(path)
+      path, file = *Roll::Library.out(path)
       puts "#{file}"
       puts "  '-> #{path} -> [x]"
     end

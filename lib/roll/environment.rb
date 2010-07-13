@@ -1,8 +1,7 @@
 #require File.dirname(__FILE__) + '/config.rb'
 require 'roll/config'
 
-require 'yaml'
-require 'fileutils'
+#require 'yaml'
 
 module Roll
 
@@ -10,32 +9,44 @@ module Roll
   #
   class Environment
 
-    # Default environment name.
-    DEFAULT = 'production'  # 'local' ?
-
     # Location of environment files.
-    #--
-    # Perhaps combine all enrtries instead?
-    #++
     DIRS = ::Config.find_config('roll', 'environments')
 
     #
     HOME_ENV_DIR = File.join(::Config::CONFIG_HOME, 'roll', 'environments')
 
-    # File that stores the name of the current environment.
-    CURRENT_FILE = File.join(::Config::CONFIG_HOME, 'roll', 'current')
+    # If no default environment variable is set, the content of this
+    # file will be used.
+    DEFAULT_FILE = File.join(::Config::CONFIG_HOME, 'roll', 'default')
 
-    # Current environment name.
+    # Default environment name.
+    DEEFAULT = File.exist?(DEFAULT_FILE) ? File.read(DEFAULT_FILE).strip : 'production'
+
+    # File that stores the name of the current environment during
+    # the current Ruby session.
+    PID_FILE = File.join(::Config::CACHE_HOME, 'roll', Process.ppid.to_s)
+
+    # Returns the name of the current environment.
     def self.current
       @current ||= (
-        if File.exist?(CURRENT_FILE)
-          env = File.read(CURRENT_FILE).strip
+        if File.exist?(PID_FILE)
+          File.read(PID_FILE).strip
         else
-          env = ENV['RUBYENV'] || DEFAULT
+          ENV['RUBYENV'] || DEFAULT
         end
-        #warn "#{env} is not a valid environment" unless list.include?(env)
-        env
       )
+    end
+
+    # Change environment to given +name+.
+    #
+    # This only lasts a long as the parent session. It tracks the session
+    # via a temporary file in `$HOME/.cache/roll/<ppid>`.
+    def self.use(name)
+      require 'fileutils'
+      dir = File.dirname(PID_FILE)
+      FileUtils.mkdir_p(dir) unless File.directory?(dir)
+      File.open(PID_FILE, 'w'){ |f| f << name }
+      PID_FILE
     end
 
     # List of available environments.
@@ -45,47 +56,36 @@ module Roll
       end
     end
 
-    # Change environment to given +name+.
-    #
-    # TODO: should only last a long as the shell session,
-    # not change it perminently.
-    #
-    def self.save(name)
-      if name == 'system'
-        FileUtils.rm(CURRENT_FILE)
-      else
-        File.open(CURRENT_FILE,'w'){|f| f << name.to_s}
-      end
-      CURRENT_FILE
-    end
-
     # Environment name.
     attr :name
 
     # Instantiate environment.
     def initialize(name=nil)
       @name = name || Environment.current
+      @lookup = []
+      @index  = Hash.new{ |h,k| h[k] = [] }
+      load
     end
 
     #
     def index
-      @index ||= Index.new(name)
+      @index #||= Index.new(name)
     end
 
     #
     def lookup
-      @lookup ||= Lookup.new(name)
+      @lookup #||= Lookup.new(name)
     end
 
     # Synchronize index to lookup table.
     def sync
-      index.reset(lookup.index)
+      @index = lookup_index
     end
 
     # Save index.
-    def save
-      index.save
-    end
+    #def save
+    #  index.save
+    #end
 
     #
     def each(&block)
@@ -97,6 +97,11 @@ module Roll
 
     #
     def to_s
+      to_s_lookup + "---\n" + to_s_index
+    end
+
+    #
+    def to_s_lookup
       str = ""
       lookup.each do |(path, depth)|
         str << "#{path}  #{depth}\n"
@@ -104,6 +109,217 @@ module Roll
       str
     end
 
+    #
+    def to_s_index
+      out = []
+      max = index.map{ |name, paths| name.size }.max
+      index.map do |name, paths|
+        paths.each do |path, loadpath|
+          out << ("%-#{max}s %s" % [name, path]) + ' ' + loadpath.join(' ')
+        end
+      end
+      out.sort.reverse.join("\n")
+    end
+
+    # Append entry to lookup list.
+    def append(path, depth=3)
+      path  = File.expand_path(path)
+      depth = (depth || 3).to_i
+      @lookup = @lookup.reject{ |(p, d)| path == p }
+      @lookup.push([path, depth])
+    end
+
+    # Remove entry from lookup list.
+    def delete(path)
+      @lookup.reject!{ |p,d| path == p }
+    end
+
+    # Environment file (full-path).
+    def file
+      @file ||= ::Config.find_config('roll', 'environments', name).first
+    end
+
+    # Load the environment file.
+    def load
+      if file && File.exist?(file)
+        lines = File.readlines(file).map{ |line| line.strip }
+        lines = lines.reject{ |line| /^\#/ =~ line or /^$/ =~ line }
+        split = lines.index('---') # would be nice if this could be /^\-\-+/
+        if split
+          lookup_lines = lines[0...split]
+          index_lines  = lines[split+1..-1]
+        else
+          lookup_lines = lines[0..-1]
+          index_lines  = []
+        end
+
+        lookup_lines.each do |line|
+          path, depth = *line.split(/\s+/)
+          dir, depth = *line.split(/\s+/)
+          lookup << [path, (depth || 3).to_i]
+        end
+
+        index_lines.each do |line|
+          name, path, *loadpath = *line.split(/\s+/)
+          index[name.strip] << [path.strip, loadpath]
+        end
+      end
+    end
+
+    # Save environment file.
+    def save
+      require 'fileutils'
+
+      out = to_s
+      #max = @table.map{ |name, paths| name.size }.max
+      #@table.map do |name, paths|
+      #  paths.each do |path|
+      #    out << "%-#{max}s %s\n" % [name, path]
+      #  end
+      #end
+      file = File.join(HOME_ENV_DIR, name)
+      if File.exist?(file)
+        data = File.read(file)
+        if out != data
+          File.open(file, 'w'){ |f| f << out }
+          #puts "updated: #{name}"
+          true
+        else
+          #puts "current: #{name}"
+          false
+        end
+      else
+        dir = File.dirname(file)
+        FileUtils.mkdir_p(dir) unless File.exist?(dir)
+        File.open(file, 'w'){ |f| f << out }
+        #puts "created: #{name}"
+        true
+      end
+      @file = file
+    end
+
+    # Generate index from lookup list.
+    def lookup_index
+      set = Hash.new{|h,k| h[k]=[]}
+      locate.each do |path|
+        name, loadpath = libdata(path)
+        next if name == 'roll' # NEVER INCLUDE ROLL ITSELF!!!
+        #vers = load_version(path)
+        if name #&& vers
+          set[name] << [path, loadpath]
+        else
+          warn "omitting: #{path}"
+        end
+      end
+      set
+    end
+
+    # Locate projects.
+    def locate
+      locs = []
+      lookup.each do |dir, depth|
+        locs << find_projects(dir, depth)
+      end
+      locs.flatten
+    end
+
+    # Search a given directory for projects upto a given depth. Projects
+    # directories are determined by containing a .ruby directory or a
+    # lib directory.
+    # 
+    # NOTE: relying on lib/ is not a reliable as would be prefered.
+    # I am hoping that .ruby/ directory will eventually become a 
+    # standard.
+    def find_projects(dir, depth=3)
+      depth = Integer(depth || 3)
+      depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
+
+      libs = []
+
+      find = File.join(dir, "{#{depth}}", ".ruby/")
+      dirs = Dir.glob(find)
+      libs += dirs.map{|d| File.dirname(d) }.uniq
+
+      #find = File.join(dir, "{#{depth}}", "lib/*.rb")
+      #locals = Dir.glob(find)
+      #locals.concat(locals.map{|d| File.dirname(File.dirname(d)) }.uniq)
+
+      find = File.join(dir, "{#{depth}}", "lib/")
+      dirs = Dir.glob(find)
+      libs += dirs.map{|d| File.dirname(d) }.uniq
+
+      libs.uniq
+    end
+
+    #
+    def metadata(path)
+      @metadata ||= {}
+      @metadata[path] ||= Metadata.new(path)
+    end
+
+    #
+    def libdata(path)
+      data = metadata(path)
+
+      if !dot_ruby?(path)
+        name     = data.extended_metadata.name
+        version  = data.extended_metadata.version
+        loadpath = data.extended_metadata.loadpath || ['lib']
+
+        dot_ruby!(path, name, version, loadpath)
+
+        #if gemspec?(path)
+        #  name, version, loadpath = geminfo(path)
+        #  dot_ruby!(path, name, version, loadpath)
+        #  #fakegem = FakeGem.load(specfile)
+        #  #return fakegem.name, fakegem.require_paths  #fakegem.version
+        #  return name, loadpath #, version ?
+        #elsif pom?(path)
+        #  data.dot_ruby! unless data.dot_ruby?
+        #else
+        #end
+      else
+        name     = data.name
+        version  = data.version
+        loadpath = data.loadpath
+      end
+
+      return name, loadpath
+    end
+
+    #
+    def dot_ruby?(location)
+      dir = File.join(location, '.ruby')
+      return false unless File.directory?(dir)
+      return true
+    end
+
+    #
+    def dot_ruby!(location, name, version, loadpath)
+      require 'fileutils'
+      dir = File.join(location, '.ruby')
+      FileUtils.mkdir(dir)
+      File.open(File.join(dir, 'name'), 'w'){ |f| f << name }
+      File.open(File.join(dir, 'version'), 'w'){ |f| f << version.to_s }
+      File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
+    end
+
+  end#class Environment
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+=begin
     # Index tracks the name and location of each library
     # in an environment.
     #--
@@ -422,8 +638,5 @@ module Roll
       #end
 
     end#class Lookup
-
-  end#class Environment
-
-end
+=end
 

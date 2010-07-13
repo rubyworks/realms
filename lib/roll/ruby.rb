@@ -15,9 +15,11 @@ module Roll
       RUBY_VERSION
     end
 
-    # TODO: 1.9+ need to remove rugbygems
+    # TODO: 1.9+ need to remove rugbygems ?
     def loadpath
       @loadpath ||= $LOAD_PATH - ['.']
+      #$LOAD_PATH - ['.']
+      #[Config::CONFIG['rubylibdir'], Config::CONFIG['archdir']].compact
     end
 
     # Release date. TODO
@@ -28,6 +30,14 @@ module Roll
     # Ruby requires nothing.
     def requires
       []
+    end
+
+    # Ruby needs to ignore a few 3rd party libraries. They will
+    # be picked up by the final fallback to Ruby's original require
+    # if all else fails.
+    def find(file, suffix=true)
+      return nil if /^rdoc/ =~ file
+      super(file, suffix)
     end
 
     # Location of executable. This is alwasy bin/. This is a fixed

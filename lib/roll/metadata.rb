@@ -12,7 +12,7 @@ module Roll
   #
   class Metadata
 
-    require 'roll/metadata/pom'
+    #require 'roll/metadata/pom'
     require 'roll/metadata/gem'
 
     # New metadata object.
@@ -99,14 +99,28 @@ module Roll
     end
 
     # Access to additonal metadata outside of the .ruby directory.
+    #
+    # TODO: Make this information more uniform.
     def extended_metadata
       @extended_method ||= (
-        type = [POM, Gem].find{ |m| m.match?(location) }
-        if type
-          type.new(location)
+        profile = Dir.glob(File.join(location, 'PROFILE'), File::FNM_CASEFOLD).first
+        if File.exist?(profile)
+          require 'yaml'
+          require 'ostruct'
+          OpenStruct.new(YAML.load(profile))          
+        elsif gemspec?(location)
+          gem
         else
-          Object.new #?
+          require 'ostruct'
+          OpenStruct.new
         end
+
+        #type = [POM, Gem].find{ |m| m.match?(location) }
+        #if type
+        #  type.new(location)
+        #else
+        #  Object.new #?
+        #end
       )
     end
 
@@ -142,6 +156,82 @@ module Roll
       File.open(File.join(dir, 'version'), 'w'){ |f| f << version.to_s }
       File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
     end
+
+    #
+    def gemspec?(path)
+      return true if Dir[File.join(path, '*.gemspec')].first
+
+      pkgname = File.basename(path)
+      gemsdir = File.dirname(path)
+      specdir = File.join(File.dirname(gemsdir), 'specifications')
+      return true if Dir[File.join(specdir, "#{pkgname}.gemspec")].first
+
+      return false
+    end
+
+    #
+    def gemspec_parse
+      if !gemspec_local_file
+        gemspec_parse_location
+      else
+        @name     = gem.name
+        @version  = gem.version.to_s
+        @loadpath = gem.require_paths
+        #@date     = gem.date
+      end
+    end
+
+    #
+    def gemspec_parse_location
+      pkgname = File.basename(location)
+
+      if md = /^(.*?)\-(\d+)$/.match(pkgname)
+        @name     = md[1]
+        @version  = md[2]
+      end
+
+      file = File.join(location, '.require_paths')
+      if File.exist?(file)
+        text = File.read(file)
+        @loadpath = text.strip.split(/\s*\n/)
+        #@loadpath = text.split(/[,;:\ \n\t]/).map{|s| s.strip}
+      end
+    end
+
+    #
+    def gem
+      @_gem ||= (
+        require 'rubygems'
+        ::Gem::Specification.load(gemspec_file)
+      )
+    end
+
+    #
+    def gemspec_file
+      gemspec_local_file || gemspec_system_file
+    end
+
+    #
+    def gemspec_local_file
+      @_local__gemspec_file ||= Dir[File.join(location, '*.gemspec')].first
+    end
+
+    def gemspec_system_file
+      @_gemspec_system_file ||= (
+        pkgname = File.basename(location)
+        gemsdir = File.dirname(location)
+        specdir = File.join(File.dirname(gemsdir), 'specifications')
+        Dir[File.join(specdir, "#{pkgname}.gemspec")].first
+      )
+    end
+
+  end
+
+end
+
+
+
+
 
 =begin
     # Version file path.
@@ -251,8 +341,4 @@ module Roll
       end
     end
 =end
-
-  end
-
-end
 

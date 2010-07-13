@@ -13,7 +13,7 @@ module Roll
       op.separator "    list      " + (" " * 23) + "List available environments."
       op.separator "    in  [DIR] " + (" " * 23) + "Roll directory into current environment."
       op.separator "    out [DIR] " + (" " * 23) + "Remove directory from current environment."
-      op.separator "    env       " + (" " * 23) + "Show current environment."
+      op.separator "    show      " + (" " * 23) + "Show current environment."
       op.separator "    index     " + (" " * 23) + "Show current environment index."
       op.separator "    sync      " + (" " * 23) + "Synchronize environment indexes."
       op.separator "    path      " + (" " * 23) + "Output bin PATH list."

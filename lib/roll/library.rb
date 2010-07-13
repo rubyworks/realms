@@ -1,6 +1,7 @@
 require 'roll/version'
 require 'roll/metadata'
 require 'roll/environment'
+#require 'roll/ledger'
 
 module Roll
 
@@ -13,10 +14,60 @@ module Roll
 
     # TODO: Some extensions are platform specific --only
     # add the ones needed for the current platform.
-    SUFFIXES = ['', '.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar']
+    SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar', '']
 
     #
     SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
+
+=begin
+    # Ledger augments the Library metaclass.
+    class << self
+      # Instance of Ledger class.
+      def ledger
+        @ledger ||= Ledger.new
+      end
+
+      # Current environment
+      def environment
+        ledger.environment
+      end
+
+      # List of library names.
+      def list
+        ledger.names
+      end
+
+      #
+      def require(path)
+        ledger.require(path)
+      end
+
+      #
+      def load(path, wrap=nil)
+        ledger.load(path, wrap)
+      end
+
+      #
+      def acquire(path, opts={})
+        ledger.acquire(path, opts)
+      end
+
+      #
+      def autoload(constant, path)
+        ledger.autoload(constant, path)
+      end
+
+      #
+      def load_stack
+        ledger.load_stack
+      end
+
+      ## NOTE: Not used yet.
+      #def load_monitor
+      #  ledger.load_monitor
+      #end
+    end
+=end
 
     # Get an instance of a library by name, or name and version.
     # Libraries are singleton, so once loaded the same object is
@@ -24,13 +75,13 @@ module Roll
     def self.instance(name, constraint=nil)
       name = name.to_s
       #raise "no library -- #{name}" unless ledger.include?(name)
-      return nil unless ledger.include?(name)
+      return nil unless include?(name) #ledger.include?(name)
 
-      library = ledger[name]
+      library = index[name] #ledger[name]
 
       if Library===library
         if constraint # TODO: it's okay if constraint fits current
-          raise VersionConflict, "previously selected version -- #{ledger[name].version}"
+          raise VersionConflict, "previously selected version -- #{index[name].version}"  # ledger[name]
         else
           library
         end
@@ -317,60 +368,25 @@ module Roll
       end
     end
 
-    # Ledger augments the Library metaclass.
-    class << self
-      # Instance of Ledger class.
-      def ledger
-        @ledger ||= Ledger.new
-      end
-
-      # Current environment
-      def environment
-        ledger.environment
-      end
-
-      # List of library names.
-      def list
-        ledger.names
-      end
-
-      #
-      def require(path)
-        ledger.require(path)
-      end
-
-      #
-      def load(path, wrap=nil)
-        ledger.load(path, wrap)
-      end
-
-      #
-      def acquire(path, opts={})
-        ledger.acquire(path, opts)
-      end
-
-      #
-      def load_stack
-        ledger.load_stack
-      end
-
-      ## NOTE: Not used yet.
-      #def load_monitor
-      #  ledger.load_monitor
-      #end
-    end
   end
 
-  # = Ledger class
-  #
-  # The ledger encapsulates the behaviors of Library's metaclass.
-  #
-  class Ledger
+  # VersionError is raised when a requested version cannot be found.
+  class VersionError < ::RangeError  # :nodoc:
+  end
+
+  # VersionConflict is raised when selecting another version
+  # of a library when a previous version has already been selected.
+  class VersionConflict < ::LoadError  # :nodoc:
+  end
+
+  class << Library
 
     include Enumerable
 
     #
     def initialize
+      roll_original_require 'roll/ruby'
+
       @index = Hash.new{|h,k| h[k] = []}
 
       @index['ruby'] = RubyLibrary.new
@@ -390,7 +406,10 @@ module Roll
 
       @load_stack = []
       @load_cache = {}
+
       #@load_monitor = Hash.new{ |h,k| h[k]=[] }
+
+      @autoload_paths = []
     end
 
     #
@@ -405,14 +424,14 @@ module Roll
 
 
     #
-    def [](name)
-      @index[name]
-    end
+    #def [](name)
+    #  @index[name]
+    #end
 
     #
-    def []=(name, value)
-      @index[name] = value
-    end
+    #def []=(name, value)
+    #  @index[name] = value
+    #end
 
     #
     def include?(name)
@@ -423,6 +442,7 @@ module Roll
     def names
       @index.keys
     end
+    alias_method :list, :names
 
     #
     def each(&block)
@@ -444,10 +464,23 @@ module Roll
       @load_cache
     end
 
+    # Stores an array of paths of which libraries were set to autoload.
+    def autoload_paths
+      @autoload_paths
+    end
+
     ## NOTE: Not used yet.
     #def load_monitor
     #  @load_monitor
     #end
+
+    # This is part of a hack to deal with the fact that autoload does not use
+    # normal #require. So Rolls has to go ahead and load them upfront.
+    def autoload(constant, fname)
+      autoload_paths << fname
+      #autoload_without_rolls(constant, fname)
+      require(fname)
+    end
 
     #--
     # The BIG QUESTION: Should Ruby's underlying require
@@ -469,12 +502,15 @@ module Roll
     #
     def require(path)
       return false if load_cache[path]
+      return false if autoload_paths.include?(path)
+      #return false if $".include?(path)
 
       lib, file = *match(path)
       if lib && file
         constrain(lib)
-        success = lib.require_absolute(file)
         load_cache[path] = [lib, file]
+        success = lib.require_absolute(file)
+        $" << path # not sure if neccessary (1.8 though may need it)
         success
       else
         begin
@@ -493,6 +529,7 @@ module Roll
       lib, file = *match(path, false)
       if lib && file
         constrain(lib)
+        load_cache[path] = [lib, file]
         lib.load_absolute(file, wrap)
       else
         begin
@@ -662,15 +699,93 @@ module Roll
       end
     end
 
-  end#class Ledger
+    # T O O L S
 
-  # VersionError is raised when a requested version cannot be found.
-  class VersionError < ::RangeError  # :nodoc:
+  public
+
+    # Get environment.
+    def env(name=nil)
+      if name
+        env = Environment.new(name)
+      else
+        env = environment #Environment.new
+      end
+      env
+    end
+
+    # Change current environment.
+    def use(name)
+      Environment.use(name)
+    end
+
+    # Return Array of environment names.
+    def environments
+      Environment.list
+    end
+
+    # DEPRECATE
+    def environment_index(name=nil)
+      env(name).to_s_index
+    end
+
+    # Synchronize an environment by +name+. If a +name+
+    # is not given the current environment is synchronized.
+    def sync(name=nil)
+      env = env(name)
+      env.sync
+      env.save
+    end
+
+    # Add path to current environment.
+    def in(path, depth=3)
+      #env = Environment.new
+
+      env.append(path, depth)
+      env.sync
+      env.save
+
+      return path, env.file
+    end
+
+    # Remove path from current environment.
+    def out(path)
+      #env = Environment.new
+
+      env.delete(path)
+      env.sync
+      env.save
+
+      return path, env.file
+    end
+
+    # Go thru each roll lib and collect bin paths.
+    def path
+      binpaths = []
+      list.each do |name|
+        lib = Library[name]
+        if lib.bindir?
+          binpaths << lib.bindir
+        end
+      end
+      binpaths
+    end
+
+    # Verify dependencies are in current environment.
+    #--
+    # TODO: Instead of Dir.pwd, lookup project root.
+    #++
+    def verify(name=nil)
+      if name
+        Library.open(name).verify
+      else
+        Library.new(Dir.pwd).verify
+      end
+    end
+
   end
 
-  # VersionConflict is raised when selecting another version
-  # of a library when a previous version has already been selected.
-  class VersionConflict < ::LoadError  # :nodoc:
+  class Library
+    initialize
   end
 
 end

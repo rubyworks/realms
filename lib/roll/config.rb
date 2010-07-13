@@ -10,6 +10,9 @@ module ::Config
   # Location of user's personal config directory.
   CONFIG_HOME = File.expand_path(ENV['XDG_CONFIG_HOME'] || File.join(HOME, '.config'))
 
+  #
+  CACHE_HOME  = File.expand_path(ENV['XDG_CACHE_HOME']  || File.join(HOME, '.cache'))
+
   # List of user shared system config directories.
   CONFIG_DIRS = (
     dirs = ENV['XDG_CONFIG_DIRS'].to_s.split(/[:;]/)
