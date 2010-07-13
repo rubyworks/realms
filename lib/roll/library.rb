@@ -3,6 +3,8 @@ require 'roll/metadata'
 require 'roll/environment'
 #require 'roll/ledger'
 
+$MONITOR = ENV['ROLL_MONITOR']
+
 module Roll
 
   # = Library class
@@ -193,20 +195,65 @@ module Roll
         SUFFIXES.each do |ext|
           lp.each do |lpath|
             f = File.join(location, lpath, file + ext)
-            return f if File.file?(f)
+            if File.file?(f)
+              return libfile(lpath, file, ext)
+            end
           end
         end
       else
         lp.each do |lpath|
           f = File.join(location, lpath, file)
-          return f if File.file?(f)
+          if File.file?(f)
+            return libfile(lpath, file, ext)
+          end
         end
       end
       nil
     end
 
-    # Does this library have a matching +file+? If so, the full-path
-    # of the file is returned.
+    #
+    def libfile(lpath, file, ext)
+      LibFile.new(self, lpath, file, ext) 
+    end
+
+    #
+    class LibFile
+      attr_reader :library, :loadpath, :filename, :extension
+      def initialize(library, loadpath, filename, extension=nil)
+        @library   = library
+        @loadpath  = loadpath
+        @filename  = filename
+        @extension = extension
+      end
+      def location
+        library.location
+      end
+      def fullname
+        File.join(location, loadpath, filename + (extension || ''))
+      end
+      def localname
+        File.join(filename + (extension || ''))
+      end
+      def to_s  ; fullname; end
+      def to_str; fullname; end
+      #
+      def require
+        return false if $".include?(localname)  # ruby 1.8 does not use absolutes
+        #Library.load_monitor[file] << caller if $LOAD_MONITOR
+        Library.load_stack << library
+        begin
+          success = roll_original_require(fullname)
+        #rescue LoadError => load_error
+        #  raise clean_backtrace(load_error)
+        ensure
+          Library.load_stack.pop
+        end
+        $" << localname # ruby 1.8 does not use absolutes
+        success
+      end
+    end
+
+    # Does this library have a matching +file+?
     #
     # Unlike #find, this also matches within the library directory
     # itself, eg. <tt>lib/foo/*</tt>. It is used by #acquire.
@@ -216,17 +263,25 @@ module Roll
         SUFFIXES.each do |ext|
           lp.each do |lpath|
             f = File.join(location, lpath, name, file + ext)
-            return f if File.file?(f)
+            if File.file?(f)
+              return LibFile.new(self, File.join(lpath, name), file, ext)
+            end
             f = File.join(location, lpath, file + ext)
-            return f if File.file?(f)
+            if File.file?(f)
+              return LibFile.new(self, lpath, file, ext)
+            end
           end
         end
       else
         lp.each do |lpath|
           f = File.join(location, lpath, name, file)
-          return f if File.file?(f)
+          if File.file?(f)
+            return LibFile.new(self, File.join(lpath, name), file)
+          end
           f = File.join(location, lpath, file)
-          return f if File.file?(f)
+          if File.file?(f)
+            return LibFile.new(self, lpath, file)
+          end
         end
       end
       nil
@@ -465,9 +520,9 @@ module Roll
     end
 
     # Stores an array of paths of which libraries were set to autoload.
-    def autoload_paths
-      @autoload_paths
-    end
+    #def autoload_paths
+    #  @autoload_paths
+    #end
 
     ## NOTE: Not used yet.
     #def load_monitor
@@ -476,42 +531,24 @@ module Roll
 
     # This is part of a hack to deal with the fact that autoload does not use
     # normal #require. So Rolls has to go ahead and load them upfront.
-    def autoload(constant, fname)
-      autoload_paths << fname
+    def autoload(constant, path)
+      #autoload_paths << path
       #autoload_without_rolls(constant, fname)
-      require(fname)
+      require(path)
     end
-
-    #--
-    # The BIG QUESTION: Should Ruby's underlying require
-    # be tried first then fallback to Rolls. Or vice-versa?
-    #
-    #  begin
-    #    original_require(path)
-    #  rescue LoadError => load_error
-    #    lib, file = *match(path)
-    #    if lib && file
-    #      constrain(lib)
-    #      lib.require_absolute(file)
-    #    else
-    #      raise clean_backtrace(load_error)
-    #    end
-    #  end
-    #++
 
     #
     def require(path)
       return false if load_cache[path]
-      return false if autoload_paths.include?(path)
-      #return false if $".include?(path)
+      #return false if autoload_paths.include?(path)
+      return false if $".include?(path)
 
-      lib, file = *match(path)
-      if lib && file
+      file = match(path)
+      if file
+        lib = file.library
         constrain(lib)
-        load_cache[path] = [lib, file]
-        success = lib.require_absolute(file)
-        $" << path # not sure if neccessary (1.8 though may need it)
-        success
+        load_cache[path] = file
+        file.require
       else
         begin
           roll_original_require(path)
@@ -523,13 +560,14 @@ module Roll
 
     #
     def load(path, wrap=nil)
-      lib, file = load_cache[path]
-      return lib.load_absolute(file, wrap) if lib
+      file = load_cache[path]
+      return file.library.load_absolute(file, wrap) if file
 
-      lib, file = *match(path, false)
-      if lib && file
+      file = match(path, false)
+      if file
+        lib = file.library
         constrain(lib)
-        load_cache[path] = [lib, file]
+        load_cache[path] = file
         lib.load_absolute(file, wrap)
       else
         begin
@@ -577,9 +615,9 @@ module Roll
 
     #
     def constrain(lib)
-      cmp = self[lib.name]
+      cmp = index[lib.name]
       if Array === cmp
-        self[lib.name] = lib
+        index[lib.name] = lib
       else
         if lib.version != cmp.version
           raise VersionError
@@ -593,48 +631,60 @@ module Roll
     def match(path, suffix=true)
       path = path.to_s
 
+#puts path if $MONITOR
+
       # Ruby appears to have a special exception for enumerator!!!
       return nil if path == 'enumerator' 
 
       # absolute path
       return nil if /^\// =~ path
 
+#puts "  1. direct" if $MONITOR
+
       if path.index(':') # a specified library
         name, path = path.split(':')
         lib = Library.open(name)
-        if lib.active?
+        #if lib.active?
           #file = lib.find(File.join(name,path), suffix)
           file = lib.include?(path, suffix)
-          return lib, file
-        end
+          return file
+        #end
       end
 
       matches = []
 
-      # try the load stack first
+#puts "  2. stack" if $MONITOR
+
+      # try the load stack
       load_stack.reverse_each do |lib|
         if file = lib.find(path, suffix)
-          return [lib, file] unless $VERBOSE
-          matches << [lib, file]
+          return file unless $VERBOSE
+          matches << file
         end
       end
+
+#puts "  3. indirect" if $MONITOR
 
       # if the head of the path is the library
       name, *_ = path.split(/\/|\\/)
       lib = Library[name]
-      if lib && lib.active?
+      if lib #&& lib.active?
         if file = lib.find(path, suffix)
-          return [lib, file] unless $VERBOSE
-          matches << [lib, file]
+          return file unless $VERBOSE
+          matches << file
         end
       end
+
+#puts "  4. rubycore" if $MONITOR
 
       # try ruby
       lib = Library['ruby']
       if file = lib.find(path, suffix)
-        return [lib, file] unless $VERBOSE
-        matches << [lib, file]
+        return file unless $VERBOSE
+        matches << file
       end
+
+#puts "  5. rest" if $MONITOR
 
       # TODO: Perhaps the selected and unselected should be kept in separate lists?
       unselected, selected = *@index.partition{ |name, libs| Array === libs }
@@ -642,10 +692,8 @@ module Roll
       # broad search pre-selected libraries
       selected.each do |(name, lib)|
         if file = lib.find(path, suffix)
-          #matches << [lib, file]
-          #return matches.first unless $VERBOSE
-          return [lib, file] unless $VERBOSE
-          matches << [lib, file]
+          return file unless $VERBOSE
+          matches << file
         end
       end
 
@@ -654,11 +702,11 @@ module Roll
         pos = []
         libs.each do |lib|
           if file = lib.find(path, suffix)
-            pos << [lib, file]
+            pos << file
           end
         end
         unless pos.empty?
-          latest = pos.sort{ |a,b| b[0].version <=> a[0].version }.first
+          latest = pos.sort{ |a,b| b.library.version <=> a.library.version }.first
           return latest unless $VERBOSE
           matches << latest
           #return matches.first unless $VERBOSE
@@ -734,6 +782,12 @@ module Roll
       env = env(name)
       env.sync
       env.save
+    end
+
+    # Automtically add .ruby/ entries to projects, where possible.
+    def prep(name=nil)
+      env = env(name)
+      env.prep
     end
 
     # Add path to current environment.

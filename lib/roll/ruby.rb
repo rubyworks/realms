@@ -5,7 +5,7 @@ module Roll
 
     # New library.
     def initialize #(location, name=nil, options={})
-      @location = '' # TODO where?
+      @location = Config::CONFIG['rubylibdir']
       @name     = 'ruby'
       @options  = {} #?
     end
@@ -15,11 +15,15 @@ module Roll
       RUBY_VERSION
     end
 
+    #
+    ARCHPATH = Config::CONFIG['archdir'].sub(Config::CONFIG['rubylibdir']+'/', '')
+
     # TODO: 1.9+ need to remove rugbygems ?
     def loadpath
-      @loadpath ||= $LOAD_PATH - ['.']
+      @loadpath ||= [ '', ARCHPATH ]
       #$LOAD_PATH - ['.']
-      #[Config::CONFIG['rubylibdir'], Config::CONFIG['archdir']].compact
+      #$LOAD_PATH - ['.']
+      #[], ].compact
     end
 
     # Release date. TODO
@@ -75,9 +79,10 @@ module Roll
 
     #
     def require_absolute(file)
-      path = loadpath_sorted.find{ |lp| file.start_with?(lp) }.chomp('/') + '/'
-      return false if $".include?(file.sub(path, ''))  # ruby 1.8 does not use absolutes
-      super(file)
+      return false if $".include?(file.localname)  # ruby 1.8 does not use absolutes
+      success = super(file)
+      $" << file.localname # ruby 1.8 does not use absolutes
+      success
     end
 
     #
@@ -85,6 +90,10 @@ module Roll
       loadpath.sort{ |a,b| b.size <=> a.size }
     end
 
+    #
+    def libfile(lpath, file, ext)
+      LibFile.new(self, lpath, file, ext) 
+    end
   end
 
 end

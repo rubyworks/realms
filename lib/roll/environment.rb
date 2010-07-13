@@ -1,12 +1,8 @@
-#require File.dirname(__FILE__) + '/config.rb'
 require 'roll/config'
-
-#require 'yaml'
 
 module Roll
 
-  # An Environment represents a set of libraries.
-  #
+  # An Environment represents a set of libraries to be served by Rolls.
   class Environment
 
     # Location of environment files.
@@ -20,7 +16,7 @@ module Roll
     DEFAULT_FILE = File.join(::Config::CONFIG_HOME, 'roll', 'default')
 
     # Default environment name.
-    DEEFAULT = File.exist?(DEFAULT_FILE) ? File.read(DEFAULT_FILE).strip : 'production'
+    DEFAULT = File.exist?(DEFAULT_FILE) ? File.read(DEFAULT_FILE).strip : 'production'
 
     # File that stores the name of the current environment during
     # the current Ruby session.
@@ -67,12 +63,12 @@ module Roll
       load
     end
 
-    #
+    # Project index is a Hash of `name => [location, loadpath]`.
     def index
       @index #||= Index.new(name)
     end
 
-    #
+    # Lookup is an Array of `[path, depth]`.
     def lookup
       @lookup #||= Lookup.new(name)
     end
@@ -82,25 +78,21 @@ module Roll
       @index = lookup_index
     end
 
-    # Save index.
-    #def save
-    #  index.save
-    #end
-
-    #
+    # Iterate over the index.
     def each(&block)
       index.each(&block)
     end
 
-    #
+    # Size of the index.
     def size ; index.size ; end
 
-    #
+    # Returns a string representation of lookup and index
+    # exactly as it is stored in the environment file.
     def to_s
       to_s_lookup + "---\n" + to_s_index
     end
 
-    #
+    # Returns a String of lookup paths and depths, one on each line.
     def to_s_lookup
       str = ""
       lookup.each do |(path, depth)|
@@ -109,7 +101,7 @@ module Roll
       str
     end
 
-    #
+    # Returns a String of `name location loadpaths`, one on each line.
     def to_s_index
       out = []
       max = index.map{ |name, paths| name.size }.max
@@ -203,6 +195,7 @@ module Roll
       set = Hash.new{|h,k| h[k]=[]}
       locate.each do |path|
         name, loadpath = libdata(path)
+        next unless name
         next if name == 'roll' # NEVER INCLUDE ROLL ITSELF!!!
         #vers = load_version(path)
         if name #&& vers
@@ -214,94 +207,123 @@ module Roll
       set
     end
 
-    # Locate projects.
-    def locate
-      locs = []
-      lookup.each do |dir, depth|
-        locs << find_projects(dir, depth)
+    # Make sure each project location in the index has a .ruby entry.
+    # If it does not have .ruby entries then it will attempt to create
+    # them.
+    #
+    # TODO: Rename this method.
+    def prep
+      locate.each do |path|
+        dotruby_ensure(path)
       end
-      locs.flatten
+      report_dotruby_write_errors
+    end
+
+    # Loop through the lookup paths and locate all projects within
+    # them. Projects are identified by having .ruby/ entries,
+    # or being an installed gem.
+    def locate
+      @locate ||= lookup.map{|dir, depth| find_projects(dir,depth) }.flatten
     end
 
     # Search a given directory for projects upto a given depth. Projects
-    # directories are determined by containing a .ruby directory or a
-    # lib directory.
-    # 
-    # NOTE: relying on lib/ is not a reliable as would be prefered.
-    # I am hoping that .ruby/ directory will eventually become a 
-    # standard.
+    # directories are determined by containing a .ruby directory or being
+    # a rubygems location.
+    #
+    # Even though Rolls can locate gems, adding a set of .ruby entries
+    # to you project is adventageous as it allows Rolls operate faster.
     def find_projects(dir, depth=3)
       depth = Integer(depth || 3)
-      depth = (0...depth).map{ |i| (["*"] * i).join('/') }.join(',')
-
       libs = []
-
-      find = File.join(dir, "{#{depth}}", ".ruby/")
-      dirs = Dir.glob(find)
-      libs += dirs.map{|d| File.dirname(d) }.uniq
-
-      #find = File.join(dir, "{#{depth}}", "lib/*.rb")
-      #locals = Dir.glob(find)
-      #locals.concat(locals.map{|d| File.dirname(File.dirname(d)) }.uniq)
-
-      find = File.join(dir, "{#{depth}}", "lib/")
-      dirs = Dir.glob(find)
-      libs += dirs.map{|d| File.dirname(d) }.uniq
-
+      (0...depth).each do |i|
+        star   = File.join(dir, *('*' * i))
+        search = Dir.glob(star)
+        search.each do |path|
+          if dotruby?(path)
+            libs << path
+          elsif gemspec?(path)
+            libs << path
+          end
+        end
+      end
       libs.uniq
     end
 
-    #
-    def metadata(path)
+    # Return Metadata for given +location+. The Metadata object
+    # is cache based on the +location+.
+    def metadata(location)
       @metadata ||= {}
-      @metadata[path] ||= Metadata.new(path)
+      @metadata[location] ||= Metadata.new(location)
     end
 
-    #
-    def libdata(path)
-      data = metadata(path)
-
-      if !dot_ruby?(path)
-        name     = data.extended_metadata.name
-        version  = data.extended_metadata.version
-        loadpath = data.extended_metadata.loadpath || ['lib']
-
-        dot_ruby!(path, name, version, loadpath)
-
-        #if gemspec?(path)
-        #  name, version, loadpath = geminfo(path)
-        #  dot_ruby!(path, name, version, loadpath)
-        #  #fakegem = FakeGem.load(specfile)
-        #  #return fakegem.name, fakegem.require_paths  #fakegem.version
-        #  return name, loadpath #, version ?
-        #elsif pom?(path)
-        #  data.dot_ruby! unless data.dot_ruby?
-        #else
-        #end
-      else
-        name     = data.name
-        version  = data.version
-        loadpath = data.loadpath
-      end
-
+    # Returns name and loadpath of project as +location+.
+    def libdata(location)
+      data = metadata(location)
+      name     = data.name
+      version  = data.version
+      loadpath = data.loadpath
       return name, loadpath
     end
 
+    # Ensure a project +location+ has .ruby entries.
+    def dotruby_ensure(location)
+      data = metadata(location)
+      begin
+        success = data.dotruby_ensure
+      rescue Errno::EACCES
+        success = false
+        dotruby_write_errors << location
+      end
+      if !success
+        # any other way to do it?
+        dotruby_missing_errors << location
+      end     
+      success
+    end
+
+    # Stores a list of write errors from attempts to auto-create .ruby entries.
+    def dotruby_write_errors
+      @dotruby_write_errors ||= []
+    end
+
     #
-    def dot_ruby?(location)
+    def dotruby_missing_errors
+      @dotruby_missing_errors ||= []
+    end
+
+    # Output to STDERR the list of projects that failed to allow .ruby entires.
+    def report_dotruby_write_errors
+      return if dotruby_write_errors.empty? 
+      $stderr.puts "Rolls attempted to write .ruby/ entries into each of the following:"
+      $stderr.puts
+      $stderr.puts "  " + dotruby_write_errors.join("\n  ")
+      $stderr.puts
+      $stderr.puts "but permission to do so was denied. Rolls needs these entries"
+      $stderr.puts "to operate at peak performance. Please grant it permission"
+      $stderr.puts "(e.g. sudo), or add the entries manually. These libraries cannot"
+      $stderr.puts "be served by Rolls until this is done. You might want to encourage"
+      $stderr.puts "the package maintainer to include .ruby/ entries in the distribution."
+      $stderr.puts
+    end
+
+    # Does this location have .ruby/ entries?
+    # TODO: Really is should at least have a `name` entry and probably a `version`.
+    def dotruby?(location)
       dir = File.join(location, '.ruby')
       return false unless File.directory?(dir)
       return true
     end
 
-    #
-    def dot_ruby!(location, name, version, loadpath)
-      require 'fileutils'
-      dir = File.join(location, '.ruby')
-      FileUtils.mkdir(dir)
-      File.open(File.join(dir, 'name'), 'w'){ |f| f << name }
-      File.open(File.join(dir, 'version'), 'w'){ |f| f << version.to_s }
-      File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
+    # Is this location a gem location?
+    def gemspec?(location)
+      return true if Dir[File.join(location, '*.gemspec')].first
+
+      pkgname = File.basename(location)
+      gemsdir = File.dirname(location)
+      specdir = File.join(File.dirname(gemsdir), 'specifications')
+      return true if Dir[File.join(specdir, "#{pkgname}.gemspec")].first
+
+      return false
     end
 
   end#class Environment

@@ -22,6 +22,7 @@ module Roll
       @version  = options[:version]
       @loadpath = options[:loadpath]
       #load_metadata
+      @loaded   = false
     end
 
     # Location of library.
@@ -94,7 +95,7 @@ module Roll
     #def active? ; true ; end
 
     #
-    def dot_ruby?
+    def dotruby?
       @dot_ruby ||= File.exist?(File.join(location, '.ruby'))
     end
 
@@ -104,12 +105,12 @@ module Roll
     def extended_metadata
       @extended_method ||= (
         profile = Dir.glob(File.join(location, 'PROFILE'), File::FNM_CASEFOLD).first
-        if File.exist?(profile)
+        if profile && File.exist?(profile)
           require 'yaml'
           require 'ostruct'
           OpenStruct.new(YAML.load(profile))          
-        elsif gemspec?(location)
-          gem
+        elsif gemspec?
+          gemspec
         else
           require 'ostruct'
           OpenStruct.new
@@ -124,21 +125,44 @@ module Roll
       )
     end
 
+    #
+    def dotruby_ensure
+      return location if dotruby?
+      if gemspec?
+        gemspec_parse
+        dotruby_save
+        return location
+      else
+        return nil
+      end
+    end
+
+    #
+    def gemspec?
+      #return true if Dir[File.join(location, '*.gemspec')].first
+      pkgname = File.basename(location)
+      gemsdir = File.dirname(location)
+      specdir = File.join(File.dirname(gemsdir), 'specifications')
+      Dir[File.join(specdir, "#{pkgname}.gemspec")].first
+    end
+
     private #------------------------------------------------------------------
 
     # Load metadata.
     def load_metadata
       @loaded = true
 
-      #dot_ruby! if !dot_ruby?
-
-      self.name     = load_dot_ruby_file('name')
-      self.version  = load_dot_ruby_file('version') #, '0.0.0')
-      self.loadpath = load_dot_ruby_file('loadpath', ['lib'])
+      if dotruby?
+        self.name     = dotruby_load_file('name')
+        self.version  = dotruby_load_file('version') #, '0.0.0')
+        self.loadpath = dotruby_load_file('loadpath', ['lib'])
+      elsif gemspec?
+        gemspec_parse
+      end
     end
 
     #
-    def load_dot_ruby_file(name, default=nil)
+    def dotruby_load_file(name, default=nil)
       file = File.join(location, '.ruby', name)
       if File.exist?(file)
         File.read(file).strip
@@ -148,7 +172,7 @@ module Roll
     end
 
     #
-    def save_dot_ruby
+    def dotruby_save
       require 'fileutils'
       dir = File.join(location, '.ruby')
       FileUtils.mkdir(dir)
@@ -157,50 +181,39 @@ module Roll
       File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
     end
 
-    #
-    def gemspec?(path)
-      return true if Dir[File.join(path, '*.gemspec')].first
+    #def gemspec_parse
+    #  if !gemspec_local_file
+    #    gemspec_parse_location
+    #  else
+    #    @name     = gem.name
+    #    @version  = gem.version.to_s
+    #    @loadpath = gem.require_paths
+    #    #@date     = gem.date
+    #  end
+    #end
 
-      pkgname = File.basename(path)
-      gemsdir = File.dirname(path)
-      specdir = File.join(File.dirname(gemsdir), 'specifications')
-      return true if Dir[File.join(specdir, "#{pkgname}.gemspec")].first
-
-      return false
-    end
-
-    #
+    # This depends on the the locations basename and the presence
+    # of `.require_paths`.
     def gemspec_parse
-      if !gemspec_local_file
-        gemspec_parse_location
-      else
-        @name     = gem.name
-        @version  = gem.version.to_s
-        @loadpath = gem.require_paths
-        #@date     = gem.date
-      end
-    end
-
-    #
-    def gemspec_parse_location
       pkgname = File.basename(location)
-
-      if md = /^(.*?)\-(\d+)$/.match(pkgname)
-        @name     = md[1]
-        @version  = md[2]
+      if md = /^(.*?)\-(\d+.*?)$/.match(pkgname)
+        self.name     = md[1]
+        self.version  = md[2]
+      else
+        raise "Could not parse name and version from gem at `#{location}`."
       end
-
       file = File.join(location, '.require_paths')
       if File.exist?(file)
         text = File.read(file)
-        @loadpath = text.strip.split(/\s*\n/)
-        #@loadpath = text.split(/[,;:\ \n\t]/).map{|s| s.strip}
+        self.loadpath = text.strip.split(/\s*\n/)
+      #else
+      #  @loadpath = ['lib'] # TODO: also ,'bin'] ?
       end
     end
 
-    #
-    def gem
-      @_gem ||= (
+    # Access to complete gemspec. This is for use with extended metadata.
+    def gemspec
+      @_gemspec ||= (
         require 'rubygems'
         ::Gem::Specification.load(gemspec_file)
       )

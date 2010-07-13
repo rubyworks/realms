@@ -13,13 +13,21 @@ module Roll
     #
     def call
       name = args.first
-      list = name ? [name] : Environment.list
+      case name
+      when 'nil'
+        list = [Environment.current]
+      when 'all'
+        list = Environment.list
+      else
+        list = [name]
+      end
+
       list.each do |name|
         result = Roll::Library.sync(name)
         if result
-          puts "   saved #{name}"
+          puts "Index for `#{name}` has been build."
         else
-          puts " current #{name}"
+          puts "Index for `#{name}` is already current."
         end
       end
     end
@@ -27,3 +35,4 @@ module Roll
   end
 
 end
+
