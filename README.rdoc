@@ -15,7 +15,7 @@
                   """"........
 
 * home: http://proutils.github.com/roll
-* worl: http://github.com/protuils/roll
+* work: http://github.com/protuils/roll
 
 
 == DESCRIPTION
@@ -23,11 +23,14 @@
 Roll is a library manager for Ruby. With Rolls developers can run their
 programs in real time --no install phase is required for one program
 to depend on another. This makes it very easy to work on a set of
-interdependent projects --without vendering. It also makes easy to
+interdependent projects, without vendoring. It also makes easy to
 create isolated library environments. Yet Rolls does so efficiently
---there need only be a single copy of any given version of a library
+because there need only be a single copy of any given version of a library
 on disc. And libraries can be stored anywhere. There is no special place
-they must all reside. You simple tell Rolls where they are.
+they must all reside. You simply tell Rolls where they are. This is include
+standard gem locations. Rolls can serve gem installed libraries as easily
+as it serve-up your development libraries.
+
 
 == STATUS
 
@@ -47,9 +50,12 @@ variable.
 
   $ export RUBYOPT="-roll"
 
-I suspect you will be using RubyGems too, in which case do:
+If you want to use RubyGems along side Rolls, this can be done too:
 
   $ export RUBYOPT="-roll -rubygems"
+
+The alternative to this is to add you gem locations to your roll 
+environment (see below).
 
 To support executables you will also need to add a line to your startup
 .bashrc (or equivalent) file.
@@ -70,7 +76,7 @@ the project must have <code>.ruby/</code> entries. That is the bare
 minimum for a project to to be loadable via Rolls as of v1.3.
 
 The only exception is for Gem stores. If you point Rolls torwards
-a <code>gems/<code> location it will attempt to parse the name,
+a <code>gems/</code> location it will attempt to parse the name,
 version and loadpath from the gem's path and/or gemspec. It will
 then save this information to under <code>.ruby/</code> in the
 project's folder --so +sudo+ may be necessary when first adding
@@ -113,6 +119,28 @@ most needs. You can specify the the depth explicitly with the
 current working directory by leaving off the path argument. 
 If the current directory has a +.ruby+ directory, a depth of +1+
 will automatically be used.
+
+In the same way you can add gem locations to you roll environment.
+For instance on my system:
+
+  $ sudo roll in /usr/lib/ruby/gems/1.8/gems
+
+Note the use of +sudo+ here. Rolls will create <code>.ruby/</coide>
+entries automatically in each gem if not already present. Since these
+are system-wide gems +sudo+ is needed to give rolls write access.
+This is only necessary the first time any new gem is rolled in.
+
+If a rolled in location changes --say you start a new project, or
+install a new gem, you can resync you roll index via the +sync+ command.
+
+  $ roll sync
+
+Resyncing is only needed when a new project is added to an enironments
+lookup locations, or if one of the already included projects change
+the .ruby/name or .ruby/loapath files. To clarify, take a look at the
++show+ command.
+
+  $ roll show --index
 
 The +use+ command stores the current environment name until the
 end of the bash session. To set it perminently, adjust the RUBYENV
