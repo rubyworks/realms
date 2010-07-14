@@ -1,5 +1,6 @@
 require 'roll/version'
 require 'roll/metadata'
+require 'roll/requirements'
 require 'roll/environment'
 
 #$MONITOR = ENV['ROLL_MONITOR']
@@ -83,6 +84,11 @@ module Roll
     # Access to metadata.
     def metadata
       @metadata ||= Metadata.new(@location, @name, @options)
+    end
+
+    #
+    def requirements
+      @requirements ||= Requirements.new(location)
     end
 
     # Is the library active?

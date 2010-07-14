@@ -14,12 +14,10 @@ module Roll
     def call
       name = args.first
       case name
-      when 'nil'
-        list = [Environment.current]
       when 'all'
         list = Environment.list
       else
-        list = [name]
+        list = [name || Environment.current]
       end
 
       list.each do |name|
