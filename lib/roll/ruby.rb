@@ -1,3 +1,5 @@
+require 'roll/library'
+
 module Roll
 
   # RubyLibrary is a specialized subclass of Library specifically designed
