@@ -14,7 +14,7 @@ module Roll
 
     #
     def call
-      if file.directory?(File.join(location, '.ruby'))
+      if File.directory?(File.join(location, '.ruby'))
         generate_isolate_index
       else
         $stderr.puts "Current directory is not a Ruby project."
@@ -42,11 +42,20 @@ module Roll
 
       if fails.empty?
         out = ''
+
+        max_name = results.map{ |lib| lib.name.size }.max
+        max_path = results.map{ |lib| lib.location.size }.max
+
         results.each do |lib|
-          out << "%s %s %s\n" % [lib.name, lib.location, lib.loadpath.join(' ')]
+          out << "%-#{max_name}s  %-#{-max_path}s  %s\n" % [lib.name, lib.location, lib.loadpath.join(' ')]
         end
+
         File.open('.ruby/index', 'w'){ |f| f << out }
-        puts out
+
+        $stdout.puts out
+
+        $stderr.puts
+        $stderr.puts "Saved to `.ruby/index`."
       else
         puts "These libraries could not be found in the current environment:"
         fails.each do |name, vers|
