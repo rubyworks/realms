@@ -91,14 +91,30 @@ module Roll
     # Returns a string representation of lookup and index
     # exactly as it is stored in the environment file.
     def to_s
-      to_s_lookup + "---\n" + to_s_index
+      set = []
+      lookup.each do |(path, depth)|
+        set << ['-', path, depth]
+      end
+      set << ['','','']
+      index.each do |name, paths|
+        paths.each do |path, loadpath|
+          set << [name, path, loadpath.join(' ')]
+        end
+      end
+      name_max = set.map{|name, path, rel| name.size }.max
+      path_max = set.map{|name, path, rel| path.size }.max
+      out = ''
+      set.each do |name, path, rel|
+        out << "%-#{name_max}s  %-#{path_max}s  %s\n" % [name, path, rel]
+      end
+      out
     end
 
     # Returns a String of lookup paths and depths, one on each line.
     def to_s_lookup
       str = ""
       lookup.each do |(path, depth)|
-        str << "#{path}  #{depth}\n"
+        str << "- #{path} #{depth}\n"
       end
       str
     end
@@ -138,24 +154,13 @@ module Roll
       if file && File.exist?(file)
         lines = File.readlines(file).map{ |line| line.strip }
         lines = lines.reject{ |line| /^\#/ =~ line or /^$/ =~ line }
-        split = lines.index('---') # would be nice if this could be /^\-\-+/
-        if split
-          lookup_lines = lines[0...split]
-          index_lines  = lines[split+1..-1]
-        else
-          lookup_lines = lines[0..-1]
-          index_lines  = []
-        end
-
-        lookup_lines.each do |line|
-          path, depth = *line.split(/\s+/)
-          dir, depth = *line.split(/\s+/)
-          lookup << [path, (depth || 3).to_i]
-        end
-
-        index_lines.each do |line|
+        lines.each do |line|
           name, path, *loadpath = *line.split(/\s+/)
-          index[name.strip] << [path.strip, loadpath]
+          if name == '-'
+            lookup << [path, (loadpath.first || 2).to_i]  # TODO: support multiple depths
+          else
+            index[name] << [path, loadpath]
+          end
         end
       end
     end
@@ -197,7 +202,7 @@ module Roll
       set = Hash.new{|h,k| h[k]=[]}
       locate.each do |path|
         name, loadpath = libdata(path)
-        next unless name
+        name = nil if name.empty?
         next if name == 'roll' # NEVER INCLUDE ROLL ITSELF!!!
         #vers = load_version(path)
         if name #&& vers
