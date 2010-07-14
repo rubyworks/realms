@@ -131,7 +131,7 @@ module Roll
       out.sort.reverse.join("\n")
     end
 
-    # Append entry to lookup list.
+    # Append an entry to the lookup list.
     def append(path, depth=3)
       path  = File.expand_path(path)
       depth = (depth || 3).to_i
@@ -139,7 +139,7 @@ module Roll
       @lookup.push([path, depth])
     end
 
-    # Remove entry from lookup list.
+    # Remove an entry from lookup list.
     def delete(path)
       @lookup.reject!{ |p,d| path == p }
     end
@@ -170,12 +170,7 @@ module Roll
       require 'fileutils'
 
       out = to_s
-      #max = @table.map{ |name, paths| name.size }.max
-      #@table.map do |name, paths|
-      #  paths.each do |path|
-      #    out << "%-#{max}s %s\n" % [name, path]
-      #  end
-      #end
+
       file = File.join(HOME_ENV_DIR, name)
       if File.exist?(file)
         data = File.read(file)
@@ -197,6 +192,30 @@ module Roll
       @file = file
     end
 
+    # Create a new environment +new_name+ with the contents
+    # of the current enviroment.
+    def copy(new_name)
+      new_env = dup
+      new_env.instance_eval do
+        @name = new_name
+        @file = nil
+      end
+      new_env
+    end
+
+    # Merge two environments. +Other+ can either be an Environment object
+    # or the name of one.
+    #
+    # NOTE: It is probably best to re-sync the environment after this.
+    def merge!(other)
+      if !(Environment === other)
+        other = Environment.new(other)  # self.class.new(other)
+      end
+      @lookup = lookup | other.lookup
+      @index  = index.merge(other.index)
+      self
+    end
+
     # Generate index from lookup list.
     def lookup_index
       set = Hash.new{|h,k| h[k]=[]}
@@ -214,7 +233,7 @@ module Roll
       set
     end
 
-    # Make sure each project location in the index has a .ruby entry.
+    # Make sure each project location in the index has .ruby entries.
     # If it does not have .ruby entries then it will attempt to create
     # them.
     #
