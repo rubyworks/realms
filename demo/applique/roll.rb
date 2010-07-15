@@ -2,6 +2,8 @@ require 'fileutils'
 
 ENV['RUBYENV'] = nil
 
+raise "Remove -roll from RUBYOPT before running tests." if ENV['RUBYOPT'].index('-roll')
+
 # Make sure we use local version of files.
 $:.unshift('lib')
 
@@ -24,7 +26,7 @@ raise "Not using temporary cache location" unless ::Config::CACHE_HOME == File.e
 
 env = Roll::Environment.new
 
-unless Roll::Environment::HOME_ENV_DIR == File.expand_path('tmp/config/roll/environments')
+unless Roll::Environment::HOME == File.expand_path('tmp/config/roll/environments')
   raise "Starting with incorrect HOME_ENV_DIR -- #{Roll::Environment::HOME_ENV_DIR}"
 end
 

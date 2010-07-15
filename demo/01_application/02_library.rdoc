@@ -1,6 +1,6 @@
 = Library Instances
 
-Given a basic set of projects as defined here[qed://support/projects.rdoc].
+Given a basic set of projects as defined here[qed://../support/projects.rdoc].
 We can use the the Library class to
 
   require 'roll/library'
