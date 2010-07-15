@@ -84,5 +84,25 @@ module ::Config
     find
   end
 
+  # Default gem home directory path.
+  def self.default_gem_dir
+    if defined? RUBY_FRAMEWORK_VERSION then
+      File.join File.dirname(CONFIG["sitedir"]), 'Gems', CONFIG["ruby_version"]
+    elsif CONFIG["rubylibprefix"] then
+      File.join(CONFIG["rubylibprefix"], 'gems', CONFIG["ruby_version"])
+    else
+      File.join(CONFIG["libdir"], ruby_engine, 'gems', CONFIG["ruby_version"])
+    end
+  end
+
+  # A wrapper around RUBY_ENGINE const that may not be defined
+  def self.ruby_engine
+    if defined? RUBY_ENGINE then
+      RUBY_ENGINE
+    else
+      'ruby'
+    end
+  end
+
 end
 

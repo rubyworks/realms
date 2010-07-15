@@ -4,14 +4,20 @@ module Roll
 
   # An Environment represents a set of libraries to be served by Rolls.
   #
-  # TODO: Rename this to Ledger?
   class Environment
 
-    # Location of environment files.
+    # Location of environment files. This include user locations, but also
+    # read-only sytems-wide locations, should an administratore want to set
+    # any of those up.
     DIRS = ::Config.find_config('roll', 'environments')
 
-    #
-    HOME_ENV_DIR = File.join(::Config::CONFIG_HOME, 'roll', 'environments')
+    # Environment home directory.
+    HOME = File.join(::Config::CONFIG_HOME, 'roll', 'environments')
+
+    # Environment home directory.
+    def self.home
+      HOME
+    end
 
     # If no default environment variable is set, the content of this
     # file will be used.
@@ -171,7 +177,7 @@ module Roll
 
       out = to_s
 
-      file = File.join(HOME_ENV_DIR, name)
+      file = File.join(self.class.home, name)
       if File.exist?(file)
         data = File.read(file)
         if out != data

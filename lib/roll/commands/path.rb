@@ -35,7 +35,6 @@ module Roll
       binpaths = []
       Library.list.each do |name|
         lib = Library[name]
-p lib
         if lib.bindir?
           binpaths << lib.bindir
         end
