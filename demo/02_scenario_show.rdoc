@@ -1,0 +1,24 @@
+As a developer managing load environments I wan to be able to easily inspect
+the current evironment.
+
+I should be able to get a reasonbale overview of the current environment
+using `roll show`.
+
+  `roll show`
+
+To get more select information show supports special options such as 
+`--index`/`-i` which displays only the project names, locations and
+loadpaths.
+
+  `roll show --index`
+
+There is also the `--lookup`/`-l` option which shows only the lookup
+directories, used to generate they index.
+
+  `roll show --lookup`
+
+Finally there is a `--yaml`/`-y` option for dumpung the entire environment
+as a seiralized YAML document.
+
+  `roll show --yaml`
+

@@ -1,0 +1,45 @@
+= Ledger Class
+
+The Ledger class
+
+To demonstrate the Ledger class we will need a set of conforming project
+as define in support/projects.rdoc[qed://../support/projects.rdoc].
+
+In the normal course of operation there is only one Ledger instance,
+stored in LEDGER and reflecting the current environment. It is
+possbile however to create secondary ledgers for testing purposes.
+
+A Ledger is instantiated with a single argument, the name of the
+environment. If a name is not given the current environment will be used.
+The current environment is determined by looking for a current PID file,
+failing that the RUBYENV environment variable, failing that the `default`
+file in the users roll config directory, and lastly falling back to 
+the static value +production+.
+
+  env = Roll::Environment.new
+
+  env.name.assert == 'production'
+
+The Environment class provides the method for *rolling-in* lookup paths.
+It takes the path and the depth-of-search as it's arguments.
+
+  env.in('tmp/projects', 3)
+
+But this only adds the location to the internal look table. To complete
+the process we need to resync the internal index to the new lookup
+table and then save the result to disc.
+
+  env.sync
+  env.save
+
+Now there should be a production file in the user's roll config folder.
+In our case this is a temporary location setup specifically for this
+demonstration.
+
+  text = File.read('tmp/config/roll/environments/production')
+
+Our projects are TryMe 1.0 and TryMe 1.1, saved in `tryme/` directories,
+so we can verify the sync and save worked by looking for these entreis.
+
+  text.assert.include?('tryme')
+

@@ -1,0 +1,51 @@
+= Copy Environment
+
+As a developer I want to be able to setup new library environments
+based on existing environments.
+
+To copy the current environment, I should be able to issue the command.
+
+  `roll copy foo`
+
+Where +foo+ is the name of the new environment built from the current.
+If we compare the output of their repsective indexes we will see they
+are exactly the same,
+
+  `roll show --index`.assert == `roll show --index foo`
+
+It is also possible to copy a named environment to a new envionment.
+
+  `roll copy foo bar`
+
+This will copy the `foo` environment we just created to a new environment
+called `bar`. Again we can verify they are identical in content.
+
+  `roll show --index foo`.assert == `roll show --index bar`
+
+If we try to copy an environment that doesn't exist, we will get an
+error telling us as much.
+
+  out = `roll copy noenv baz`
+
+  out.assert.include?('does not exist')
+
+If we try to copy an environment over a pre-existing environment, we will
+get an error telling us that we need to use the `--force` option if we wish
+to overwrite it.
+
+  out = `roll copy foo bar`
+
+  out.assert.include?('already exists')
+  out.assert.include?('--force option to overwrite')
+
+By supplying the force option we can go ahead and force the operation.
+
+  `roll copy -f foo bar`
+
+And again we verify the contents are identical.
+
+  `roll show --index`.assert == `roll show --index foo`
+
+(TODO: Note that with this last step we should alter +foo+ first to make
+the final test more robust. It's too easy to get a false positive here.)
+
