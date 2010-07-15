@@ -85,7 +85,7 @@ module ::Config
   end
 
   # Default gem home directory path.
-  def self.default_gem_dir
+  def self.gem_home
     if defined? RUBY_FRAMEWORK_VERSION then
       File.join File.dirname(CONFIG["sitedir"]), 'Gems', CONFIG["ruby_version"]
     elsif CONFIG["rubylibprefix"] then

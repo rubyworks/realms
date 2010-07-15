@@ -25,7 +25,7 @@ module Roll
 
       @index = Hash.new{|h,k| h[k] = []}
 
-      # -- current environment if name is +nil+.
+      #- current environment if name is +nil+.
       @environment = Environment.new(name)
 
       @environment.each do |name, paths|
@@ -34,22 +34,22 @@ module Roll
             warn "invalid path for #{name} -- #{path}"
             next
           end
-          # todo: valid project directory?
+          # TODO: valid project directory?
           lib = Library.new(path, :name=>name, :loadpath=>loadpath)
           @index[name] << lib if lib.active?
         end
       end
 
-      # TODO: fallback measure ?
-      if ENV['ROLLOLD']
-        @index.each do |name, libs|
-          sorted_libs = [libs].flatten.sort
-          lib = sorted_libs.first
-          lib.loadpath.each do |lp|
-            $LOAD_PATH.unshift(File.join(lib.location, lp))
-          end
-        end
-      end
+      # TODO: fallback measure would put all libs on loadpath ?
+      #if ENV['ROLLOLD']
+      #  @index.each do |name, libs|
+      #    sorted_libs = [libs].flatten.sort
+      #    lib = sorted_libs.first
+      #    lib.loadpath.each do |lp|
+      #      $LOAD_PATH.unshift(File.join(lib.location, lp))
+      #    end
+      #  end
+      #end
 
       @index['ruby'] = RubyLibrary.new
 
@@ -109,8 +109,8 @@ module Roll
     #
     # name - Optional name of the environemnt. [to_s]
     #
-    # Returns the current Environment. If name is given,
-    # returns the environment by that name.
+    # Returns the current Environment. If name is given, returns the
+    # environment by that name.
     def environment(name=nil)
       if name
         Environment.new(name)
@@ -119,7 +119,7 @@ module Roll
       end
     end
 
-    # DEPRECATE
+    # DEPRECATE: Alias for #environment.
     alias_method :env, :environment
  
     # Returns an hash of `name => library` or `name => [ libvN, libv2, ...]`.
@@ -127,33 +127,33 @@ module Roll
       @index
     end
 
-    #
+    # Does the ledger include a library by the given +name+?
     def include?(name)
       @index.include?(name)
     end
 
-    #
+    # Returns a list of all the library names.
     def names
       @index.keys
     end
     alias_method :list, :names
 
-    #
+    # Iterate through each library set.
     def each(&block)
       @index.each(&block)
     end
 
-    #
+    # Number of library sets.
     def size
       @index.size
     end
 
-    #
+    # Array keeps track of currely loading libraries.
     def load_stack
       @load_stack
     end
 
-    #
+    # Hash that stores which paths have already been loaded.
     def load_cache
       @load_cache
     end
@@ -188,6 +188,7 @@ module Roll
     #
     #   require('facets:string/margin', :load=>true)
     #
+    # TODO: Should we also check $"? Eg. `return false if $".include?(path)`.
     def require(path, options={})
       if file = load_cache[path]
         if options[:load]
@@ -203,7 +204,6 @@ module Roll
         return file.acquire(options)
       end
 
-      #- fallback
       if options[:load]
         load_without_rolls(path, options[:wrap])
       else
@@ -211,11 +211,15 @@ module Roll
       end
     end
 
+    # Load file path. This is just like #require except that previously
+    # loaded files will be reloaded and standard extensions will not be
+    # automatically appended.
+    #
     # TODO: maybe swap #load and #require ?
-    def load(file, options={})
+    def load(path, options={})
       options[:load]   = true
       options[:suffix] = false
-      require(file, options)
+      require(path, options)
     end
 
     # Legacy require.
@@ -353,7 +357,7 @@ puts "  (7 fallback)" if MONITOR
 
     # Brute force search looks through all libraries for a matching file.
     #
-    # path    - file path fow which to search
+    # path    - file path for which to search
     # options: 
     #   :select -
     #   :suffix -
@@ -442,7 +446,7 @@ puts "  (7 fallback)" if MONITOR
     # Synchronize an environment by +name+. If a +name+
     # is not given the current environment is synchronized.
     def sync(name=nil)
-      env = env(name)
+      env = environment(name)
       env.sync
       env.save
     end
@@ -492,6 +496,21 @@ puts "  (7 fallback)" if MONITOR
       else
         Library.new(Dir.pwd).verify
       end
+    end
+
+    # Sync environments that contain locations relative to the
+    # current gem home.
+    def sync_gem_environments
+      resync = []
+      environments.each |name|
+        env = environment(name)
+        if env.has_gems?         
+          resync << name
+          env.sync
+          env.save
+        end
+      end
+      resync
     end
 
   end

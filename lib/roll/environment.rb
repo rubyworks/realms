@@ -339,22 +339,33 @@ module Roll
     end
 
     # Does this location have .ruby/ entries?
-    # TODO: Really is should at least have a `name` entry and probably a `version`.
+    # TODO: Really is should at probably have a `version` too.
     def dotruby?(location)
-      dir = File.join(location, '.ruby')
-      return false unless File.directory?(dir)
+      name_file = File.join(location, '.ruby', 'name')
+      return false unless File.file?(name_file)
       return true
     end
 
-    # Is this location a gem location?
+    # Is this location a gem home location?
     def gemspec?(location)
-      return true if Dir[File.join(location, '*.gemspec')].first
-
+      #return true if Dir[File.join(location, '*.gemspec')].first
       pkgname = File.basename(location)
       gemsdir = File.dirname(location)
       specdir = File.join(File.dirname(gemsdir), 'specifications')
       return true if Dir[File.join(specdir, "#{pkgname}.gemspec")].first
+      return false
+    end
 
+    # Does the environment include any entires that lie within the *current*
+    # gem directory?
+    def has_gems?
+      dir = (ENV['GEM_HOME'] || ::Config.gem_home)
+      return true if lookup.any? do |path|
+        Regexp.new("^#{Regexp.escape(dir)}[\/\\]") =~ path
+      end
+      return false if index.any? do |path|
+        Regexp.new("^#{Regexp.escape(dir)}[\/\\]") =~ path
+      end
       return false
     end
 

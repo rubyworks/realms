@@ -190,134 +190,36 @@ module Roll
     # Alias for #find.
     alias_method :include?, :find
 
-=begin
-    # Standard loadpath search for the first matching +file+.
-    # Set +suffix+ to false to prevent automatic extension matching.
-    def find(file, suffix=true)
-      suffix = false if SUFFIXES.include?(File.extname(file))
-      lp = loadpath
-      if suffix
-        SUFFIXES.each do |ext|
-          lp.each do |lpath|
-            f = File.join(location, lpath, file + ext)
-            if File.file?(f)
-              return libfile(lpath, file, ext)
-            end
-          end
-        end
-      else
-        lp.each do |lpath|
-          f = File.join(location, lpath, file)
-          if File.file?(f)
-            return libfile(lpath, file)
-          end
-        end
-      end
-      nil
-    end
-=end
-
     # Create a new LibFile object from +lpath+, +file+ and +ext+.
     def libfile(lpath, file, ext=nil)
       LibFile.new(self, lpath, file, ext)
     end
 
-    # LibFile class represents a single file in a library.
-    class LibFile
-      attr_reader :library, :loadpath, :filename, :extension
-      def initialize(library, loadpath, filename, extension=nil)
-        @library   = library
-        @loadpath  = loadpath
-        @filename  = filename
-        @extension = extension
-      end
-      def location
-        library.location
-      end
-      def fullname
-        File.join(location, loadpath, filename + (extension || ''))
-      end
-      def localname
-        File.join(filename + (extension || ''))
-      end
-      def to_s  ; fullname; end
-      def to_str; fullname; end
-
-      #
-      def acquire(opts={})
-        if opts[:load]
-          load(opts[:wrap])
-        else
-          require
-        end
-      end
-
-      #
-      def require
-        return false if $".include?(localname)  # ruby 1.8 does not use absolutes
-        $" << localname # ruby 1.8 does not use absolutes
-        #Library.load_monitor[file] << caller if $LOAD_MONITOR
-        Library.load_stack << library
-        begin
-          library.activate
-          success = require_without_rolls(fullname)
-        #rescue LoadError => load_error
-        #  raise clean_backtrace(load_error)
-        ensure
-          Library.load_stack.pop
-        end
-        success
-      end
-
-      #
-      def load
-        $" << localname # ruby 1.8 does not use absolutes
-        #Library.load_monitor[file] << caller if $LOAD_MONITOR
-        Library.load_stack << library
-        begin
-          library.activate
-          success = load_without_rolls(fullname)
-        #rescue LoadError => load_error
-        #  raise clean_backtrace(load_error)
-        ensure
-          Library.load_stack.pop
-        end
-        success
-      end
-
-      def ==(other)
-        fullname == other.fullname
-      end
-
-      def eql?(other)
-        fullname == other.fullname
-      end
-
-      def hash
-        fullname.hash
-      end
-    end
-
+    # Activate a library by putting it's loadpaths on the master $LOAD_PATH.
+    # This is neccessary only for the fact that autoload will not utilize
+    # customized require methods.
     #
+    # THINK: Should we also constrain the library here? My only hesitation
+    # to that is we do not have direct access the ledger object, but would
+    # have to use $LEDGER.
     def activate
       # TODO: ledger constrain
-
-      # Ah ha! Savior of the autoload.
       absolute_loadpath.each do |alp|
         $LOAD_PATH.unshift(alp)
       end
     end
 
     #
-    def require(file)
-      if path = include?(file)
-        require_absolute(path)
+    def require(path, options={})
+      if file = include?(path, options)
+        file.require(options)
       else
-        load_error = LoadError.new("no such file to require -- #{name}:#{file}")
+        load_error = LoadError.new("no such file to require -- #{name}:#{path}")
         raise clean_backtrace(load_error)
       end
     end
 
+=begin
     # NOT SURE ABOUT USING THIS
     def require_absolute(file)
       #Library.load_monitor[file] << caller if $LOAD_MONITOR
@@ -331,17 +233,19 @@ module Roll
       end
       success
     end
+=end
 
     #
-    def load(file, wrap=nil)
-      if path = include?(file, false)
-        load_absolute(path, wrap)
+    def load(path, options={})
+      if file = include?(path, options)
+        file.load(options)
       else
-        load_error = LoadError.new("no such file to load -- #{name}:#{file}")
+        load_error = LoadError.new("no such file to load -- #{name}:#{path}")
         clean_backtrace(load_error)
       end
     end
 
+=begin
     #
     def load_absolute(file, wrap=nil)
       #Library.load_monitor[file] << caller if $LOAD_MONITOR
@@ -355,6 +259,7 @@ module Roll
       end
       success
     end
+=end
 
     # Inspection.
     def inspect
@@ -431,6 +336,82 @@ module Roll
         bt = bt.reject{ |e| /roll/ =~ e } if bt
         error.set_backtrace(bt)
         error
+      end
+    end
+
+    # LibFile class represents a single file in a library.
+    class LibFile
+      attr_reader :library, :loadpath, :filename, :extension
+      def initialize(library, loadpath, filename, extension=nil)
+        @library   = library
+        @loadpath  = loadpath
+        @filename  = filename
+        @extension = extension
+      end
+      def location
+        library.location
+      end
+      def fullname
+        File.join(location, loadpath, filename + (extension || ''))
+      end
+      def localname
+        File.join(filename + (extension || ''))
+      end
+      def to_s  ; fullname; end
+      def to_str; fullname; end
+
+      #
+      def acquire(opts={})
+        if opts[:load]
+          load(opts[:wrap])
+        else
+          require
+        end
+      end
+
+      #
+      def require(options={})
+        return false if $".include?(localname)  # ruby 1.8 does not use absolutes
+        $" << localname # ruby 1.8 does not use absolutes
+        #Library.load_monitor[file] << caller if $LOAD_MONITOR
+        Library.load_stack << library
+        begin
+          library.activate
+          success = require_without_rolls(fullname)
+        rescue LoadError => load_error  # TODO: deativeate this if $DEBUG ?
+          raise clean_backtrace(load_error)
+        ensure
+          Library.load_stack.pop
+        end
+        success
+      end
+
+      #
+      def load(options={})
+        $" << localname # ruby 1.8 does not use absolutes
+        #Library.load_monitor[file] << caller if $LOAD_MONITOR
+        Library.load_stack << library
+        begin
+          library.activate
+          success = load_without_rolls(fullname)
+        #rescue LoadError => load_error
+        #  raise clean_backtrace(load_error)
+        ensure
+          Library.load_stack.pop
+        end
+        success
+      end
+
+      def ==(other)
+        fullname == other.fullname
+      end
+
+      def eql?(other)
+        fullname == other.fullname
+      end
+
+      def hash
+        fullname.hash
       end
     end
 
