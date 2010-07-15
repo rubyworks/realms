@@ -13,16 +13,17 @@ module Roll
 
     include Enumerable
 
-    #$MONITOR = ENV['ROLL_MONITOR']
+    MONITOR = ENV['ROLL_MONITOR']
 
     # Setup if the library ledger.
     #
     def initialize(name=nil)
-      roll_original_require 'roll/ruby'
+      require_without_rolls 'roll/ruby'
+
+      @load_stack = []
+      @load_cache = {}
 
       @index = Hash.new{|h,k| h[k] = []}
-
-      @index['ruby'] = RubyLibrary.new
 
       # -- current environment if name is +nil+.
       @environment = Environment.new(name)
@@ -33,13 +34,24 @@ module Roll
             warn "invalid path for #{name} -- #{path}"
             next
           end
-          lib = Library.new(path, name, :loadpath=>loadpath)
+          # todo: valid project directory?
+          lib = Library.new(path, :name=>name, :loadpath=>loadpath)
           @index[name] << lib if lib.active?
         end
       end
 
-      @load_stack = []
-      @load_cache = {}
+      # TODO: fallback measure ?
+      if ENV['ROLLOLD']
+        @index.each do |name, libs|
+          sorted_libs = [libs].flatten.sort
+          lib = sorted_libs.first
+          lib.loadpath.each do |lp|
+            $LOAD_PATH.unshift(File.join(lib.location, lp))
+          end
+        end
+      end
+
+      @index['ruby'] = RubyLibrary.new
 
       #@load_monitor = Hash.new{ |h,k| h[k]=[] }
     end
@@ -151,19 +163,78 @@ module Roll
     #  @load_monitor
     #end
 
-    # This is part of a hack to deal with the fact that autoload does not use
-    # normal #require. So Rolls has to go ahead and load them upfront.
-    def autoload(constant, path)
-      #autoload_without_rolls(constant, fname)
-      require(path)
+    # Constrain a library to a single version. This means, if anyone tries
+    # to use a different version once a library has been constrained, an
+    # VersionConflict error will be raised.
+    def constrain(lib)
+      cmp = index[lib.name]
+      if Array === cmp
+        index[lib.name] = lib
+      else
+        if lib.version != cmp.version
+          raise VersionError
+        end
+      end
     end
 
+    # Roll-style loading. First it looks for a specific library via `:`.
+    # If `:` is not present it then tries the current library. Failing that
+    # it fallsback to Ruby itself.
     #
-    def require(path)
+    #   require('facets:string/margin')
+    #
+    # To "load" the library, rather than "require" it, set the +:load+
+    # option to true.
+    #
+    #   require('facets:string/margin', :load=>true)
+    #
+    def require(path, options={})
+      if file = load_cache[path]
+        if options[:load]
+          file.load
+        else
+          return false
+        end
+      end
+
+      if file = find(path, options)
+        constrain(file.library)
+        load_cache[path] = file
+        return file.acquire(options)
+      end
+
+      #- fallback
+      if options[:load]
+        load_without_rolls(path, options[:wrap])
+      else
+        require_without_rolls(path)
+      end
+    end
+
+    # TODO: maybe swap #load and #require ?
+    def load(file, options={})
+      options[:load]   = true
+      options[:suffix] = false
+      require(file, options)
+    end
+
+    # Legacy require.
+    def require_legacy(path)
+      require(path, :legacy=>true)
+    end
+
+    # Legacy loading.
+    def load_legacy(path, wrap=nil)
+      load(path, :legacy=>true, :wrap=>wrap)
+    end
+
+=begin
+    #
+    def legacy_require(path)
       return false if load_cache[path]
       return false if $".include?(path)
 
-      file = match(path)
+      file = match(path) || search(path)
       if file
         lib = file.library
         constrain(lib)
@@ -179,11 +250,11 @@ module Roll
     end
 
     #
-    def load(path, wrap=nil)
+    def legacy_load(path, wrap=nil)
       file = load_cache[path]
       return file.library.load_absolute(file, wrap) if file
 
-      file = match(path, false)
+      file = match(path, :suffix=>false) || search(path, :suffix=>false)
       if file
         lib = file.library
         constrain(lib)
@@ -197,157 +268,141 @@ module Roll
         end
       end
     end
+=end
 
-    # Acquire is pure Roll-style loading. First it
-    # looks for a specific library via ':'. If ':' is
-    # not present it then tries the current library.
-    # Failing that it fallsback to Ruby itself.
     #
-    #   acquire('facets:string/margin')
-    #
-    # To "load" the library, rather than "require" it set
-    # the +:load+ option to true.
-    #
-    #   acquire('facets:string/margin', :load=>true)
-    #
-    def acquire(file, opts={})
-      if file.index(':') # a specific library
-        name, file = file.split(':')
-        lib = Library.open(name)
-        abs = lib.include?(file)
-      else # try the current library
-        cur = load_stack.last
-        if cur && abs = cur.include?(file)
-          lib = cur
-        elsif !file.index('/') # is this a library name?
-          if cur = Library.instance(file)
-            lib = cur
-            abs = lib.default # default file to load
-          end
-        end
-      end
-      if opts[:load]
-        lib ? lib.load_absolute(abs) : roll_original_load(file)
-      else
-        lib ? lib.require_absolute(abs) : roll_original_require(file)
-      end
+    def match(path, opts={})
+      find(path, opts)
     end
-
-    #
-    def constrain(lib)
-      cmp = index[lib.name]
-      if Array === cmp
-        index[lib.name] = lib
-      else
-        if lib.version != cmp.version
-          raise VersionError
-        end
-      end
-    end
-
-  private
 
     # Find matching libary files. This is the "mac daddy" method used by
     # the #require and #load methods to find the sepcified +path+ among
     # the various libraries and their loadpaths.
-    def match(path, suffix=true)
-      path = path.to_s
+    def find(path, options={})
+      path   = path.to_s
 
-#puts path if $MONITOR
+      suffix = options[:suffix]
+      search = options[:search]
+      legacy = options[:legacy]
+
+print path if MONITOR
 
       # Ruby appears to have a special exception for enumerator!!!
-      return nil if path == 'enumerator' 
+      #return nil if path == 'enumerator' 
 
-      # absolute path
-      return nil if /^\// =~ path
-
-#puts "  1. direct" if $MONITOR
+      # TODO: absolute path ???
+      if /^\// =~ path
+        return nil
+      end
 
       if path.index(':') # a specified library
         name, path = path.split(':')
         lib = Library.open(name)
-        #if lib.active?
-          #file = lib.find(File.join(name,path), suffix)
-          file = lib.include?(path, suffix)
-          return file
-        #end
+        file = lib.include?(path, options)
+puts "  (1 direct)" if MONITOR
+        return file
       end
 
-      matches = []
-
-#puts "  2. stack" if $MONITOR
-
-      # try the load stack
+      # try the load stack (TODO: just last or all?)
       load_stack.reverse_each do |lib|
-        if file = lib.find(path, suffix)
-          return file unless $VERBOSE
-          matches << file
+        if file = lib.include?(path, options)
+puts "  (2 stack)" if MONITOR
+          return file
         end
       end
-
-#puts "  3. indirect" if $MONITOR
+      #last = load_stack.last
+      #if last && file = last.include?(file)
+      #  return file
+      #end
 
       # if the head of the path is the library
-      name, *_ = path.split(/\/|\\/)
-      lib = Library[name]
-      if lib #&& lib.active?
-        if file = lib.find(path, suffix)
-          return file unless $VERBOSE
-          matches << file
+      if path.index('/') or path.index('\\')
+        name, *_ = path.split(/\/|\\/)
+        lib = Library[name]
+        if lib && file = lib.include?(path, options)
+puts "  (3 indirect)" if MONITOR
+          return file
         end
       end
-
-#puts "  4. rubycore" if $MONITOR
 
       # try ruby
       lib = Library['ruby']
-      if file = lib.find(path, suffix)
-        return file unless $VERBOSE
-        matches << file
+      if file = lib.include?(path, options)
+puts "  (4 ruby core)" if MONITOR
+        return file
+      end
+ 
+      # a plain library name?
+      if !path.index('/') && lib = Library.instance(path)
+        if file = lib.default # default file to load
+puts "  (5 plain library name)" if MONITOR
+          return file
+        end
       end
 
-#puts "  5. rest" if $MONITOR
+      # if fallback to brute force search
+      if search or legacy
+        result = search(path, options)
+puts "  (6 brute search)" if MONITOR
+        return result if result
+      end
+
+puts "  (7 fallback)" if MONITOR
+      nil
+    end
+
+    # Brute force search looks through all libraries for a matching file.
+    #
+    # path    - file path fow which to search
+    # options: 
+    #   :select -
+    #   :suffix -
+    #   :legacy -
+    #
+    # Returns either
+    def search(path, options={})
+      matches = []
+      select  = options[:select]
 
       # TODO: Perhaps the selected and unselected should be kept in separate lists?
       unselected, selected = *@index.partition{ |name, libs| Array === libs }
 
-      # broad search pre-selected libraries
+      #- broad search pre-selected libraries
       selected.each do |(name, lib)|
-        if file = lib.find(path, suffix)
-          return file unless $VERBOSE
+        if file = lib.find(path, options)
+          return file unless select #$VERBOSE
           matches << file
         end
       end
 
-      # finally try a broad search on unselected libraries
+      #- finally try a broad search on unselected libraries
       unselected.each do |(name, libs)|
         pos = []
         libs.each do |lib|
-          if file = lib.find(path, suffix)
+          if file = lib.find(path, options)
             pos << file
           end
         end
         unless pos.empty?
           latest = pos.sort{ |a,b| b.library.version <=> a.library.version }.first
-          return latest unless $VERBOSE
+          return latest unless select #$VERBOSE
           matches << latest
           #return matches.first unless $VERBOSE
         end
       end
 
+      #- last ditch attempt, search $LOAD_PATH
+      # ???
+
       matches.uniq!
-
-      if matches.size > 1
-        warn_multiples(path, matches)
-      end
-
-      matches.first
+      #warn_multiples(path, matches) if matches.size > 1
+      select ? matches.first : matches
     end
 
-    #
+    # Issue warning about multiple matches.
     def warn_multiples(path, matches)
       warn "multiple matches for same request -- #{path}"
-      matches.each do |lib, file|
+      matches.each do |file|
         warn "  #{file}"
       end
     end
@@ -442,3 +497,4 @@ module Roll
   end
 
 end
+

@@ -19,17 +19,17 @@ module Roll
       @options  = {} #?
     end
 
-    #
+    # Ruby version.
     def version
       RUBY_VERSION
     end
 
-    #
+    # Arch directory relative to the ruby lib dir.
     ARCHPATH = Config::CONFIG['archdir'].sub(Config::CONFIG['rubylibdir']+'/', '')
 
     # TODO: 1.9+ need to remove rugbygems ?
     def loadpath
-      @loadpath ||= [ '', ARCHPATH ]
+      @loadpath ||= ['', ARCHPATH]
       #$LOAD_PATH - ['.']
       #$LOAD_PATH - ['.']
       #[], ].compact
@@ -94,7 +94,7 @@ module Roll
     def require_absolute(file)
       return false if $".include?(file.localname)  # ruby 1.8 does not use absolutes
       success = super(file)
-      $" << file.localname # ruby 1.8 does not use absolutes
+      $" << file.localname # ruby 1.8 does not use absolutes TODO: move up?
       $".uniq!
       success
     end
@@ -106,7 +106,7 @@ module Roll
     # Returns Boolean success of loading the file.
     def load_absolute(file, wrap=nil)
       success = super(file, wrap)
-      $" << file.localname # ruby 1.8 does not use absolutes
+      $" << file.localname # ruby 1.8 does not use absolutes TODO: move up?
       $".uniq!
       success
     end
@@ -117,7 +117,7 @@ module Roll
     end
 
     # Construct a LibFile match.
-    def libfile(lpath, file, ext)
+    def libfile(lpath, file, ext=nil)
       LibFile.new(self, lpath, file, ext) 
     end
   end

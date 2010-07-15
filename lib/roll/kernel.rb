@@ -29,9 +29,9 @@ module ::Kernel
   module_function :roll
 
   # Require script.
-  def require(file)
+  def require(file, options={})
     #Roll::Library.ledger.require(file)
-    $LEDGER.require(file)
+    $LEDGER.require(file, options)
   end
 
   module_function :require
@@ -39,11 +39,12 @@ module ::Kernel
   # Load script.
   def load(file, wrap=false)
     #Roll::Library.ledger.load(file, wrap)
-    $LEDGER.load(file, wrap)
+    $LEDGER.load(file, :wrap=>wrap)
   end
 
   module_function :load
 
+=begin
   # Autoload script (Note that rolls neuters this functionality).
   def autoload(constant, file)
     #Roll::Library.ledger.autoload(constant, file)
@@ -51,6 +52,7 @@ module ::Kernel
   end
 
   module_function :autoload
+=end
 
   # Acquire script.
   def acquire(file, opts={})
@@ -61,6 +63,7 @@ module ::Kernel
   module_function :acquire
 end
 
+=begin
 class Module
   # Autoload script.
   #
@@ -80,4 +83,5 @@ class Module
     $LEDGER.autoload(constant, file)
   end
 end
+=end
 

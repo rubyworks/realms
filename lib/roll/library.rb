@@ -59,18 +59,17 @@ module Roll
 
     # TODO: Some extensions are platform specific --only
     # add the ones needed for the current platform.
-    SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar', '']
+    SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar'] #, '']
 
     # Extensions glob, joins extensions with comma and wrap in curly brackets.
     SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
 
-
     # New Library object.
     #
     # TODO: Place name into options.
-    def initialize(location, name=nil, options={})
+    def initialize(location, options={})
       @location = location
-      @name     = name
+      @name     = options.delete(:name)
       @options  = options
     end
 
@@ -120,6 +119,11 @@ module Roll
     # Alias for +#date+.
     alias_method :released, :date
 
+    #
+    def absolute_loadpath
+      loadpath.map{ |lp| File.join(location, lp) }
+    end
+
     # List of dependencies taken from a REQUIRE file, if it exists.
     # This includes both neccessary and optional dependencies.
     #
@@ -138,9 +142,59 @@ module Roll
       end
     end
 
+    # Does this library have a matching +file+.
+    #
+    # file    - file path to find [to_s]
+    # options - Hash of optional settings to adjust search behavior
+    # options[:suffix] - automatically try standard extensions if file has none.
+    # options[:legacy] - do not match within +name+ directory, eg. `lib/foo/*`.
+    #
+    def find(file, options={})
+      legacy = options[:legacy]
+      suffix = options[:suffix] || options[:suffix].nil?
+      #suffix = false if options[:load]
+      suffix = false if SUFFIXES.include?(File.extname(file))
+      lp = loadpath
+      if suffix
+        SUFFIXES.each do |ext|
+          lp.each do |lpath|
+            unless legacy
+              f = File.join(location, lpath, name, file + ext)
+              if File.file?(f)
+                return libfile(File.join(lpath, name), file, ext)
+              end
+            end
+            f = File.join(location, lpath, file + ext)
+            if File.file?(f)
+              return libfile(lpath, file, ext)
+            end
+          end
+        end
+      else
+        lp.each do |lpath|
+          unless legacy
+            f = File.join(location, lpath, name, file)
+            if File.file?(f)
+              return libfile(File.join(lpath, name), file)
+            end
+          end
+          f = File.join(location, lpath, file)
+          if File.file?(f)
+            return libfile(lpath, file)
+          end
+        end
+      end
+      nil
+    end
+
+    # Alias for #find.
+    alias_method :include?, :find
+
+=begin
     # Standard loadpath search for the first matching +file+.
     # Set +suffix+ to false to prevent automatic extension matching.
     def find(file, suffix=true)
+      suffix = false if SUFFIXES.include?(File.extname(file))
       lp = loadpath
       if suffix
         SUFFIXES.each do |ext|
@@ -155,16 +209,17 @@ module Roll
         lp.each do |lpath|
           f = File.join(location, lpath, file)
           if File.file?(f)
-            return libfile(lpath, file, ext)
+            return libfile(lpath, file)
           end
         end
       end
       nil
     end
+=end
 
     # Create a new LibFile object from +lpath+, +file+ and +ext+.
-    def libfile(lpath, file, ext)
-      LibFile.new(self, lpath, file, ext) 
+    def libfile(lpath, file, ext=nil)
+      LibFile.new(self, lpath, file, ext)
     end
 
     # LibFile class represents a single file in a library.
@@ -187,54 +242,70 @@ module Roll
       end
       def to_s  ; fullname; end
       def to_str; fullname; end
+
+      #
+      def acquire(opts={})
+        if opts[:load]
+          load(opts[:wrap])
+        else
+          require
+        end
+      end
+
       #
       def require
         return false if $".include?(localname)  # ruby 1.8 does not use absolutes
+        $" << localname # ruby 1.8 does not use absolutes
         #Library.load_monitor[file] << caller if $LOAD_MONITOR
         Library.load_stack << library
         begin
-          success = roll_original_require(fullname)
+          library.activate
+          success = require_without_rolls(fullname)
         #rescue LoadError => load_error
         #  raise clean_backtrace(load_error)
         ensure
           Library.load_stack.pop
         end
-        $" << localname # ruby 1.8 does not use absolutes
         success
+      end
+
+      #
+      def load
+        $" << localname # ruby 1.8 does not use absolutes
+        #Library.load_monitor[file] << caller if $LOAD_MONITOR
+        Library.load_stack << library
+        begin
+          library.activate
+          success = load_without_rolls(fullname)
+        #rescue LoadError => load_error
+        #  raise clean_backtrace(load_error)
+        ensure
+          Library.load_stack.pop
+        end
+        success
+      end
+
+      def ==(other)
+        fullname == other.fullname
+      end
+
+      def eql?(other)
+        fullname == other.fullname
+      end
+
+      def hash
+        fullname.hash
       end
     end
 
-    # Does this library have a matching +file+? This is almost the same
-    # as #find, but unlike #find, this also matches within the library
-    # directory itself, e.g. `lib/foo/*`. This method is used by #acquire.
-    def include?(file, suffix=true)
-      lp = loadpath
-      if suffix
-        SUFFIXES.each do |ext|
-          lp.each do |lpath|
-            f = File.join(location, lpath, name, file + ext)
-            if File.file?(f)
-              return LibFile.new(self, File.join(lpath, name), file, ext)
-            end
-            f = File.join(location, lpath, file + ext)
-            if File.file?(f)
-              return LibFile.new(self, lpath, file, ext)
-            end
-          end
-        end
-      else
-        lp.each do |lpath|
-          f = File.join(location, lpath, name, file)
-          if File.file?(f)
-            return LibFile.new(self, File.join(lpath, name), file)
-          end
-          f = File.join(location, lpath, file)
-          if File.file?(f)
-            return LibFile.new(self, lpath, file)
-          end
-        end
+    #
+    def activate
+      # TODO: ledger constrain
+
+      # Ah ha! Savior of the autoload.
+      absolute_loadpath.each do |alp|
+        $LOAD_PATH.unshift(alp)
       end
-      nil
     end
 
     #
