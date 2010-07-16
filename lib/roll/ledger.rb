@@ -434,9 +434,9 @@ puts "  (7 fallback)" if MONITOR
     # -- T O O L S --
 
     # Change current environment.
-    def use(name)
-      Environment.use(name)
-    end
+    #def use(name)
+    #  Environment.use(name)
+    #end
 
     # Return Array of environment names.
     def environments
@@ -459,20 +459,22 @@ puts "  (7 fallback)" if MONITOR
     end
 
     # Add path to current environment.
-    def in(path, depth=3)
+    def insert(path, depth=3)
       env.append(path, depth)
       env.sync
       env.save
       return path, env.file
     end
+    alias_method :in, :insert
 
     # Remove path from current environment.
-    def out(path)
+    def remove(path)
       env.delete(path)
       env.sync
       env.save
       return path, env.file
     end
+    alias_method :out, :remove
 
     # Go thru each roll lib and collect bin paths.
     def path
@@ -502,7 +504,7 @@ puts "  (7 fallback)" if MONITOR
     # current gem home.
     def sync_gem_environments
       resync = []
-      environments.each |name|
+      environments.each do |name|
         env = environment(name)
         if env.has_gems?         
           resync << name
