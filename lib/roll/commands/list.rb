@@ -6,25 +6,31 @@ module Roll
     #
     def setup
       op.banner = "Usage: roll list"
-      op.separator "List current environments."
+      op.separator "List available libraries in environment."
     end
 
     #
     def call
-      curr = Roll::Library.env.name
-      envs = Roll::Library.environments.sort
-      if envs.empty?
-        puts "No environments."        
+      names = Roll::Library.names.sort
+      if names.empty?
+        puts "No libraries found."
       else
-        puts
-        envs.each do |env|
-          if curr == env
-            puts "=> #{env}"
-          else
-            puts "   #{env}"
-          end
+        max  = names.map{ |name| name.size }.max + 4
+        rows = (names.size / 4).to_i
+        cols = []
+        names.each_with_index do |name, i|
+          c = i % rows
+          cols[c] ||= []
+          cols[c] << name
         end
-        puts
+        out = ""
+        cols.each do |row|
+          row.each do |name|
+            out << ("%-#{max}s" % [name])
+          end
+          out << "\n"
+        end
+        puts out
       end
     end
 
