@@ -1,0 +1,8 @@
+---
+development/test:
+- qed
+- lemon
+
+development/document:
+- rdoc
+
