@@ -6,58 +6,29 @@ module Roll
   #
   class Environment
 
-    # Location of environment files. This include user locations, but also
-    # read-only sytems-wide locations, should an administratore want to set
-    # any of those up.
-    DIRS = ::Config.find_config('roll', 'environments')
-
-    # Environment home directory.
-    HOME = File.join(::Config::CONFIG_HOME, 'roll', 'environments')
-
     # Environment home directory.
     def self.home
-      HOME
+      Roll.config.home_environment_directory
+    end
+ 
+    # Project local environments directory.
+    def self.local
+      Roll.config.local_environment_directory
     end
 
-    # If no default environment variable is set, the content of this
-    # file will be used.
-    DEFAULT_FILE = File.join(::Config::CONFIG_HOME, 'roll', 'default')
-
     # Default environment name.
-    DEFAULT = File.exist?(DEFAULT_FILE) ? File.read(DEFAULT_FILE).strip : 'production'
-
-    # File that stores the name of the current environment during
-    # the current Ruby session.
-    #PID_FILE = File.join(::Config::CACHE_HOME, 'roll', Process.ppid.to_s)
+    def self.default
+      Roll.config.default_environment
+    end
 
     # Returns the name of the current environment.
     def self.current
-      @current ||= (
-        #if File.exist?(PID_FILE)
-        #  File.read(PID_FILE).strip
-        #else
-          ENV['roll_environment'] || ENV['RUBYENV'] || DEFAULT
-        #end
-      )
+      Roll.config.current_environment
     end
-
-    # Change environment to given +name+.
-    #
-    # This only lasts a long as the parent session. It tracks the session
-    # via a temporary file in `$HOME/.cache/roll/<ppid>`.
-    #def self.use(name)
-    #  require 'fileutils'
-    #  dir = File.dirname(PID_FILE)
-    #  FileUtils.mkdir_p(dir) unless File.directory?(dir)
-    #  File.open(PID_FILE, 'w'){ |f| f << name }
-    #  PID_FILE
-    #end
 
     # List of available environments.
     def self.list
-      Dir[File.join('{'+DIRS.join(',')+'}', '*')].map do |file|
-        File.basename(file)
-      end
+      Roll.config.environments
     end
 
     # Environment name.
@@ -162,7 +133,7 @@ module Roll
 
     # Environment file (full-path).
     def file
-      @file ||= ::Config.find_config('roll', 'environments', name).first
+      @file ||= Roll.config.find_environment_file(name)
     end
 
     # Load the environment file.

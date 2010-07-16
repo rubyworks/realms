@@ -32,12 +32,12 @@ module ::Config
     /wince/i,
   ]
 
+  WINDOWS_PLATFORM = !!WIN_PATTERNS.find{ |r| RUBY_PLATFORM =~ r }
+
   # Is this a windows platform? This method compares the entires
   # in +WIN_PATTERNS+ against +RUBY_PLATFORM+.
-  def self.win_platform?
-    @win_platform ||= (
-      !!WIN_PATTERNS.find{ |r| RUBY_PLATFORM =~ r }
-    )
+  def self.windows_platform?
+    WINDOWS_PLATFORM
   end
 
   # Return the path to the data directory associated with the given
@@ -82,26 +82,6 @@ module ::Config
       end
     end
     find
-  end
-
-  # Default gem home directory path.
-  def self.gem_home
-    if defined? RUBY_FRAMEWORK_VERSION then
-      File.join File.dirname(CONFIG["sitedir"]), 'Gems', CONFIG["ruby_version"]
-    elsif CONFIG["rubylibprefix"] then
-      File.join(CONFIG["rubylibprefix"], 'gems', CONFIG["ruby_version"])
-    else
-      File.join(CONFIG["libdir"], ruby_engine, 'gems', CONFIG["ruby_version"])
-    end
-  end
-
-  # A wrapper around RUBY_ENGINE const that may not be defined
-  def self.ruby_engine
-    if defined? RUBY_ENGINE then
-      RUBY_ENGINE
-    else
-      'ruby'
-    end
   end
 
 end
