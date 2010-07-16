@@ -1,0 +1,43 @@
+= Use Command
+
+The use command provides a convenient way to switch between load environments.
+Switching environments is also instrumental in creating new environments.
+For example, we may want a new load environment called "development", we
+can run:
+
+  `roll use development`
+
+Invoking the `use` command to create a new load environment doesn't actually
+change anything except the current environment name. So if you accidently
+type a name you did not intend, there is no harm done. Simple reissue the
+`use` command, or use `exit` -- You can use `exit` because `use` actually
+spawns a new child shell after each invocation in order to effect shell
+variables.
+
+To instantiate the new environment --writing the environments configuration
+file to disc, we need to insert a lookup location.
+
+  `roll in tmp/projects`
+
+We will go into the `in` command more in the next section, needless to say
+the adding 'tmp/projects' to the development environment saved the 
+environment permenantly to disc.
+
+Besides creating new environments, of course, the `use` command let's us jump
+between load environments that already exist. For example, we can quickly
+switch back to the default "production" environment.
+
+  `roll use production`
+
+Another way to switch environments is set the RUBYENV variable manually.
+
+  `export RUBYENV=development`
+
+This is arguably the better approach b/c unlike `use` it does not spawn
+a child shell.
+
+Not you can see the stack of child shell create by `use` using the `stack`
+command.
+
+  `roll stack`
+

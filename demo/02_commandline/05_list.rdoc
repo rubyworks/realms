@@ -1,0 +1,8 @@
+= List Command
+
+To see the current environment, and a list of available environments,
+use the `list` comamnd.
+
+  `roll list`
+
+

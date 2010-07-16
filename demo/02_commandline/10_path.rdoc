@@ -1,0 +1,10 @@
+= Path Command
+
+The `path` command outputs a colon separated string of bin/ paths
+for the indexed projects, which is suitable for appedning to 
+an shell environments PATH variable.
+
+  `roll path`
+
+This can be used to setup executables on Linux systems.
+

@@ -1,13 +1,13 @@
-= Copy Environment
+= Copying an Environment
 
-As a developer I want to be able to setup new library environments
+As developer's we want to be able to setup new library environments
 based on existing environments.
 
-To copy the current environment, I should be able to issue the command.
+To copy the current environment, we can issue the `copy` command.
 
   `roll copy foo`
 
-Where +foo+ is the name of the new environment built from the current.
+Where `foo` is the name of the new environment built from the current.
 If we compare the output of their repsective indexes we will see they
 are exactly the same,
 
@@ -30,7 +30,7 @@ error telling us as much.
   out.assert.include?('does not exist')
 
 If we try to copy an environment over a pre-existing environment, we will
-get an error telling us that we need to use the `--force` option if we wish
+get an error telling us that we need to use the `--force` option in order
 to overwrite it.
 
   out = `roll copy foo bar`
@@ -38,7 +38,7 @@ to overwrite it.
   out.assert.include?('already exists')
   out.assert.include?('--force option to overwrite')
 
-By supplying the force option we can go ahead and force the operation.
+By supplying the `--force` option we can go ahead and perform the operation.
 
   `roll copy -f foo bar`
 
@@ -47,5 +47,6 @@ And again we verify the contents are identical.
   `roll show --index`.assert == `roll show --index foo`
 
 (TODO: Note that with this last step we should alter +foo+ first to make
-the final test more robust. It's too easy to get a false positive here.)
+the final test more robust. It's too easy to get a false positive here.
+But we'll let it go for the moment.)
 

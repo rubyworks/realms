@@ -1,42 +1,44 @@
 = Environment Class
 
-The Environment class encapsulates the config data used to setup the internal
-ledger. It also provides methods for manipulating these files.
+The Environment class encapsulates the configuration data used to setup
+the Ledger. It also provides methods for manipulating the configuration
+files.
 
 To demonstrate the Environment class we will need a set of conforming project
 as define in support/projects.rdoc[qed://../support/projects.rdoc].
 
 An Environment is instantiated with a single argument, the name of the
 environment. If a name is not given the current environment will be used.
-The current environment is determined by looking for a current PID file,
-failing that the RUBYENV environment variable, failing that the `default`
-file in the users roll config directory, and lastly falling back to 
-the static value +production+.
+The current environment is determined by looking for a temporary PID-based
+config file, failing that the RUBYENV environment variable, failing that
+the `default` file in the users roll config directory, and lastly if all
+else fails falling back to the static value "production".
 
   env = Roll::Environment.new
-
   env.name.assert == 'production'
 
-The Environment class provides the method for *rolling-in* lookup paths.
-It takes the path and the depth-of-search as it's arguments.
+An environment stores two essential tables for the functioning of Rolls.
+The first if the lookup table. Which contains an associative array 
+of [path, depth] pairs. We can add a entry to the lookup table via #append.
 
-  env.in('tmp/projects', 3)
+  env.append('tmp/projects', 2)
 
-But this only adds the location to the internal look table. To complete
-the process we need to resync the internal index to the new lookup
-table and then save the result to disc.
+Looking at the lookup table we will see the entry is present.
+
+  env.lookup.assert == [[File.expand_path('tmp/projects'), 2]]
+
+The second important table is the index table. This table is generated
+from the lookup table via the #sync method. Notice the index is presently
+empty.
+
+  env.index.assert == {}
+
+But if we sync the environment,
 
   env.sync
-  env.save
 
-Now there should be a production file in the user's roll config folder.
-In our case this is a temporary location setup specifically for this
-demonstration.
+then the index will contain entries for the library that exists in the
+`tmp/projects` directory.
 
-  text = File.read('tmp/config/roll/environments/production')
-
-Our projects are TryMe 1.0 and TryMe 1.1, saved in `tryme/` directories,
-so we can verify the sync and save worked by looking for these entreis.
-
-  text.assert.include?('tryme')
+  env.index.keys.assert == ['tryme']
 

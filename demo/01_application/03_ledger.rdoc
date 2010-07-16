@@ -1,0 +1,49 @@
+= Ledger Class
+
+The Ledger class
+
+To demonstrate the Ledger class we will need a set of conforming projects
+as defines in support/projects.rdoc[qed://../support/projects.rdoc].
+
+In the normal course of operation there is only one Ledger instance,
+stored in $LEDGER and reflecting the current environment. (It is
+possbile however to create secondary ledgers for testing, or other
+esoteric purposes.)
+
+A Ledger is instantiated with a single argument, the name of the
+environment. If a name is not given the current environment will be used.
+The current environment is determined by looking for a temporary PID-based
+config file, failing that the RUBYENV environment variable, failing that
+the `default` file in the users roll config directory, and lastly if all
+else fails falling back to the static value "production".
+
+  $LEDGER.environment.name.assert == 'production'
+
+The Library class actually redirects most calls to the $LEDGER, so we
+could invoke the same methods on it instead.
+
+  Roll::Library.environment.name.assert == 'production'
+
+Which you choose to use is really a matter of taste. The Roll::Library
+rendition was made for readability, whereas $LEDGER is used internally.
+For the rest of this demo we will use $LEDGER since this demonstration
+is specifically about the Ledger class.
+
+The Ledger provides a method for *rolling-in* lookup paths. It takes the
+path and the depth-of-search as it's arguments.
+
+  $LEDGER.insert('tmp/projects', 2)
+
+This will add the path and depth to the internal lookup table. Then resync the
+internal index to the adjusted lookup table and save the result to disc.
+So now there should be a `production` file in the user's roll config folder.
+In our case this is a temporary location setup specifically for this
+demonstration.
+
+  text = File.read('tmp/config/roll/environments/production')
+
+Our projects are TryMe 1.0 and TryMe 1.1, saved in `tryme/` directories,
+so we can verify the insert worked by looking for this term.
+
+  text.assert.include?('tryme/')
+

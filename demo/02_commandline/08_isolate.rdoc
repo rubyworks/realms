@@ -1,0 +1,5 @@
+= Isolate a Project
+
+  `cd tmp/projects/tryme/1.0; roll isolate`
+
+

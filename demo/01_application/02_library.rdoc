@@ -18,11 +18,11 @@ With a library instance in hand we can query it for information about itself.
   tryme10.version.to_s.assert == "1.0"
   tryme11.version.to_s.assert == "1.1"
 
-Secondary information, taken from the PROFILE, can be queried via the #metadata
+Secondary information, taken from the PROFILE, can be queried via the #profile
 method.
 
-  tryme10.metadata.homepage.assert == "http://tryme.foo"
-  tryme11.metadata.homepage.assert == "http://tryme.foo"
+  tryme10.profile['homepage'].assert == "http://tryme.foo"
+  tryme11.profile['homepage'].assert == "http://tryme.foo"
 
 Of course, the most important function of a library is to load/require a file.
 
