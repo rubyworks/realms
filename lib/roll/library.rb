@@ -84,6 +84,11 @@ module Roll
     end
 
     #
+    def profile
+      metadata.profile
+    end
+
+    #
     def requirements
       @requirements ||= Requirements.new(location)
     end

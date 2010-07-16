@@ -99,6 +99,7 @@ module Roll
       @dot_ruby ||= File.exist?(File.join(location, '.ruby'))
     end
 
+=begin
     # Access to additonal metadata outside of the .ruby/ directory.
     #
     # TODO: Make this information more uniform beteen POM PROFILE and
@@ -116,6 +117,46 @@ module Roll
           require 'ostruct'
           OpenStruct.new
         end
+      )
+    end
+=end
+
+    # Does the project have a PROFILE?
+    def profile?
+      Dir.glob(File.join(location, 'PROFILE'), File::FNM_CASEFOLD).first
+    end
+
+    # Return the PROFILE data as Hash. If the project does not have
+    # a profile, then return an empty Hash.
+    def profile
+      @_profile ||= (
+        if file = profile?
+          require 'yaml'
+          #- require 'ostruct'
+          #- OpenStruct.new(YAML.load(profile))
+          YAML.load(File.new(file))
+        else
+          #- OpenStruct.new
+          {}
+        end
+      )
+    end
+
+    # Deterime if the location is a gem location. It does this by looking
+    # for the corresponding `gems/specification/*.gemspec` file.
+    def gemspec?
+      #return true if Dir[File.join(location, '*.gemspec')].first
+      pkgname = File.basename(location)
+      gemsdir = File.dirname(location)
+      specdir = File.join(File.dirname(gemsdir), 'specifications')
+      Dir[File.join(specdir, "#{pkgname}.gemspec")].first
+    end
+
+    # Access to complete gemspec. This is for use with extended metadata.
+    def gemspec
+      @_gemspec ||= (
+        require 'rubygems'
+        ::Gem::Specification.load(gemspec_file)
       )
     end
 
@@ -138,16 +179,6 @@ module Roll
       else
         return nil
       end
-    end
-
-    # Deterime if the location if a gem location. If does this by looking
-    # for the corresponding `gems/specification/*.gemspec` file.
-    def gemspec?
-      #return true if Dir[File.join(location, '*.gemspec')].first
-      pkgname = File.basename(location)
-      gemsdir = File.dirname(location)
-      specdir = File.join(File.dirname(gemsdir), 'specifications')
-      Dir[File.join(specdir, "#{pkgname}.gemspec")].first
     end
 
     private #------------------------------------------------------------------
@@ -216,14 +247,6 @@ module Roll
     #  end
     #end
     #++
-
-    # Access to complete gemspec. This is for use with extended metadata.
-    def gemspec
-      @_gemspec ||= (
-        require 'rubygems'
-        ::Gem::Specification.load(gemspec_file)
-      )
-    end
 
     # Returns the path to the .gemspec file.
     def gemspec_file
