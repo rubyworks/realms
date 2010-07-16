@@ -20,7 +20,14 @@ module Roll
 
     #
     def call
-      env = Roll::Library.env(*args)
+      name = args.first
+
+      if name and !Roll::Library.environments.include?(name)
+        $stderr.puts "Environment not found."
+        return
+      end
+
+      env = Roll::Library.env(name)
       case opts[:format]
       when :yaml
         puts env.to_yaml
