@@ -1,6 +1,10 @@
 require 'open3'
 require 'benchmark'
 
+# prime any file system caches
+require 'facets'
+require 'nokogiri'
+
 def run(cmd)
   cmd = %[export RUBYENV="rubygems"; export RUBYOPT=""; ] + cmd 
   Open3.popen3(cmd) do |stdin, stdout, stderr|  
