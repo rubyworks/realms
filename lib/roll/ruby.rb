@@ -14,7 +14,7 @@ module Roll
 
     # New library.
     def initialize #(location, name=nil, options={})
-      @location = Config::CONFIG['rubylibdir']
+      @location = ::Config::CONFIG['rubylibdir']
       @name     = 'ruby'
       @options  = {} #?
     end
@@ -25,7 +25,7 @@ module Roll
     end
 
     # Arch directory relative to the ruby lib dir.
-    ARCHPATH = Config::CONFIG['archdir'].sub(Config::CONFIG['rubylibdir']+'/', '')
+    ARCHPATH = ::Config::CONFIG['archdir'].sub(::Config::CONFIG['rubylibdir']+'/', '')
 
     # TODO: 1.9+ need to remove rugbygems ?
     def loadpath
