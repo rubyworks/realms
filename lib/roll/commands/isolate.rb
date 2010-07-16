@@ -26,8 +26,12 @@ module Roll
       Dir.pwd
     end
 
-    # TODO: Load in all environments if +all+ option.
+    # TODO: Load in all environments if +all+ option as resource for lookup.
+    #
+    # TODO: Move most of this code into library somewhere.
     def generate_isolate_index
+      require 'fileutils'
+
       if opts[:all]
         list = Library.environments
       else
@@ -50,12 +54,17 @@ module Roll
           out << "%-#{max_name}s  %-#{-max_path}s  %s\n" % [lib.name, lib.location, lib.loadpath.join(' ')]
         end
 
-        File.open('.ruby/index', 'w'){ |f| f << out }
+        dir = Roll.config.local_environment_directory
+
+        FileUtils.mkdir_p(dir)
+
+        file = File.join(dir, 'local')
+
+        File.open(file, 'w'){ |f| f << out }
 
         $stdout.puts out
-
         $stderr.puts
-        $stderr.puts "Saved to `.ruby/index`."
+        $stderr.puts "Saved to `#{file}`."
       else
         puts "These libraries could not be found in the current environment:"
         fails.each do |name, vers|
