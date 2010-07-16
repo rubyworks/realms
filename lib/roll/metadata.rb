@@ -10,9 +10,6 @@ module Roll
   #
   class Metadata
 
-    #require 'roll/metadata/pom'
-    require 'roll/metadata/gem'
-
     # New metadata object.
     def initialize(location, name=nil, options={})
       @location = location
@@ -98,28 +95,6 @@ module Roll
     def dotruby?
       @dot_ruby ||= File.exist?(File.join(location, '.ruby'))
     end
-
-=begin
-    # Access to additonal metadata outside of the .ruby/ directory.
-    #
-    # TODO: Make this information more uniform beteen POM PROFILE and
-    # RubyGems GEM::Specification; and think of a shorter name.
-    def extended_metadata
-      @extended_method ||= (
-        profile = Dir.glob(File.join(location, 'PROFILE'), File::FNM_CASEFOLD).first
-        if profile && File.exist?(profile)
-          require 'yaml'
-          require 'ostruct'
-          OpenStruct.new(YAML.load(profile))          
-        elsif gemspec?
-          gemspec
-        else
-          require 'ostruct'
-          OpenStruct.new
-        end
-      )
-    end
-=end
 
     # Does the project have a PROFILE?
     def profile?
@@ -273,75 +248,4 @@ module Roll
   end
 
 end
-
-
-
-
-
-=begin
-    # Version file path.
-    def version_file
-      @version_file ||= (
-        paths = Dir.glob(File.join(location, "version{.txt,.yml,.yaml,}"), File::FNM_CASEFOLD)
-        paths.select{ |f| File.file?(f) }.first
-      )
-    end
-=end
-
-=begin
-    # Load VERSION file, if it exists.
-    def load_version
-      if version_file
-        ext = File.extname(version_file)
-        if ext == '.yml' or ext == '.yaml'
-          data = YAML.load(File.new(version_file))
-          parse_version_hash(data)
-        else
-          text = File.read(version_file).strip
-          if text[0..3] == '---' or text.index('major:')
-            data = YAML.load(text)
-            parse_version_hash(data)
-          else
-            parse_version_string(text)
-          end
-        end
-        true if @version
-      else
-        false
-      end
-    end
-
-    # Parse hash-based VERSION file.
-    def parse_version_hash(data)
-      data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
-      self.name = data[:name] if data[:name]
-      self.date = data[:date] if data[:date]
-      # jeweler
-      if data[:major]
-        self.version = data.values_at(:major, :minor, :patch, :build).compact.join('.')
-      else
-        vers = data[:vers] || data[:version]
-        self.version = (Array === vers ? vers.join('.') : vers)
-      end
-      self.codename = data.values_at(:code, :codename).compact.first
-    end
-
-    # Parse string-based VERSION file.
-    def parse_version_string(text)
-      text = text.strip
-      # name
-      if md = /^(\w+)(\-\d|\ )/.match(text)
-        self.name = md[1]
-      end
-      # version
-      if md = /(\d+\.)+(\w+\.)?(\d+)/.match(text)
-        self.version = md[0]
-      end
-      # date
-      # TODO: convert to date/time
-      if md = /\d\d\d\d-\d\d-\d\d/.match(text)
-        self.date = md[0]
-      end
-    end
-=end
 
