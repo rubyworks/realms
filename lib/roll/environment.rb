@@ -28,16 +28,16 @@ module Roll
 
     # File that stores the name of the current environment during
     # the current Ruby session.
-    PID_FILE = File.join(::Config::CACHE_HOME, 'roll', Process.ppid.to_s)
+    #PID_FILE = File.join(::Config::CACHE_HOME, 'roll', Process.ppid.to_s)
 
     # Returns the name of the current environment.
     def self.current
       @current ||= (
-        if File.exist?(PID_FILE)
-          File.read(PID_FILE).strip
-        else
-          ENV['RUBYENV'] || DEFAULT
-        end
+        #if File.exist?(PID_FILE)
+        #  File.read(PID_FILE).strip
+        #else
+          ENV['roll_environment'] || ENV['RUBYENV'] || DEFAULT
+        #end
       )
     end
 
@@ -45,13 +45,13 @@ module Roll
     #
     # This only lasts a long as the parent session. It tracks the session
     # via a temporary file in `$HOME/.cache/roll/<ppid>`.
-    def self.use(name)
-      require 'fileutils'
-      dir = File.dirname(PID_FILE)
-      FileUtils.mkdir_p(dir) unless File.directory?(dir)
-      File.open(PID_FILE, 'w'){ |f| f << name }
-      PID_FILE
-    end
+    #def self.use(name)
+    #  require 'fileutils'
+    #  dir = File.dirname(PID_FILE)
+    #  FileUtils.mkdir_p(dir) unless File.directory?(dir)
+    #  File.open(PID_FILE, 'w'){ |f| f << name }
+    #  PID_FILE
+    #end
 
     # List of available environments.
     def self.list
@@ -71,14 +71,15 @@ module Roll
       load
     end
 
-    # Project index is a Hash of `name => [location, loadpath]`.
-    def index
-      @index #||= Index.new(name)
-    end
-
     # Lookup is an Array of `[path, depth]`.
     def lookup
-      @lookup #||= Lookup.new(name)
+      @lookup
+    end
+
+    # Project index is a Hash of `name => [location, loadpath]`.
+    # The index is generated via #sync based on the `lookup` table.
+    def index
+      @index
     end
 
     # Synchronize index to lookup table.
@@ -98,15 +99,23 @@ module Roll
     # exactly as it is stored in the environment file.
     def to_s
       set = []
-      lookup.each do |(path, depth)|
-        set << ['-', path, depth]
-      end
-      set << ['','','']
+
       index.each do |name, paths|
         paths.each do |path, loadpath|
           set << [name, path, loadpath.join(' ')]
         end
       end
+
+      set.sort! do |a,b|
+        x = a[0] <=> b[0]
+        x != 0 ? x : b[1] <=> a[1]  # TODO: use natcmp
+      end
+
+      set.unshift ['','','']
+      lookup.each do |(path, depth)|
+        set.unshift ['-', path, depth]
+      end
+
       name_max = set.map{|name, path, rel| name.size }.max
       path_max = set.map{|name, path, rel| path.size }.max
       out = ''
@@ -119,8 +128,9 @@ module Roll
     # Returns a String of lookup paths and depths, one on each line.
     def to_s_lookup
       str = ""
+      max = lookup.map{ |(path, depth)| path.size }.max
       lookup.each do |(path, depth)|
-        str << "- #{path} #{depth}\n"
+        str << ("- %-#{max}s %s\n" % [path, depth.to_s])
       end
       str
     end
@@ -174,28 +184,25 @@ module Roll
     # Save environment file.
     def save
       require 'fileutils'
-
       out = to_s
-
       file = File.join(self.class.home, name)
       if File.exist?(file)
-        data = File.read(file)
-        if out != data
+        old = File.read(file)
+        if out != old
           File.open(file, 'w'){ |f| f << out }
-          #puts "updated: #{name}"
-          true
+          @file = file
+          return true
         else
           #puts "current: #{name}"
-          false
+          return false
         end
       else
         dir = File.dirname(file)
         FileUtils.mkdir_p(dir) unless File.exist?(dir)
         File.open(file, 'w'){ |f| f << out }
-        #puts "created: #{name}"
-        true
+        @file = file
+        return true
       end
-      @file = file
     end
 
     # Create a new environment +new_name+ with the contents
@@ -233,7 +240,7 @@ module Roll
         if name #&& vers
           set[name] << [path, loadpath]
         else
-          warn "omitting: #{path}"
+          warn "[omit] does not have .ruby/name -- #{path}"
         end
       end
       set
@@ -267,8 +274,8 @@ module Roll
     def find_projects(dir, depth=3)
       depth = Integer(depth || 3)
       libs = []
-      (0...depth).each do |i|
-        star   = File.join(dir, *('*' * i))
+      (0..depth).each do |i|
+        star   = File.join(dir, *(['*'] * i))
         search = Dir.glob(star)
         search.each do |path|
           if dotruby?(path)
@@ -360,11 +367,14 @@ module Roll
     # gem directory?
     def has_gems?
       dir = (ENV['GEM_HOME'] || ::Config.gem_home)
-      return true if lookup.any? do |path|
-        Regexp.new("^#{Regexp.escape(dir)}[\/\\]") =~ path
+      rex = Regexp.new("^#{Regexp.escape(dir)}\/")
+      return true if lookup.any? do |(path, depth)|
+        rex =~ path
       end
-      return false if index.any? do |path|
-        Regexp.new("^#{Regexp.escape(dir)}[\/\\]") =~ path
+      return true if index.any? do |name, vers|
+        vers.any? do |path, loadpath|
+          rex =~ path
+        end
       end
       return false
     end
