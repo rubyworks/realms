@@ -23,7 +23,7 @@ module Roll
       list.each do |name|
         result = Roll::Library.sync(name)
         if result
-          puts "Index for `#{name}` has been build."
+          puts "Index for `#{name}` has been synced."
         else
           puts "Index for `#{name}` is already current."
         end
