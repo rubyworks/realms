@@ -1,0 +1,4 @@
+-      <%= Dir.pwd %>/tmp/projects            3
+                                                                                       
+tryme  <%= Dir.pwd %>/tmp/projects/tryme/1.1  lib
+tryme  <%= Dir.pwd %>/tmp/projects/tryme/1.0  lib

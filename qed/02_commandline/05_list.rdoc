@@ -1,8 +1,14 @@
 = List Command
 
-To see the current environment, and a list of available environments,
-use the `list` comamnd.
+To see a list of available projects use the `list` command.
 
   `roll list`
 
+The standard output will look like:
+
+  foo      ruby     tryme
+
+Notice the entry for ruby. You won't find this project in our temporary
+projects location. It is a built-in "project" that represents Ruby's
+standard library.
 

@@ -1,6 +1,6 @@
 = Show Command
 
-As a developer managing load environments we want to be able to easily inspect
+As a developer managing load environments you want to be able to easily inspect
 the current evironment.
 
 We can get a reasonbale overview of the current environment using `roll show`.

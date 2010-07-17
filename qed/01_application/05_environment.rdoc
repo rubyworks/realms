@@ -5,7 +5,7 @@ the Ledger. It also provides methods for manipulating the configuration
 files.
 
 To demonstrate the Environment class we will need a set of conforming project
-as define in support/projects.rdoc[qed://../support/projects.rdoc].
+as define in support/projects.rdoc[qed://../helpers/projects.rdoc].
 
 An Environment is instantiated with a single argument, the name of the
 environment. If a name is not given the current environment will be used.
@@ -41,4 +41,30 @@ then the index will contain entries for the library that exists in the
 `tmp/projects` directory.
 
   env.index.keys.assert == ['tryme']
+
+An Environment object provides a number of means of access to it's data.
+In particular Environment is Enumerable, so we can iterate over the internal
+index table using #each. Notice the structure of the index.
+
+  env.each do |name, vers|
+    name.assert == 'tryme'
+    vers.each do |location, loadpath|
+      location.assert.include?('tmp/projects/')
+      loadpath.assert == ['lib']
+    end
+  end
+
+Using #each is no different than iterating over the environments index.
+
+   env.index.each do |name, vers|
+     # ...
+   end
+
+This differs from the other internal table the environment tracks, which is
+the *lookup* table.
+
+   env.lookup.each do |path, depth|
+      # ...
+   end
+
 

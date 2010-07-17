@@ -3,7 +3,7 @@
 The Ledger class
 
 To demonstrate the Ledger class we will need a set of conforming projects
-as defines in support/projects.rdoc[qed://../support/projects.rdoc].
+as defined in projects.rdoc[qed://../helpers/projects.rdoc].
 
 In the normal course of operation there is only one Ledger instance,
 stored in $LEDGER and reflecting the current environment. (It is
@@ -12,10 +12,10 @@ esoteric purposes.)
 
 A Ledger is instantiated with a single argument, the name of the
 environment. If a name is not given the current environment will be used.
-The current environment is determined by looking for a temporary PID-based
-config file, failing that the RUBYENV environment variable, failing that
-the `default` file in the users roll config directory, and lastly if all
-else fails falling back to the static value "production".
+The current environment is determined by looking for the roll_environment
+or RUBYENV environment variable, failing that the `default` file in the
+users roll config directory, and lastly if all else fails falling back to
+the static value "production".
 
   $LEDGER.environment.name.assert == 'production'
 
@@ -41,6 +41,8 @@ In our case this is a temporary location setup specifically for this
 demonstration.
 
   text = File.read('tmp/config/roll/environments/production')
+
+Normally the file will by in one's home directory under `.config/roll/`.
 
 Our projects are TryMe 1.0 and TryMe 1.1, saved in `tryme/` directories,
 so we can verify the insert worked by looking for this term.

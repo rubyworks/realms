@@ -1,43 +1,83 @@
 = Use Command
 
-The use command provides a convenient way to switch between load environments.
-Switching environments is also instrumental in creating new environments.
-For example, we may want a new load environment called "development", we
-can run:
+The use command provides a convenient way to list available load environments,
+see which environment is current and switching between them. To list the 
+available environments simple issue the `use` command with no additional
+parameters.
 
-  `roll use development`
+  `roll use`
 
-Invoking the `use` command to create a new load environment doesn't actually
-change anything except the current environment name. So if you accidently
-type a name you did not intend, there is no harm done. Simple reissue the
-`use` command, or use `exit` -- You can use `exit` because `use` actually
-spawns a new child shell after each invocation in order to effect shell
-variables.
+The standard output will look like:
 
-To instantiate the new environment --writing the environments configuration
-file to disc, we need to insert a lookup location.
+     development
+  => production
+     testing
 
-  `roll in tmp/projects`
+Notice the arrow pointing to "production". This tells us which environment
+is current. We can switch environments by following the `use` command with
+the name of the environment desired.
 
-We will go into the `in` command more in the next section, needless to say
-the adding 'tmp/projects' to the development environment saved the 
-environment permenantly to disc.
+  `roll use testing`
 
-Besides creating new environments, of course, the `use` command let's us jump
-between load environments that already exist. For example, we can quickly
-switch back to the default "production" environment.
+Running `roll use` again we would see:
 
-  `roll use production`
+     development
+     production
+  => testing
 
-Another way to switch environments is set the RUBYENV variable manually.
+Switching between environments with `use` also means switching shells prompts. 
+The `use` command actually spawns a new child shell after each invocation
+in order to effect shell variables. This means we can switch back to the
+previous environment quickly just by typing `exit`.
 
-  `export RUBYENV=development`
-
-This is arguably the better approach b/c unlike `use` it does not spawn
-a child shell.
-
-Not you can see the stack of child shell create by `use` using the `stack`
+We can actually see the stack of child shells create by `use` using the `stack`
 command.
 
   `roll stack`
+
+The standard output of which, at this point, would look like:
+
+  production
+
+Which means, that if we used `exit` we would leave the "testing" environment
+and return to "production".
+
+There is another way to switch between environments, without spawning a new
+child shell, by setting the RUBYENV variable manually.
+
+  `export RUBYENV=development`
+
+While setting the RUBYENV variable will avoid creatign a new child shell,
+it will not adjust PATH settings, if your shell setup is using `roll path` to
+set the executable lookup locations.
+
+Switching between environments is also instrumental in creating new
+environments. For example, let's say we want to add a new expiremental
+load environment.
+
+  `roll use expiremental`
+
+Invoking the `use` command to create a new load environment doesn't actually
+change anything except the current environment name. So if an unwanted name
+were accidently typed, there is no harm done. Simply reissue the `use` 
+command, or use `exit` to correct. 
+
+To instantiate the new environment --writing the environments configuration
+file to disc, we need to insert a *lookup* location.
+
+  `roll in tmp/projects`
+
+We will explore the `in` command more in the next section, for now we need
+only know that it added 'tmp/projects' to the expirmental environment and 
+saved the environment configuration to disc. We can verify this by having
+a look at the list of environments again.
+
+  `roll use`
+
+The standard output will look like:
+
+     development
+  => expiremental
+     production
+     testing
 

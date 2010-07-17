@@ -1,0 +1,29 @@
+= Additional Project
+
+== Neo 0.0.1
+
+Given a project directory "neo/0.0.1".
+
+With a file "VERSION" containing...
+
+  name: neo
+  vers: 0.0.1
+
+With a file "PROFILE" containing...
+
+  title   : Neo
+  author  : Thomas Sawyer
+  homepage: http://neo.foo
+
+With a file "lib/neo.rb" containing...
+
+  $neo_message = "Neo v0.0.1"
+
+With a file ".ruby/name" containing...
+
+  neo
+
+With a file ".ruby/version" containing...
+
+  0.0.1
+

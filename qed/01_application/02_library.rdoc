@@ -1,6 +1,6 @@
 = Library Instances
 
-Given a basic set of projects as defined here[qed://../support/projects.rdoc].
+Given a basic set of projects as defined here[qed://../helpers/projects.rdoc].
 We can use the the Library class to
 
   require 'roll/library'
@@ -24,11 +24,23 @@ method.
   tryme10.profile['homepage'].assert == "http://tryme.foo"
   tryme11.profile['homepage'].assert == "http://tryme.foo"
 
-Of course, the most important function of a library is to load/require a file.
+Of course, the most important function of a library is to load and require
+a script. With an Library instance in hand this can be achieved directly.
 
   tryme10.load('tryme.rb')
   $tryme_message.assert == "Try Me v1.0"
 
   tryme11.load('tryme.rb')
   $tryme_message.assert == "Try Me v1.1"
+
+When requiring files, if a file is required from two different versions of a 
+library a VersionConflict error will be rasied.
+
+  tryme11.require('tryme')
+
+  expect Roll::VersionConflict do
+    tryme10.require('tryme')
+  end
+
+
 
