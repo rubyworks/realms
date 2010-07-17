@@ -47,19 +47,19 @@ child shell, by setting the RUBYENV variable manually.
 
   `export RUBYENV=development`
 
-While setting the RUBYENV variable will avoid creatign a new child shell,
+While setting the RUBYENV variable will avoid creating a new child shell,
 it will not adjust PATH settings, if your shell setup is using `roll path` to
-set the executable lookup locations.
+set the executable look-up locations.
 
 Switching between environments is also instrumental in creating new
-environments. For example, let's say we want to add a new expiremental
+environments. For example, let's say we want to add a new experimental
 load environment.
 
-  `roll use expiremental`
+  `roll use experimental`
 
 Invoking the `use` command to create a new load environment doesn't actually
 change anything except the current environment name. So if an unwanted name
-were accidently typed, there is no harm done. Simply reissue the `use` 
+were accidentally typed, there is no harm done. Simply reissue the `use` 
 command, or use `exit` to correct. 
 
 To instantiate the new environment --writing the environments configuration
@@ -68,7 +68,7 @@ file to disc, we need to insert a *lookup* location.
   `roll in tmp/projects`
 
 We will explore the `in` command more in the next section, for now we need
-only know that it added 'tmp/projects' to the expirmental environment and 
+only know that it added 'tmp/projects' to the experimental environment and 
 saved the environment configuration to disc. We can verify this by having
 a look at the list of environments again.
 
@@ -77,7 +77,7 @@ a look at the list of environments again.
 The standard output will look like:
 
      development
-  => expiremental
+  => experimental
      production
      testing
 

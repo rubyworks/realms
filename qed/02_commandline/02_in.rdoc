@@ -8,7 +8,7 @@ to our load environment we use the `in` command.
   `roll in tmp/projects`
 
 The default environment is called `production`. So the above command will
-create a `production` environment continaing entries for the projects located
+create a `production` environment containing entries for the projects located
 in `tmp/projects`. By default the `roll in` command searches for conforming
 projects two directories below the given directory. This is usually sufficient,
 as most project directories have projects either directly within them or one

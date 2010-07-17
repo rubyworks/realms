@@ -35,6 +35,10 @@ When '= Copy Command' do
   complete_setup
 end
 
+When '= Merge Command' do
+  complete_setup
+end
+
 When '= Verify Command' do
   complete_setup
 end

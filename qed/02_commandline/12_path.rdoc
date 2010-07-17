@@ -1,7 +1,7 @@
 = Path Command
 
 The `path` command outputs a colon separated string of bin/ paths
-for the indexed projects, which is suitable for appeeding to 
+for the indexed projects, which is suitable for appending to 
 an shell environments PATH variable. This can be used to setup
 executable lookup on Linux systems.
 

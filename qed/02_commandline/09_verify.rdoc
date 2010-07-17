@@ -12,6 +12,6 @@ The standard output will look like:
 
   [LOAD] foo 0.8+
 
-Which means the requirement 'foo 0.8+' was successuflly loaded via the
+Which means the requirement 'foo 0.8+' was successfully loaded via the
 current environment.
 

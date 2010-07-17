@@ -11,7 +11,7 @@ As demonstrate in "Roll List" we know that the current environment, the default
   `rm -r tmp/projects/foo`
 
 Now the environment has an index entry for a project that is no longer present.
-When utilizing the enviornment in your scripts, this will not effect anything,
+When utilizing the environment in your scripts, this will not effect anything,
 any missing projects will simply be ignored. 
 
 To refresh the environment's index, bringing it back into sync, issue the `sync`

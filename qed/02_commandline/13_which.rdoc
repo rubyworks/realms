@@ -1,6 +1,6 @@
 = Which Command
 
-The `roll which` command will tell teh abosolute path of file that would
+The `roll which` command will tell the absolute path of file that would
 be required given the path as it would be passed to the require method.
 For example, to see the full name of the file that `require "tryme"` would
 actually load, we can type,
