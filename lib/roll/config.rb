@@ -1,4 +1,4 @@
-require 'roll/core_ext/config'
+require 'roll/xdg'
 
 module Roll
 
@@ -10,19 +10,16 @@ module Roll
   # Rolls Configuration.
   class Config
 
-    # User's home directory.
-    HOME = File.expand_path('~') # ENV['HOME']
-
-    #
-    XDG_CONFIG_HOME = File.expand_path(ENV['XDG_CONFIG_HOME'] || File.join(HOME, '.config'))
-
     # Location of environment files. This includes user location, but also
     # read-only sytems-wide locations, should an administratore want to set
     # any of those up.
     #DIRS = ::Config.find_config('roll', 'environments')
 
+    # Roll's user home temporary cache directory.
+    ROLL_CACHE_HOME = File.join(XDG.cache_home, 'roll')
+
     # Roll's user home configuration directory.
-    ROLL_CONFIG_HOME = File.join(XDG_CONFIG_HOME, 'roll')
+    ROLL_CONFIG_HOME = File.join(XDG.config_home, 'roll')
 
     # Default environment name.
     DEFAULT_ENVIRONMENT = 'production'
@@ -99,14 +96,29 @@ module Roll
       end
     end
 
+    #
+    def system_environments
+      environments - home_environments
+    end
+
+    # List of all available environments.
+    def environments
+      XDG.search_config('roll/environments/*').map do |file|
+        File.basename(file)
+      end
+    end
+
+    #--
     # List of all available environments.
     # TODO: Add system wide environments.
-    def environments
-      local_environments + home_environments # + system_environments
-      #Dir[File.join('{'+DIRS.join(',')+'}', '*')].map do |file|
-      #  File.basename(file)
-      #end
-    end
+    #def environments
+    #  #local_environments + home_environments # + system_environments
+    #  home_environments # + system_environments
+    #  #Dir[File.join('{'+DIRS.join(',')+'}', '*')].map do |file|
+    #  #  File.basename(file)
+    #  #end
+    #end
+    #++
 
     # TODO: Add system wide locations.
     def find_environment_file(name)

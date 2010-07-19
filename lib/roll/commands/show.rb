@@ -21,7 +21,6 @@ module Roll
     #
     def call
       name = args.first
-
       if name and !Roll::Library.environments.include?(name)
         $stderr.puts "Environment not found."
         return

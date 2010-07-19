@@ -37,7 +37,7 @@ module Roll
 
       puts "Roll environment is now '#{name}'."
 
-      exec("$SHELL -i")
+      exec("$SHELL") # -i")
     end
 
     #

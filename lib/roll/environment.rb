@@ -5,6 +5,7 @@ module Roll
   # An Environment represents a set of libraries to be served by Rolls.
   #
   class Environment
+    include Enumerable
 
     # Environment home directory.
     def self.home
@@ -37,9 +38,25 @@ module Roll
     # Instantiate environment.
     def initialize(name=nil)
       @name = name || Environment.current
-      @lookup = []
-      @index  = Hash.new{ |h,k| h[k] = [] }
+      #@lookup = []
+      #@index  = Hash.new{ |h,k| h[k] = [] }
       load
+    end
+
+    # Load the environment file.
+    def load
+      if file && File.exist?(file)
+        lines = File.readlines(file).map{ |line| line.strip }
+        lines = lines.reject{ |line| /^\#/ =~ line or /^$/ =~ line }
+        lines.each do |line|
+          name, path, *loadpath = *line.split(/\s+/)
+          if name == '-'
+            lookup << [path, (loadpath.first || 2).to_i]  # TODO: support multiple depths
+          else
+            index[name] << [path, loadpath]
+          end
+        end
+      end
     end
 
     # Lookup is an Array of `[path, depth]`.
@@ -55,7 +72,11 @@ module Roll
 
     # Synchronize index to lookup table.
     def sync
-      @index = lookup_index
+      if /^local(\.|$)/ =~ name    # preven locals from syncing
+        # TODO: use isolate
+      else
+        @index = lookup_index
+      end
     end
 
     # Iterate over the index.
@@ -133,22 +154,18 @@ module Roll
 
     # Environment file (full-path).
     def file
-      @file ||= Roll.config.find_environment_file(name)
+      @file ||= (
+        Roll.config.find_environment_file(name) || default_file
+      )
     end
 
-    # Load the environment file.
-    def load
-      if file && File.exist?(file)
-        lines = File.readlines(file).map{ |line| line.strip }
-        lines = lines.reject{ |line| /^\#/ =~ line or /^$/ =~ line }
-        lines.each do |line|
-          name, path, *loadpath = *line.split(/\s+/)
-          if name == '-'
-            lookup << [path, (loadpath.first || 2).to_i]  # TODO: support multiple depths
-          else
-            index[name] << [path, loadpath]
-          end
-        end
+    #
+    def default_file
+      case name
+      when /^local(\.|$)/
+        File.join(self.class.local, name)
+      else
+        File.join(self.class.home, name)
       end
     end
 

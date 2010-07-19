@@ -42,10 +42,12 @@ module Roll
     #
     def safegaurd_copy(name_from, name_to)
       if !Library.environments.include?(name_from)
-        raise "Environment `#{name_from}` does not exist."
+        $stderr.puts "Environment `#{name_from}` does not exist."
+        exit -1
       end
       if Library.environments.include?(name_to) && !opts[:force]
-        raise "`#{name_to}` already exists. Use --force option to overwrite."
+        $stderr.puts "`#{name_to}` already exists. Use --force option to overwrite."
+        exit -1
       end
     end
 

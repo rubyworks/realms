@@ -18,13 +18,20 @@ module Roll
     # Parses a string constraint returning the operation as a lambda.
     def self.constraint_lambda(constraint)
       op, val = *parse_constraint(constraint)
-      lambda{ |t| t.send(op, val) }
+      lambda do |t|
+        case t
+        when Version
+          t.send(op, val)
+        else
+          Version.new(t).send(op, val)
+        end
+      end
     end
 
     # Converts a constraint into an operator and value.
     def self.parse_constraint(constraint)
       constraint = constraint.strip
-      re = %r{^(=~|~>|<=|>=|==|=|<|>)?\s*(\d+(:?[-.]\d+)*)$}
+      re = %r{^(=~|~>|<=|>=|==|=|<|>)?\s*(\d+(:?\.\S+)*)$}
       if md = re.match(constraint)
         if op = md[1]
           op = '=~' if op == '~>'

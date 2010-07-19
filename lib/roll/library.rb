@@ -1,58 +1,13 @@
+require 'roll/object'
 require 'roll/metadata'
 require 'roll/requirements'
+require 'roll/file'
 
 module Roll
 
   # = Library class encapsulates a location on disc that contains a Ruby
   # project... with loadable lib files, of course.
-  class Library
-
-    # Current ledger.
-    def self.ledger
-      $LEDGER ||= Ledger.new
-    end
-
-    # A shortcut for #instance.
-    def self.[](name, constraint=nil)
-      instance(name, constraint)
-    end
-
-    # Get an instance of a library by name, or name and version.
-    # Libraries are singleton, so once loaded the same object is
-    # always returned.
-    def self.instance(name, constraint=nil)
-      ledger.library(name, constraint=nil)
-    end
-
-    # Same as #instance but will raise and error if the library is
-    # not found. This can also take a block to yield on the library.
-    def self.open(name, constraint=nil, &block)
-      ledger.open(name, constraint, &block)
-    end
-
-    #
-    def self.require(file)
-      ledger.require(file)
-    end
-
-    #
-    def self.load(file, wrap=nil)
-      ledger.load(file, wrap)
-    end
-
-    #
-    def self.autoload(constant, file)
-      ledger.autoload(constant, file)
-    end
-
-    # Redirect methods called against Library to current Ledger.
-    def self.method_missing(s, *a, &b)
-      if ledger.respond_to?(s)
-        ledger.send(s, *a, &b)
-      else
-        super(s, *a, &b)
-      end
-    end
+  class Library < Object
 
     # Dynamic link extension.
     #DLEXT = '.' + ::Config::CONFIG['DLEXT']
@@ -71,6 +26,14 @@ module Roll
       @location = location
       @name     = options.delete(:name)
       @options  = options
+      @active   = false
+
+      if $LEDGER
+        entry = $LEDGER.index[name]
+        if Array === entry
+          entry << self unless entry.include?(self)
+        end
+      end
     end
 
     # Location of library files on disc.
@@ -88,16 +51,13 @@ module Roll
       metadata.profile
     end
 
-    #
-    def requirements
-      @requirements ||= Requirements.new(location)
-    end
-
     # Is the library active?
     #
     # NOTE: Presently this is always +true+.
+    #
+    # TODO: If keeping, change to omit?
     def active?
-      @active ||= metadata.active?
+      @omit ||= !metadata.active?
     end
 
     # Library's "unixname".
@@ -129,12 +89,13 @@ module Roll
       loadpath.map{ |lp| File.join(location, lp) }
     end
 
+    #
+    def requirements
+      @requirements ||= Requirements.new(location)
+    end
+
     # List of dependencies taken from a REQUIRE file, if it exists.
     # This includes both neccessary and optional dependencies.
-    #
-    # FIXME: Currently this returns and empty array. To fix either add to the
-    # Metadata class or create a new class that can parse the requirements
-    # listed ina REQUIRE file, .gemspec, and/or Gemfile.
     def requires
       []
     end
@@ -200,20 +161,6 @@ module Roll
       LibFile.new(self, lpath, file, ext)
     end
 
-    # Activate a library by putting it's loadpaths on the master $LOAD_PATH.
-    # This is neccessary only for the fact that autoload will not utilize
-    # customized require methods.
-    #
-    # THINK: Should we also constrain the library here? My only hesitation
-    # to that is we do not have direct access the ledger object, but would
-    # have to use $LEDGER.
-    def activate
-      # TODO: ledger constrain
-      absolute_loadpath.each do |alp|
-        $LOAD_PATH.unshift(alp)
-      end
-    end
-
     #
     def require(path, options={})
       if file = include?(path, options)
@@ -265,6 +212,19 @@ module Roll
       success
     end
 =end
+
+    #
+    def isolate(options={})
+      if options[:all]
+        list = Library.environments
+      else
+        list = [Library.environment]
+      end
+
+      results = library.requirements.verify
+
+      fails, libs = results.partition{ |r| Array === r }
+    end
 
     # Inspection.
     def inspect
@@ -329,94 +289,68 @@ module Roll
     # Is there a <tt>data/</tt> location?
     def datadir? ; File.exist?(datadir) ; end
 
-  private
-
-    # Take an +error+ and remove any mention of 'roll' from it's backtrace.
-    # Will leave the backtrace untouched if $DEBUG is set to true.
-    def clean_backtrace(error)
-      if $DEBUG
-        error
-      else
-        bt = error.backtrace
-        bt = bt.reject{ |e| /roll/ =~ e } if bt
-        error.set_backtrace(bt)
-        error
-      end
+    #
+    def to_rb
+      to_h.inspect
     end
 
-    # LibFile class represents a single file in a library.
-    class LibFile
-      attr_reader :library, :loadpath, :filename, :extension
-      def initialize(library, loadpath, filename, extension=nil)
-        @library   = library
-        @loadpath  = loadpath
-        @filename  = filename
-        @extension = extension
-      end
-      def location
-        library.location
-      end
-      def fullname
-        File.join(location, loadpath, filename + (extension || ''))
-      end
-      def localname
-        File.join(filename + (extension || ''))
-      end
-      def to_s  ; fullname; end
-      def to_str; fullname; end
+    # Convert to hash
+    def to_h
+      {
+        'name'     => name,
+        'version'  => version,
+        'loadpath' => loadpath,
+        'date'     => date,
+        'requires' => requires
+      }
+    end
 
-      #
-      def acquire(opts={})
-        if opts[:load]
-          load(opts[:wrap])
-        else
-          require
-        end
-      end
+    # C L A S S  M E T H O D S
 
-      #
-      def require(options={})
-        return false if $".include?(localname)  # ruby 1.8 does not use absolutes
-        $" << localname # ruby 1.8 does not use absolutes
-        #Library.load_monitor[file] << caller if $LOAD_MONITOR
-        Library.load_stack << library
-        begin
-          library.activate
-          success = require_without_rolls(fullname)
-        rescue LoadError => load_error  # TODO: deativeate this if $DEBUG ?
-          raise clean_backtrace(load_error)
-        ensure
-          Library.load_stack.pop
-        end
-        success
-      end
+    # Current ledger.
+    def self.ledger
+      $LEDGER ||= Ledger.new
+    end
 
-      #
-      def load(options={})
-        $" << localname # ruby 1.8 does not use absolutes
-        #Library.load_monitor[file] << caller if $LOAD_MONITOR
-        Library.load_stack << library
-        begin
-          library.activate
-          success = load_without_rolls(fullname)
-        #rescue LoadError => load_error
-        #  raise clean_backtrace(load_error)
-        ensure
-          Library.load_stack.pop
-        end
-        success
-      end
+    # A shortcut for #instance.
+    def self.[](name, constraint=nil)
+      instance(name, constraint)
+    end
 
-      def ==(other)
-        fullname == other.fullname
-      end
+    # Get an instance of a library by name, or name and version.
+    # Libraries are singleton, so once loaded the same object is
+    # always returned.
+    def self.instance(name, constraint=nil)
+      ledger.library(name, constraint=nil)
+    end
 
-      def eql?(other)
-        fullname == other.fullname
-      end
+    # Same as #instance but will raise and error if the library is
+    # not found. This can also take a block to yield on the library.
+    def self.open(name, constraint=nil, &block)
+      ledger.open(name, constraint, &block)
+    end
 
-      def hash
-        fullname.hash
+    #
+    def self.require(file)
+      ledger.require(file)
+    end
+
+    #
+    def self.load(file, wrap=nil)
+      ledger.load(file, wrap)
+    end
+
+    #
+    def self.autoload(constant, file)
+      ledger.autoload(constant, file)
+    end
+
+    # Redirect methods called against Library to current Ledger.
+    def self.method_missing(s, *a, &b)
+      if ledger.respond_to?(s)
+        ledger.send(s, *a, &b)
+      else
+        super(s, *a, &b)
       end
     end
 

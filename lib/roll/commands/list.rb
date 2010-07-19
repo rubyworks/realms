@@ -16,7 +16,7 @@ module Roll
         puts "No libraries found."
       else
         max  = names.map{ |name| name.size }.max + 4
-        rows = (names.size / 4).to_i
+        rows = ((names.size + 4) / 4).to_i
         cols = []
         names.each_with_index do |name, i|
           c = i % rows

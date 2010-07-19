@@ -36,7 +36,7 @@ module Roll
           end
           # TODO: valid project directory?
           lib = Library.new(path, :name=>name, :loadpath=>loadpath)
-          @index[name] << lib if lib.active?
+          @index[name] << lib #unless lib.omit?
         end
       end
 
@@ -73,23 +73,23 @@ module Roll
       library = index[name]
 
       if Library===library
-        if constraint # TODO: it's okay if constraint fits current
-          raise VersionConflict, "previously selected version -- #{index[name].version}"  # ledger[name]
+        if constraint # FIXME: it's okay if constraint fits current
+          raise VersionConflict, "previously selected version -- #{library.version}"  # ledger[name]
         else
           library
         end
       else # library is an array of versions
         if constraint
           compare = Version.constraint_lambda(constraint)
-          library = library.select(&compare).max
+          library = library.select{ |lib| compare[lib.version] }.max
         else
           library = library.max
         end
         unless library
           raise VersionError, "no library version -- #{name} #{constraint}"
         end
-        #ledger[name] = library
-        #library.activate
+        #index[name] = library #constrain(library)
+        library.activate
         return library
       end
     end
@@ -105,27 +105,44 @@ module Roll
       library
     end
 
+    # Activate a library by putting it's loadpaths on the master $LOAD_PATH.
+    # This is neccessary only for the fact that autoload will not utilize
+    # customized require methods.
+    #
+    # THINK: Should we also constrain the library here? My only hesitation
+    # to that is we do not have direct access the ledger object, but would
+    # have to use $LEDGER.
+    def activate(library)
+      lib = $LEDGER.index[name]
+#p lib
+      if Library === lib
+        raise VersionConflict if lib != self
+      else
+        library.absolute_loadpath.each do |path|
+          $LOAD_PATH.unshift(path)
+        end
+
+        $LEDGER.index[name] = library
+
+        if library.requirements.exist?
+          library.requirements.verify(true)
+          # complete collapse
+        end
+      end
+    end
+
     # Get environment.
     #
     # name - Optional name of the environemnt. [to_s]
     #
     # Returns the current Environment. If name is given, returns the
     # environment by that name.
-    def environment(name=nil)
-      if name
-        Environment.new(name)
-      else
-        @environment
-      end
+    def environment
+      @environment
     end
-
-    # DEPRECATE: Alias for #environment.
-    alias_method :env, :environment
  
     # Returns an hash of `name => library` or `name => [ libvN, libv2, ...]`.
-    def index
-      @index
-    end
+    def index ; @index ; end
 
     # Does the ledger include a library by the given +name+?
     def include?(name)
@@ -136,6 +153,8 @@ module Roll
     def names
       @index.keys
     end
+
+    #
     alias_method :list, :names
 
     # Iterate through each library set.
@@ -438,6 +457,15 @@ puts "  (7 fallback)" if MONITOR
     #  Environment.use(name)
     #end
 
+    #
+    def env(name)
+      if name
+        Environment.new(name)
+      else
+        @environment #Environment.current
+      end
+    end
+
     # Return Array of environment names.
     def environments
       Environment.list
@@ -446,9 +474,16 @@ puts "  (7 fallback)" if MONITOR
     # Synchronize an environment by +name+. If a +name+
     # is not given the current environment is synchronized.
     def sync(name=nil)
-      env = environment(name)
+      env = env(name)
       env.sync
       env.save
+    end
+
+    # Check to see if an environment is in-sync by +name+. If a +name+
+    # is not given the current environment is checked.
+    def check(name=nil)
+      env = env(name)
+      env.index == env.lookup_index
     end
 
     # Automtically add .ruby/ entries to projects, where possible.
@@ -465,6 +500,8 @@ puts "  (7 fallback)" if MONITOR
       env.save
       return path, env.file
     end
+
+    # Alias for #insert.
     alias_method :in, :insert
 
     # Remove path from current environment.
@@ -474,6 +511,8 @@ puts "  (7 fallback)" if MONITOR
       env.save
       return path, env.file
     end
+
+    # Alias for #remove.
     alias_method :out, :remove
 
     # Go thru each roll lib and collect bin paths.

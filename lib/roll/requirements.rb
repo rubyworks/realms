@@ -21,6 +21,11 @@ module Roll
     end
 
     #
+    def exist?
+      File.exist?(File.join(location, 'REQUIRE'))
+    end
+
+    #
     def load_require_file
       dependencies = []
       file = File.join(location, 'REQUIRE')
@@ -42,17 +47,20 @@ module Roll
 
     # Returns a list of Library and/or [name, vers] entries.
     # A Libray entry means the library was loaded, whereas the
-    # name/vers array menas it failed. (TODO: Best way to do this?)
+    # name/vers array means it failed. (TODO: Best way to do this?)
+    #
+    # TODO: don't do stdout here
     def verify(verbose=false)
       libs, fail = [], []
       dependencies.each do |name, vers|
         lib = Library[name, vers]
         if lib
           libs << lib
-          $stderr.puts "  [LOAD] #{name} #{vers}" if verbose
+          $stdout.puts "  [LOAD] #{name} #{vers}" if verbose
+          lib.requirements.verify(verbose)
         else
           libs << [name, vers]
-          $stderr.puts "  [FAIL] #{name} #{vers}" if verbose
+          $stdout.puts "  [FAIL] #{name} #{vers}" if verbose
         end
       end
       return libs

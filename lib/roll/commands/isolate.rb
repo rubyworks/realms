@@ -14,22 +14,18 @@ module Roll
 
     #
     def call
+      location = args.first || Dir.pwd
       if File.directory?(File.join(location, '.ruby'))
-        generate_isolate_index
+        generate_isolate_index(location)
       else
-        $stderr.puts "Current directory is not a Ruby project."
+        $stderr.puts "Directory is not a Ruby project."
       end
-    end
-
-    #
-    def location
-      Dir.pwd
     end
 
     # TODO: Load in all environments if +all+ option as resource for lookup.
     #
     # TODO: Move most of this code into library somewhere.
-    def generate_isolate_index
+    def generate_isolate_index(location)
       require 'fileutils'
 
       if opts[:all]
