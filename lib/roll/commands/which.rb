@@ -14,7 +14,7 @@ module Roll
     #
     def call
       path = args.first
-      file = $LEDGER.find(path)
+      file = library_find(path)
       if file
         puts file.fullname
       else

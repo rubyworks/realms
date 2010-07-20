@@ -7,11 +7,23 @@ module Roll
     def setup
       op.banner = "Usage: roll list"
       op.separator "List available libraries in environment."
+      op.on('--verbose', '-v', "Show detailed listing.") do
+        opts[:verbose] = true
+      end
     end
 
     #
     def call
-      names = Roll::Library.names.sort
+      if opts[:verbose]
+        list_verbose
+      else
+        list_names
+      end
+    end
+
+    #
+    def list_names
+      names = $LEDGER.keys.sort
       if names.empty?
         puts "No libraries found."
       else
@@ -32,6 +44,17 @@ module Roll
         end
         puts out
       end
+    end
+
+    #
+    def list_verbose 
+      name = args.first
+      if name and !Roll::Library.environments.include?(name)
+        $stderr.puts "Environment not found."
+        return
+      end
+      env = Environment[name]
+      puts env.to_s_index
     end
 
   end

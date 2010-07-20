@@ -12,7 +12,8 @@ module Roll
     # Show/Change current environment.
     #
     def call
-      puts Roll::Library.env(*args).to_s_index
+      name = args.first
+      puts Environment[name].to_s_index
     end
 
   end

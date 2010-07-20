@@ -1,4 +1,4 @@
-module Roll
+class Library
 
   #
   class Requirements
@@ -20,6 +20,11 @@ module Roll
       @dependencies || load_require_file
     end
 
+    # TODO: split runtime from all others
+    def runtime
+      dependencies
+    end
+
     #
     def exist?
       File.exist?(File.join(location, 'REQUIRE'))
@@ -27,19 +32,27 @@ module Roll
 
     #
     def load_require_file
+      return []
+
+      #require 'yaml'
       dependencies = []
       file = File.join(location, 'REQUIRE')
       if File.exist?(file)
-        list = []
-        data = YAML.load(File.new(file))
-        data.each do |type, reqs|
-          list.concat(reqs)
-        end
-        list.each do |dep|
-          name, *vers = dep.split(/\s+/)
-          vers = vers.join('')
-          vers = nil if vers.empty?
-          dependencies << [name, vers]
+        begin
+          data = YAML.load(File.new(file))
+          list = []
+          data.each do |type, reqs|
+            list.concat(reqs)
+          end
+          list.each do |dep|
+            name, *vers = dep.split(/\s+/)
+            vers = vers.join('')
+            vers = nil if vers.empty?
+            dependencies << [name, vers]
+          end
+        rescue
+          $stderr.puts "roll: failed to load requirements -- #{file}"
+          dependencies = []
         end
       end
       @dependencies = dependencies
@@ -57,13 +70,15 @@ module Roll
         if lib
           libs << lib
           $stdout.puts "  [LOAD] #{name} #{vers}" if verbose
-          lib.requirements.verify(verbose)
+          unless libs.include?(lib) or fail.include?(luib)
+            lib.requirements.verify(verbose)
+          end
         else
-          libs << [name, vers]
+          fail << [name, vers]
           $stdout.puts "  [FAIL] #{name} #{vers}" if verbose
         end
       end
-      return libs
+      return libs, fail
     end
 
     #

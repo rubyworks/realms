@@ -1,6 +1,6 @@
 require 'roll/library'
 
-module Roll
+class Library
 
   # RubyLibrary is a specialized subclass of Library specifically designed
   # to sever Ruby's standard library. It is used to speed up load times for
@@ -118,8 +118,36 @@ module Roll
 
     # Construct a LibFile match.
     def libfile(lpath, file, ext=nil)
-      LibFile.new(self, lpath, file, ext) 
+      Library::LibFile.new(self, lpath, file, ext) 
     end
+  end
+
+  #
+  class SiteRubyLibrary < RubyLibrary
+
+    # New library.
+    def initialize #(location, name=nil, options={})
+      @location = ::Config::CONFIG['sitelibdir']
+      @name     = 'site_ruby'
+      @options  = {} #?
+    end
+
+    # Ruby version.
+    def version
+      RUBY_VERSION
+    end
+
+    # Arch directory relative to the site_ruby lib dir.
+    ARCHPATH = ::Config::CONFIG['sitearchdir'].sub(::Config::CONFIG['sitelibdir']+'/', '')
+
+    # TODO: 1.9+ need to remove rugbygems ?
+    def loadpath
+      @loadpath ||= ['', ARCHPATH]
+      #$LOAD_PATH - ['.']
+      #$LOAD_PATH - ['.']
+      #[], ].compact
+    end
+
   end
 
 end

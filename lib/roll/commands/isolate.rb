@@ -28,11 +28,11 @@ module Roll
     def generate_isolate_index(location)
       require 'fileutils'
 
-      if opts[:all]
-        list = Library.environments
-      else
-        list = [Library.environment]
-      end
+      #if opts[:all]
+      #  list = Library.environments
+      #else
+      #  list = [Library.environment.name]
+      #end
 
       library = Library.new(location)
 

@@ -24,7 +24,7 @@ module Roll
 
     #
     def check_sync(name)
-      result = Roll::Library.check(name)
+      result = Environment.check(name)
       if result
         puts "Index for `#{name}` is in-sync."
       else
@@ -34,7 +34,7 @@ module Roll
 
     # Synchronize ledgers.
     def synchronize(name)
-      name = args.first
+      name = args.first || Environment.current
       case name
       when 'all'
         list = Environment.list
@@ -43,7 +43,7 @@ module Roll
       end
 
       list.each do |name|
-        result = Roll::Library.sync(name)
+        result = Environment.sync(name)
         if result
           puts "Index for `#{name}` has been synced."
         else

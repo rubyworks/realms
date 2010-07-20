@@ -42,7 +42,7 @@ module Roll
 
     #
     def show_environment_list
-      curr = Roll::Library.env.name
+      curr = Roll::Library.environment.name
       envs = Roll::Library.environments.sort
       if envs.empty?
         puts "No environments."        

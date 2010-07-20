@@ -7,11 +7,11 @@ module Roll
     def setup
       op.banner = "Usage: roll show [NAME]"
       op.separator "Show environment."
-      op.on('--index', '-i', "Show index listing.") do
-        opts[:format] = :index
-      end
       op.on('--lookup', '-l', "Show lookup listing.") do
         opts[:format] = :lookup
+      end
+      op.on('--index', '-i', "Show index listing.") do
+        opts[:format] = :index
       end
       op.on('--yaml', '-y', "Dump environment in YAML format (implies -i).") do
         opts[:format] = :yaml
@@ -26,7 +26,7 @@ module Roll
         return
       end
 
-      env = Roll::Library.env(name)
+      env = Environment[name]
       case opts[:format]
       when :yaml
         puts env.to_yaml
@@ -35,11 +35,7 @@ module Roll
       when :lookup
         puts env.to_s_lookup
       else
-        puts "[#{env.name}]"
-        puts
         puts env.to_s
-        puts
-        puts "(file://#{env.file})"
       end
     end
 

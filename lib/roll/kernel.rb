@@ -1,66 +1,45 @@
+#require 'roll/monitor'
 require 'roll/original'
-require 'roll/ledger'
+require 'roll/config'
+require 'roll/version'
+require 'roll/environment'
+require 'roll/library'
+require 'roll/ruby'
+require 'roll/bootstrap'
 
-# Should this be global constant instead?
-$LEDGER = Roll::Ledger.new
+Library.bootstrap
 
 module ::Kernel
+
   # In which library is the current file participating?
   def __LIBRARY__
-    #Roll::Library.ledger.load_stack.last
-    $LEDGER.load_stack.last
+    $LOAD_STACK.last
   end
 
   # Activate a library.
-  def library(name, constraint=nil)
-    #Roll::Library.ledger.open(name, constraint)
-    $LEDGER.open(name, constraint)
+  # Same as #library_instance but will raise and error if the library is
+  # not found. This can also take a block to yield on the library.
+  def library(name, constraint=nil, &block) #:yield:
+    Library.activate(name, constraint, &block)
   end
 
   module_function :library
 
-  # Activate a library.
-  # TODO: Do we really want a #roll method?
-  def roll(name, constraint=nil)
-    #Roll::Library.ledger.open(name, constraint)
-    $LEDGER.open(name, constraint)
+  # Load script.
+  def require(file, options={}, &block)
+    Library.require(file, options, &block)
   end
 
-  module_function :roll
-
-  # Require script.
-  def require(file, options={})
-    #Roll::Library.ledger.require(file)
-    $LEDGER.require(file, options)
-  end
-
+  #
   module_function :require
 
   # Load script.
-  def load(file, wrap=false)
-    #Roll::Library.ledger.load(file, wrap)
-    $LEDGER.load(file, :wrap=>wrap)
+  def load(file, options={}, &block)
+    Library.load(file, options, &block)
   end
 
   module_function :load
 
-=begin
-  # Autoload script (Note that rolls neuters this functionality).
-  def autoload(constant, file)
-    #Roll::Library.ledger.autoload(constant, file)
-    $LEDGER.autoload(constant, file)
-  end
-
-  module_function :autoload
-=end
-
-  # Acquire script.
-  def acquire(file, opts={})
-    #Roll::Library.ledger.acquire(file, opts)
-    $LEDGER.acquire(file, opts)
-  end
-
-  module_function :acquire
 end
 
 =begin
@@ -70,7 +49,7 @@ class Module
   # NOTE: Rolls has to neuter this functionality b/c og a "bug" in Ruby
   # which doesn't allow autoload from using overridden require methods.
   def autoload(constant, file)
-    #Roll::Library.ledger.autoload(constant, file)
+    #Library.ledger.autoload(constant, file)
     $LEDGER.autoload(constant, file)
   end
 
@@ -79,7 +58,7 @@ class Module
   # NOTE: Rolls has to neuter this functionality b/c og a "bug" in Ruby
   # which doesn't allow autoload from using overridden require methods.
   def self.autoload(constant, file)
-    #Roll::Library.ledger.autoload(constant, file)
+    #Library.ledger.autoload(constant, file)
     $LEDGER.autoload(constant, file)
   end
 end

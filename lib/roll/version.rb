@@ -1,4 +1,4 @@
-module Roll
+class Library
 
   # = Version Number
   #
@@ -153,6 +153,17 @@ module Roll
   # VersionConflict is raised when selecting another version
   # of a library when a previous version has already been selected.
   class VersionConflict < ::LoadError  # :nodoc:
+    def initialize(lib1, lib2=nil)
+      @lib1 = lib1
+      @lib2 = lib2
+    end
+    def message
+      if @lib2
+        @lib1.inspect + " vs. " + @lib2.inspect
+      else
+        "previously selected version -- #{@lib1.inspect}"
+      end
+    end
   end
 
 end

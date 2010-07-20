@@ -17,10 +17,11 @@ module Roll
     def call
       path  = File.expand_path(args.first || Dir.pwd)
       depth = opts[:depth]
-      path, file = *Roll::Library.in(path, depth)
+      path, file = *Roll::Environment.insert(path, depth)
       puts "#{path}"
       puts "  '-> #{file}"
     end
 
   end
 end
+

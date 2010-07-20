@@ -1,359 +1,693 @@
-require 'roll/object'
-require 'roll/metadata'
-require 'roll/requirements'
-require 'roll/file'
+# = Library class encapsulates a location on disc that contains a Ruby
+# project... with loadable lib files, of course.
+class Library
+  require 'roll/metadata'
+  require 'roll/requirements'
+  require 'roll/file'
 
-module Roll
+  # Dynamic link extension.
+  #DLEXT = '.' + ::Config::CONFIG['DLEXT']
 
-  # = Library class encapsulates a location on disc that contains a Ruby
-  # project... with loadable lib files, of course.
-  class Library < Object
+  # TODO: Some extensions are platform specific --only
+  # add the ones needed for the current platform.
+  SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar'] #, '']
 
-    # Dynamic link extension.
-    #DLEXT = '.' + ::Config::CONFIG['DLEXT']
+  # Extensions glob, joins extensions with comma and wrap in curly brackets.
+  SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
 
-    # TODO: Some extensions are platform specific --only
-    # add the ones needed for the current platform.
-    SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar'] #, '']
+  # New Library object.
+  def initialize(location, data={})
+    @location = location
+    @active   = false
 
-    # Extensions glob, joins extensions with comma and wrap in curly brackets.
-    SUFFIX_PATTERN = "{#{SUFFIXES.join(',')}}"
+    data = data.rekey
 
-    # New Library object.
-    #
-    # TODO: Place name into options.
-    def initialize(location, options={})
-      @location = location
-      @name     = options.delete(:name)
-      @options  = options
-      @active   = false
+    if data.empty?
+      load_metadata
+    else
+      @name     = data[:name]
+      @version  = Version.new(data[:version])
+      @loadpath = data[:loadpath]
+      @date     = data[:date]  # TODO: convert to Time
+      @omit     = data[:omit]
+    end
 
-      if $LEDGER
-        entry = $LEDGER.index[name]
-        if Array === entry
-          entry << self unless entry.include?(self)
-        end
+    # refresh metadata if a development location
+    load_metadata if data[:development]
+
+    if $LEDGER
+      entry = $LEDGER[name]
+      if Array === entry
+        entry << self unless entry.include?(self)
       end
     end
+  end
 
-    # Location of library files on disc.
-    def location
-      @location
+  # Activate a library by putting it's loadpaths on the master $LOAD_PATH.
+  # This is neccessary only for the fact that autoload will not utilize
+  # customized require methods.
+  def activate
+    return if @active
+    lib = $LEDGER[name]
+    if Library === lib
+      raise VersionConflict.new(self, lib) if lib != self
+    else
+      absolute_loadpath.each do |path|
+        $LOAD_PATH.unshift(path)
+      end
+      $LEDGER[name] = self
+      # TODO: activate runtime dependencies
+      #library.verify
     end
+    @active = true
+  end
 
-    # Access to metadata.
-    def metadata
-      @metadata ||= Metadata.new(@location, @name, @options)
-    end
-
-    #
-    def profile
-      metadata.profile
-    end
-
-    # Is the library active?
-    #
-    # NOTE: Presently this is always +true+.
-    #
-    # TODO: If keeping, change to omit?
-    def active?
-      @omit ||= !metadata.active?
-    end
-
-    # Library's "unixname".
-    def name
-      @name ||= metadata.name
-    end
-
-    # Library's version number.
-    def version
-      metadata.version
-    end
-
-    # Library's internal load path(s). This will default to `['lib']`
-    # not otherwise given.
-    def loadpath
-      metadata.loadpath
-    end
-
-    # Release date.
-    def date
-      metadata.date
-    end
-
-    # Alias for +#date+.
-    alias_method :released, :date
-
-    #
-    def absolute_loadpath
-      loadpath.map{ |lp| File.join(location, lp) }
-    end
-
-    #
-    def requirements
-      @requirements ||= Requirements.new(location)
-    end
-
-    # List of dependencies taken from a REQUIRE file, if it exists.
-    # This includes both neccessary and optional dependencies.
-    def requires
-      []
-    end
-
-    # Take each project dependency and open it. This will help reveal any
-    # version conflicts or missing dependencies.
-    def verify
-      requires.each do |(name, constraint)|
-        Library.open(name, constraint)
+=begin
+  # Constrain a library to a single version. This means, if anyone tries
+  # to use a different version once a library has been constrained, an
+  # VersionConflict error will be raised.
+  def constrain
+    cmp = $LEDGER[name]
+    if Array === cmp
+      $LEDGER[name] = self
+    else
+      if self.version != cmp.version
+        raise VersionError
       end
     end
+  end
+=end
 
-    # Does this library have a matching +file+.
-    #
-    # file    - file path to find [to_s]
-    # options - Hash of optional settings to adjust search behavior
-    # options[:suffix] - automatically try standard extensions if file has none.
-    # options[:legacy] - do not match within +name+ directory, eg. `lib/foo/*`.
-    #
-    def find(file, options={})
-      legacy = options[:legacy]
-      suffix = options[:suffix] || options[:suffix].nil?
-      #suffix = false if options[:load]
-      suffix = false if SUFFIXES.include?(File.extname(file))
-      lp = loadpath
-      if suffix
+  # Location of library files on disc.
+  def location
+    @location
+  end
+
+  # Access to metadata.
+  def metadata
+    @metadata ||= Metadata.new(@location) #, :name=>name)
+  end
+
+  #
+  def profile
+    metadata.profile
+  end
+
+  #
+  def requirements
+    metadata.requirements
+  end
+
+  #
+  def load_metadata
+    @name     = metadata.name
+    @version  = metadata.version
+    @loadpath = metadata.loadpath
+    @date     = metadata.date
+    @requires = metadata.requires
+  end
+
+  # Library's "unixname".
+  def name
+    @name
+  end
+
+  # Library's version number.
+  def version
+    @version
+  end
+
+  # Library's internal load path(s). This will default to `['lib']`
+  # not otherwise given.
+  def loadpath
+    @loadpath
+  end
+
+  # Release date.
+  def date
+    @date
+  end
+
+  # Alias for +#date+.
+  alias_method :released, :date
+
+  # Runtime dependencies.
+  def requires
+    @requires
+  end
+
+  # Omit library form any ledger?
+  def omit
+    @omit
+  end
+
+  #
+  alias_method :omit?, :omit
+
+  #
+  def absolute_loadpath
+    loadpath.map{ |lp| ::File.join(location, lp) }
+  end
+
+  # Take runtime dependencies and open them. This will help reveal any
+  # version conflicts or missing dependencies.
+  def verify
+    requires.each do |(name, constraint)|
+      Library.open(name, constraint)
+    end
+  end
+
+  # Take all dependencies and open it. This will help reveal any
+  # version conflicts or missing dependencies.
+  def verify_all
+    requirements.each do |(name, constraint)|
+      Library.open(name, constraint)
+    end
+  end
+
+  # Does this library have a matching +file+.
+  #
+  # file    - file path to find [to_s]
+  # options - Hash of optional settings to adjust search behavior
+  # options[:suffix] - automatically try standard extensions if file has none.
+  # options[:legacy] - do not match within +name+ directory, eg. `lib/foo/*`.
+  #
+  # NOTE: This method was designed to maximize speed.
+  def find(file, options={})
+    legacy = options[:legacy]
+    suffix = options[:suffix] || options[:suffix].nil?
+    #suffix = false if options[:load]
+    suffix = false if SUFFIXES.include?(::File.extname(file))
+    lp = loadpath()
+    if suffix
+      if legacy
         SUFFIXES.each do |ext|
           lp.each do |lpath|
-            unless legacy
-              f = File.join(location, lpath, name, file + ext)
-              if File.file?(f)
-                return libfile(File.join(lpath, name), file, ext)
-              end
-            end
-            f = File.join(location, lpath, file + ext)
-            if File.file?(f)
-              return libfile(lpath, file, ext)
-            end
+            f = ::File.join(location, lpath, file + ext)
+            return libfile(lpath, file, ext) if ::File.file?(f)
           end
+        end
+      else
+        SUFFIXES.each do |ext|
+          lp.each do |lpath|
+            f = ::File.join(location, lpath, file + ext)
+            return libfile(lpath, file, ext) if ::File.file?(f)
+            f = ::File.join(location, lpath, name, file + ext)               
+            return libfile(::File.join(lpath, name), file, ext) if ::File.file?(f)
+          end
+        end
+      end
+    else
+      if legacy
+        lp.each do |lpath|
+          f = ::File.join(location, lpath, file)
+          return libfile(lpath, file) if ::File.file?(f)
         end
       else
         lp.each do |lpath|
-          unless legacy
-            f = File.join(location, lpath, name, file)
-            if File.file?(f)
-              return libfile(File.join(lpath, name), file)
-            end
-          end
-          f = File.join(location, lpath, file)
-          if File.file?(f)
-            return libfile(lpath, file)
+          f = ::File.join(location, lpath, file)        
+          return libfile(lpath, file) if ::File.file?(f)
+          f = ::File.join(location, lpath, name, file)
+          return libfile(::File.join(lpath, name), file) if ::File.file?(f)
+        end
+      end
+    end
+    nil
+  end
+
+  # Alias for #find.
+  alias_method :include?, :find
+
+  # Create a new LibFile object from +lpath+, +file+ and +ext+.
+  def libfile(lpath, file, ext=nil)
+    LibFile.new(self, lpath, file, ext)
+  end
+
+  #
+  def require(path, options={})
+    if file = include?(path, options)
+      file.require(options)
+    else
+      raise LoadError.new(path, name)
+    end
+  end
+
+  #
+  def load(path, options={})
+    if file = include?(path, options)
+      file.load(options)
+    else
+      raise LoadError.new(path, name)
+    end
+  end
+
+
+=begin
+  # NOT SURE ABOUT USING THIS
+  def require_absolute(file)
+    #Library.load_monitor[file] << caller if $LOAD_MONITOR
+    Library.load_stack << self
+    begin
+      success = roll_original_require(file)
+    #rescue LoadError => load_error
+    #  raise clean_backtrace(load_error)
+    ensure
+      Library.load_stack.pop
+    end
+    success
+  end
+
+  #
+  def load_absolute(file, wrap=nil)
+    #Library.load_monitor[file] << caller if $LOAD_MONITOR
+    Library.load_stack << self
+    begin
+      success = roll_original_load(file, wrap)
+    #rescue LoadError => load_error
+    #  raise clean_backtrace(load_error)
+    ensure
+      Library.load_stack.pop
+    end
+    success
+  end
+=end
+
+  #
+  def isolate(options={})
+    if options[:all]
+      list = Library.environments
+    else
+      list = [Library.environment]
+    end
+
+    results = library.requirements.verify
+
+    fails, libs = results.partition{ |r| Array === r }
+  end
+
+  # Inspection.
+  def inspect
+    if version
+      %[#<Library #{name}/#{version} @location="#{location}">]
+    else
+      %[#<Library #{name} @location="#{location}">]
+    end
+  end
+
+  # Same as #inspect.
+  def to_s
+    inspect
+  end
+
+  # Compare by version.
+  def <=>(other)
+    version <=> other.version
+  end
+
+  # Return default file. This is the file that has same name as the
+  # library itself.
+  def default
+    @default ||= include?(name)
+  end
+
+  #--
+  #    # List of subdirectories that are searched when loading.
+  #    #--
+  #    # This defualts to ['lib/{name}', 'lib']. The first entry is
+  #    # usually proper location; the latter is added for default
+  #    # compatability with the traditional require system.
+  #    #++
+  #    def libdir
+  #      loadpath.map{ |path| ::File.join(location, path) }
+  #    end
+  #
+  #    # Does the library have any lib directories?
+  #    def libdir?
+  #      lib.any?{ |d| ::File.directory?(d) }
+  #    end
+  #++
+
+  # Location of executable. This is alwasy bin/. This is a fixed
+  # convention, unlike lib/ which needs to be more flexable.
+  def bindir  ; ::File.join(location, 'bin') ; end
+
+  # Is there a <tt>bin/</tt> location?
+  def bindir? ; ::File.exist?(bindir) ; end
+
+  # Location of library system configuration files.
+  # This is alwasy the <tt>etc/</tt> directory.
+  def confdir ; ::File.join(location, 'etc') ; end
+
+  # Is there a <tt>etc/</tt> location?
+  def confdir? ; ::File.exist?(confdir) ; end
+
+  # Location of library shared data directory.
+  # This is always the <tt>data/</tt> directory.
+  def datadir ; ::File.join(location, 'data') ; end
+
+  # Is there a <tt>data/</tt> location?
+  def datadir? ; ::File.exist?(datadir) ; end
+
+  #
+  #def to_rb
+  #  to_h.inspect
+  #end
+
+  # Convert to hash
+  def to_h
+    {
+      :name     => name,
+      :version  => version.to_s,
+      :loadpath => loadpath,
+      :date     => date,
+      :requires => requires
+    }
+  end
+
+  # C L A S S  M E T H O D S
+
+# temporary
+#$MONITOR = ENV['ROLL_MONITOR']
+
+  # Find matching libary files. This is the "mac daddy" method used by
+  # the #require and #load methods to find the sepcified +path+ among
+  # the various libraries and their loadpaths.
+  def self.find(path, options={})
+    path   = path.to_s
+
+    suffix = options[:suffix]
+    search = options[:search]
+    legacy = options[:legacy]
+
+#print path if $MONITOR
+
+    # Ruby appears to have a special exception for enumerator!!!
+    #return nil if path == 'enumerator' 
+
+    # absolute path
+    return nil if /^\// =~ path
+
+    if path.index(':') # a specified library
+      name, path = path.split(':')
+      lib = library(name)
+      file = lib.include?(path, options)
+      raise LoadError, "no such file to load -- #{path}" unless file
+#puts "  (1 direct)" if $MONITOR
+      return file
+    end
+
+    # try the load stack (TODO: just last or all?)
+    $LOAD_STACK.reverse_each do |lib|
+      if file = lib.include?(path, options)
+#puts "  (2 stack)" if $MONITOR
+        return file
+      end
+    end
+    #last = $LOAD_STACK.last
+    #if last && file = last.include?(file)
+    #  return file
+    #end
+
+    # if the head of the path is the library
+    if path.index('/') or path.index('\\')
+      name, *_ = path.split(/\/|\\/)
+      lib = Library[name]
+      if lib && file = lib.include?(path, options)
+#puts "  (3 indirect)" if $MONITOR
+        return file
+      end
+    end
+
+    # try site_ruby
+    lib = Library['site_ruby']
+    if file = lib.include?(path, options)
+#puts "  (4 ruby core)" if $MONITOR
+      return file
+    end
+
+    # try ruby
+    lib = Library['ruby']
+    if file = lib.include?(path, options)
+#puts "  (4 ruby core)" if $MONITOR
+      return file
+    end
+
+    # a plain library name?
+    if !path.index('/') && lib = Library.instance(path)
+      if file = lib.default # default file to load
+#puts "  (5 plain library name)" if $MONITOR
+        return file
+      end
+    end
+
+    # fallback to brute force search
+    if search or legacy
+      if file = library_search(path, options)
+#puts "  (6 brute search)" if $MONITOR
+        return file
+      end
+    end
+
+#puts "  (7 fallback)" if $MONITOR
+    nil
+  end
+
+  # Brute force search looks through all libraries for a matching file.
+  #
+  # path    - file path for which to search
+  # options: 
+  #   :select -
+  #   :suffix -
+  #   :legacy -
+  #
+  # Returns either
+  def self.search(path, options={})
+    matches = []
+
+    select  = options[:select]
+    suffix  = options[:suffix] || options[:suffix].nil?
+    #suffix = false if options[:load]
+    suffix = false if Library::SUFFIXES.include?(::File.extname(path))
+
+    # TODO: Perhaps the selected and unselected should be kept in separate lists?
+    unselected, selected = *$LEDGER.partition{ |name, libs| Array === libs }
+
+    #: broad search of pre-selected libraries
+    selected.each do |(name, lib)|
+      if file = lib.find(path, options)
+        return file unless select
+        matches << file
+      end
+    end
+
+    #: finally try a broad search on unselected libraries
+    unselected.each do |(name, libs)|
+      pos = []
+      libs.each do |lib|
+        if file = lib.find(path, options)
+          pos << file
+        end
+      end
+      unless pos.empty?
+        latest = pos.sort{ |a,b| b.library.version <=> a.library.version }.first
+        return latest unless select
+        matches << latest
+      end
+    end
+
+    #: last ditch attempt, search all $LOAD_PATH
+    if suffix
+      SUFFIXES.each do |ext|
+        $LOAD_PATH.each do |location|
+          file = ::File.join(location, file + ext)
+          if ::File.file?(file)
+            return Library::LibFile.new(location, '.', file, ext)
+            matches << file 
           end
         end
       end
-      nil
+    else
+      $LOAD_PATH.each do |location|
+        file = ::File.join(location, file)
+        if ::File.file?(file)
+          return Library::LibFile.new(location, '.', file, ext) unless select
+          matches << file
+        end
+      end
     end
 
-    # Alias for #find.
-    alias_method :include?, :find
+    select ? matches.first : matches.uniq
+  end
 
-    # Create a new LibFile object from +lpath+, +file+ and +ext+.
-    def libfile(lpath, file, ext=nil)
-      LibFile.new(self, lpath, file, ext)
-    end
+  # Current ledger.
+  def self.ledger
+    $LEDGER
+  end
 
-    #
-    def require(path, options={})
-      if file = include?(path, options)
-        file.require(options)
+  #
+  def self.load_stack
+    $LOAD_STACK
+  end
+
+  #
+  def self.names
+    $LEDGER.keys
+  end
+
+  #
+  def self.list
+    $LEDGER.keys
+  end
+
+  # A shortcut for #instance.
+  def self.[](name, constraint=nil)
+    instance(name, constraint)
+  end
+
+  # Get an instance of a library by name, or name and version.
+  # Libraries are singleton, so once loaded the same object is
+  # always returned.
+  def self.instance(name, constraint=nil)
+    name = name.to_s
+    #raise "no library -- #{name}" unless include?(name)
+    return nil unless $LEDGER.include?(name)
+
+    library = $LEDGER[name]
+
+    if Library===library
+      if constraint # FIXME: it's okay if constraint fits current
+        raise Library::VersionConflict, library
       else
-        load_error = LoadError.new("no such file to require -- #{name}:#{path}")
-        raise clean_backtrace(load_error)
+        library
       end
-    end
-
-=begin
-    # NOT SURE ABOUT USING THIS
-    def require_absolute(file)
-      #Library.load_monitor[file] << caller if $LOAD_MONITOR
-      Library.load_stack << self
-      begin
-        success = roll_original_require(file)
-      #rescue LoadError => load_error
-      #  raise clean_backtrace(load_error)
-      ensure
-        Library.load_stack.pop
-      end
-      success
-    end
-=end
-
-    #
-    def load(path, options={})
-      if file = include?(path, options)
-        file.load(options)
+    else # library is an array of versions
+      if constraint
+        compare = Library::Version.constraint_lambda(constraint)
+        library = library.select{ |lib| compare[lib.version] }.max
       else
-        load_error = LoadError.new("no such file to load -- #{name}:#{path}")
-        clean_backtrace(load_error)
+        library = library.max
       end
-    end
-
-=begin
-    #
-    def load_absolute(file, wrap=nil)
-      #Library.load_monitor[file] << caller if $LOAD_MONITOR
-      Library.load_stack << self
-      begin
-        success = roll_original_load(file, wrap)
-      #rescue LoadError => load_error
-      #  raise clean_backtrace(load_error)
-      ensure
-        Library.load_stack.pop
+      unless library
+        raise VersionError, "no library version -- #{name} #{constraint}"
       end
-      success
+      #index[name] = library #constrain(library)
+      library.activate
+      return library
     end
-=end
+  end
 
-    #
-    def isolate(options={})
-      if options[:all]
-        list = Library.environments
+  # Activate a library. Same as #instance but will raise and error if the
+  # library is not found. This can also take a block to yield on the library.
+  def self.activate(name, constraint=nil) #:yield:
+    library = instance(name, constraint)
+    unless library
+      raise LoadError, "no library -- #{name}"
+    end
+    libarary.activate
+    yield(library) if block_given?
+    library
+  end
+
+  # Roll-style loading. First it looks for a specific library via `:`.
+  # If `:` is not present it then tries the current loading library.
+  # Failing that it fallsback to Ruby itself.
+  #
+  #   require('facets:string/margin')
+  #
+  # To "load" the library, rather than "require" it, set the +:load+
+  # option to true.
+  #
+  #   require('facets:string/margin', :load=>true)
+  #
+  # TODO: Should we also check $"? Eg. `return false if $".include?(path)`.
+  def self.require(path, options={}, &block)
+    options.merge!(block.call) if block
+
+    if file = $LOAD_CACHE[path]
+      if options[:load]
+        return file.load
       else
-        list = [Library.environment]
-      end
-
-      results = library.requirements.verify
-
-      fails, libs = results.partition{ |r| Array === r }
-    end
-
-    # Inspection.
-    def inspect
-      if version
-        %[#<Library #{name}/#{version} @location="#{location}">]
-      else
-        %[#<Library #{name} @location="#{location}">]
+        return false
       end
     end
 
-    # Same as #inspect.
+    if file = Library.find(path, options)
+      file.library.activate
+      $LOAD_CACHE[path] = file
+      return file.acquire(options)
+    end
+
+    if options[:load]
+      load_without_rolls(path, options[:wrap])
+    else
+      require_without_rolls(path)
+    end
+  end
+
+  # Load file path. This is just like #require except that previously
+  # loaded files will be reloaded and standard extensions will not be
+  # automatically appended.
+  #
+  # TODO: maybe swap #load and #require ?
+  def self.load(path, options={}, &block)
+    options.merge!(block.call) if block
+
+    options[:wrap]   = true if options and !(Hash===options)
+    options[:load]   = true
+    options[:suffix] = false
+
+    if file = $LOAD_CACHE[path]
+      return file.load
+    end
+
+    if file = Library.find(path, options)
+      file.library.activate
+      $LOAD_CACHE[path] = file
+      return file.load(options) #acquire(options)
+    end
+
+    #if options[:load]
+      load_without_rolls(path, options[:wrap])
+    #else
+    #  require_without_rolls(path)
+    #end
+  end
+
+  # Return Array of environment names.
+  def self.environments
+    Environment.list
+  end
+
+  #
+  def self.environment(name=nil)
+    Environment[name]
+  end
+
+  #
+  #def self.autoload(constant, file)
+  #  ledger.autoload(constant, file)
+  #end
+
+  class LoadError < ::LoadError
+    def initialize(failed_path, library_name=nil)
+      super()
+      @failed_path  = failed_path
+      @library_name = library_name
+      clean_backtrace
+    end
+
     def to_s
-      inspect
+      "no such file to load -- #{@library_name}:#{@failed_path}"
     end
 
-    # Compare by version.
-    def <=>(other)
-      version <=> other.version
+    # Take an +error+ and remove any mention of 'roll' from it's backtrace.
+    # Will leave the backtrace untouched if $DEBUG is set to true.
+    def clean_backtrace
+      return if ENV['roll_debug'] || $DEBUG
+      bt = backtrace
+      bt = bt.reject{ |e| /roll/ =~ e } if bt
+      set_backtrace(bt)
     end
-
-    # Return default file. This is the file that has same name as the
-    # library itself.
-    def default
-      @default ||= include?(name)
-    end
-
-    #--
-    #    # List of subdirectories that are searched when loading.
-    #    #--
-    #    # This defualts to ['lib/{name}', 'lib']. The first entry is
-    #    # usually proper location; the latter is added for default
-    #    # compatability with the traditional require system.
-    #    #++
-    #    def libdir
-    #      loadpath.map{ |path| File.join(location, path) }
-    #    end
-    #
-    #    # Does the library have any lib directories?
-    #    def libdir?
-    #      lib.any?{ |d| File.directory?(d) }
-    #    end
-    #++
-
-    # Location of executable. This is alwasy bin/. This is a fixed
-    # convention, unlike lib/ which needs to be more flexable.
-    def bindir  ; File.join(location, 'bin') ; end
-
-    # Is there a <tt>bin/</tt> location?
-    def bindir? ; File.exist?(bindir) ; end
-
-    # Location of library system configuration files.
-    # This is alwasy the <tt>etc/</tt> directory.
-    def confdir ; File.join(location, 'etc') ; end
-
-    # Is there a <tt>etc/</tt> location?
-    def confdir? ; File.exist?(confdir) ; end
-
-    # Location of library shared data directory.
-    # This is always the <tt>data/</tt> directory.
-    def datadir ; File.join(location, 'data') ; end
-
-    # Is there a <tt>data/</tt> location?
-    def datadir? ; File.exist?(datadir) ; end
-
-    #
-    def to_rb
-      to_h.inspect
-    end
-
-    # Convert to hash
-    def to_h
-      {
-        'name'     => name,
-        'version'  => version,
-        'loadpath' => loadpath,
-        'date'     => date,
-        'requires' => requires
-      }
-    end
-
-    # C L A S S  M E T H O D S
-
-    # Current ledger.
-    def self.ledger
-      $LEDGER ||= Ledger.new
-    end
-
-    # A shortcut for #instance.
-    def self.[](name, constraint=nil)
-      instance(name, constraint)
-    end
-
-    # Get an instance of a library by name, or name and version.
-    # Libraries are singleton, so once loaded the same object is
-    # always returned.
-    def self.instance(name, constraint=nil)
-      ledger.library(name, constraint=nil)
-    end
-
-    # Same as #instance but will raise and error if the library is
-    # not found. This can also take a block to yield on the library.
-    def self.open(name, constraint=nil, &block)
-      ledger.open(name, constraint, &block)
-    end
-
-    #
-    def self.require(file)
-      ledger.require(file)
-    end
-
-    #
-    def self.load(file, wrap=nil)
-      ledger.load(file, wrap)
-    end
-
-    #
-    def self.autoload(constant, file)
-      ledger.autoload(constant, file)
-    end
-
-    # Redirect methods called against Library to current Ledger.
-    def self.method_missing(s, *a, &b)
-      if ledger.respond_to?(s)
-        ledger.send(s, *a, &b)
-      else
-        super(s, *a, &b)
-      end
-    end
-
   end
 
 end

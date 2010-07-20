@@ -1,6 +1,6 @@
-require 'roll/xdg'
+require 'roll/core_ext/rbconfig'
 
-module Roll
+class Library
 
   # 
   def self.config
@@ -16,10 +16,10 @@ module Roll
     #DIRS = ::Config.find_config('roll', 'environments')
 
     # Roll's user home temporary cache directory.
-    ROLL_CACHE_HOME = File.join(XDG.cache_home, 'roll')
+    #ROLL_CACHE_HOME = File.join(xdg_cache_home, 'roll')
 
     # Roll's user home configuration directory.
-    ROLL_CONFIG_HOME = File.join(XDG.config_home, 'roll')
+    #ROLL_CONFIG_HOME = File.join(xdg_config_home, 'roll')
 
     # Default environment name.
     DEFAULT_ENVIRONMENT = 'production'
@@ -28,9 +28,14 @@ module Roll
     def initialize()
     end
 
-    # Roll's use home configuration directory.
+    # Roll's home configuration directory.
     def home_directory
-      ROLL_CONFIG_HOME
+      File.join(XDG.config_home, 'roll')
+    end
+
+    # Roll's cache directory.
+    def cache_directory
+      File.join(XDG.cache_home, 'roll')
     end
 
     # Project local Roll's config directory. This will be either `.roll/`
@@ -161,6 +166,80 @@ module Roll
         RUBY_ENGINE
       else
         'ruby'
+      end
+    end
+
+    module XDG
+      extend self
+
+      # User's home directory.
+      def home
+        File.expand_path('~') # ENV['HOME']
+      end
+
+      # Freedesktop.org standard location for configuration files.
+      def config_home
+        File.expand_path(ENV['XDG_CONFIG_HOME'] || File.join(home, '.config'))
+      end
+
+      # Location of user's personal config directory.
+      def data_home
+        File.expand_path(ENV['XDG_DATA_HOME'] || File.join(home, '.local', 'share'))
+      end
+
+      # Freedesktop.org standard location for temporary cache.
+      def cache_home
+        File.expand_path(ENV['XDG_CACHE_HOME'] || File.join(home, '.cache'))
+      end
+
+      # List of system config directories.
+      def config_dirs
+        dirs = ENV['XDG_CONFIG_DIRS'].to_s.split(/[:;]/)
+        if dirs.empty?
+          dirs = [File.join(::RbConfig::CONFIG['sysconfdir'], 'xdg')]
+        end
+        dirs.collect{ |d| File.expand_path(d) }
+      end
+
+      # List of system data directories.
+      def data_dirs
+        dirs = ENV['XDG_DATA_DIRS'].to_s.split(/[:;]/)
+        if dirs.empty?
+          dirs = [::RbConfig::CONFIG['datarootdir']]  # what about local?
+        end
+        dirs.collect{ |d| File.expand_path(d) }
+      end
+
+      # Lookup configuration file.
+      def search_config(*glob)
+        flag = 0
+        flag = (flag | glob.pop) while Fixnum === glob.last
+        find = []
+        [config_home, *config_dirs].each do |dir|
+          path = File.join(dir, *glob)
+          if block_given?
+            find.concat(Dir.glob(path, flag).select(&block))
+          else
+            find.concat(Dir.glob(path, flag))
+          end
+        end
+        find
+      end
+
+      # Lookup data file.
+      def search_data(*glob)
+        flag = 0
+        flag = (flag | glob.pop) while Fixnum === glob.last
+        find = []
+        [data_home, *data_dirs].each do |dir|
+          path = File.join(dir, *glob)
+          if block_given?
+            find.concat(Dir.glob(path, flag).select(&block))
+          else
+            find.concat(Dir.glob(path, flag))
+          end
+        end
+        find
       end
     end
 

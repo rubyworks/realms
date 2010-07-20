@@ -1,19 +1,13 @@
-#require 'yaml'
-
-module Roll
+class Library
 
   # The Metadata call encapsulates a library's package,
   # profile and requirements information.
-  #
-  # TODO: Improve loading and parsing of metadata.
-  # We want this to be as fast and as lazy as possible.
-  #
   class Metadata
 
     # New metadata object.
-    def initialize(location, name=nil, options={})
+    def initialize(location, options={})
       @location = location
-      @name     = name
+      @name     = options[:name]
       @version  = options[:version]
       @loadpath = options[:loadpath]
       #load_metadata
@@ -31,6 +25,17 @@ module Roll
 
     # In code name, e.g. "ActiveRecord"
     attr_accessor :codename
+
+    # TODO: Add other fields later
+    def to_h
+      { :location => location,
+        :name     => name,
+        :version  => version.to_s,
+        :loadpath => loadpath,
+        :date     => date,
+        :requires => requires
+      }
+    end
 
     # Local load paths.
     def loadpath
@@ -117,6 +122,16 @@ module Roll
       )
     end
 
+    #
+    def requirements
+      @requirements ||= Requirements.new(location)
+    end
+
+    #
+    def requires
+      @requires ||= requirements.runtime
+    end
+
     # Deterime if the location is a gem location. It does this by looking
     # for the corresponding `gems/specification/*.gemspec` file.
     def gemspec?
@@ -190,6 +205,18 @@ module Roll
       File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
     end
 
+    #
+    def gemspec_parse
+      #require('rubygems/specifcation'){{:legacy=>true}}
+      require 'rubygems'
+      spec = eval(File.read(gemspec_file))
+      self.name     = spec.name
+      self.version  = spec.version.to_s
+      self.date     = spec.date
+      self.loadpath = spec.require_paths
+    end
+
+=begin
     # Extract the minimal metadata from a gem location. This does not parse
     # the actual gemspec, but parses the gem locations basename and looks for
     # the presence of a `.require_paths` file. This is much more efficient.
@@ -209,6 +236,7 @@ module Roll
         self.loadpath = ['lib'] # TODO: also ,'bin'] ?
       end
     end
+=end
 
     #--
     #def gemspec_parse
@@ -244,6 +272,23 @@ module Roll
         Dir[File.join(specdir, "#{pkgname}.gemspec")].first
       )
     end
+
+    # Fake
+    #module Gem
+    #  class Specification < Hash
+    #    def initialize
+    #      yield(self)
+    #    end
+    #    def method_missing(s,v=nil,*a,&b)
+    #      case s.to_s
+    #      when /=$/
+    #        self[s.to_s.chomp('=').to_sym] = v
+    #      else
+    #        self[s]
+    #      end
+    #    end
+    #  end
+    #end
 
   end
 

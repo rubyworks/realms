@@ -1,21 +1,26 @@
-require 'roll/original'
-
 module ::Kernel
+  class << self
+    alias_method :require_without_monitor, :require
+    alias_method :load_without_monitor, :load
+  end
 
-  # Require script.
+  alias_method :require_without_monitor, :require
+  alias_method :load_without_monitor, :load
+
+  # Require script and print what is being require.
   def require(file)
-    $stderr.puts "require: #{file}"
-    roll_original_require(file)
+    $stderr.puts "monitor require: #{file}\n#{caller.inspect}\n\n"
+    require_without_monitor(file)
   end
 
   module_function :require
 
-  # Load script.
+  # Load script and print what is being loaded.
   def load(file, wrap=false)
-    $stderr.puts "load: #{file}"
-    roll_original_load(file, wrap)
+    $stderr.puts "monitor load: #{file}\n#{caller.inspect}\n\n"
+    load_without_monitor(file, wrap)
   end
 
   module_function :load
-
 end
+
