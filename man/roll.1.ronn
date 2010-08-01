@@ -1,0 +1,30 @@
+roll(1)
+=======
+
+## Roll Commands
+
+  roll-list(1)
+
+  roll-use(1)
+
+  roll-in(1)
+
+  roll-out(1)
+
+  roll-show(1)
+
+  roll-sync(1)
+
+  roll-copy(1)
+
+  roll-merge(1)
+
+  roll-verify(1)
+
+  roll-isolate(1)
+
+  roll-gem(1)
+
+  roll-path(1)
+
+

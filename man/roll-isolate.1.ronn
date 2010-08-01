@@ -1,0 +1,17 @@
+roll-isolate(1) -- produce a private isolated environment for a project
+=======================================================================
+
+## SYNOPSIS
+
+`roll-isolate`
+
+## DESCRIPTION
+
+`roll-isolate` produces a special environment specifically catered to the 
+current project based on it's dependencies.
+
+## SEE ALSO
+
+roll(1), roll-verify(1), roll-list(1),
+<http://proutils.github.com/roll>
+

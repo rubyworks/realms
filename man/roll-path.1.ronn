@@ -1,0 +1,18 @@
+roll-path(1) -- produce a unix style path list
+==============================================
+
+## SYNOPSIS
+
+`roll-path`
+
+## DESCRIPTION
+
+`roll-path` prints out a UNIX style path list suitable for appending the
+system $PATH variable. This allows executables located in project's bin
+directories to automatically available via the command-line.
+
+## SEE ALSO
+
+roll(1), roll-exec(1),
+<http://proutils.github.com/roll>
+

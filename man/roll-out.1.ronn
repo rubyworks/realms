@@ -1,0 +1,18 @@
+roll-out(1) -- remove path from the environment's lookup list
+=============================================================
+
+## SYNOPSIS
+
+`roll-out` [<path>]
+
+## DESCRIPTION
+
+`roll-out` removes a path from the current environment's lookup list and then
+re-syncs the ennvironment index automatically. If no `<path>` is given the
+present working directory is used.
+
+## SEE ALSO
+
+roll(1), roll-in(1),
+<http://proutils.github.com/roll>
+

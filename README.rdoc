@@ -1,5 +1,6 @@
-= ROLLING WITH RUBY
+= RUBY ROLLER
 
+<pre style="color:red">
                   ____
               ,dP9CGG88@b,
             ,IP""YICCG888@@b,
@@ -13,6 +14,7 @@
            `Y8888888@@@@@@@P'......
               `@@@@@@@@@P'.......
                   """"........
+</pre>
 
 * home: http://proutils.github.com/roll
 * work: http://github.com/protuils/roll
@@ -20,25 +22,25 @@
 
 == DESCRIPTION
 
-Roll is a library manager for Ruby. With Rolls developers can run their
+Roller is a library manager for Ruby. With Roller developers can run their
 programs in real time --no install phase is required for one program
 to depend on another. This makes it very easy to work on a set of
 interdependent projects, without vendoring. It also makes easy to
-create isolated library environments. Yet Rolls does so efficiently
+create isolated library environments. Yet Roller does so efficiently
 because there need only be a single copy of any given version of a library
 on disc. And libraries can be stored anywhere. There is no special place
-they must all reside. You simply tell Rolls where they are. This is include
-standard gem locations. Rolls can serve gem installed libraries as easily
-as it serve-up your development libraries.
+they must all reside. You simply tell Roller where they reside. And that
+includes your Gem home. Roller can serve gem installed libraries as easily
+as it serves development libraries.
 
 
 == STATUS
 
-Rolls works fairly well. I have used it for development for years, so
+Roller works fairly well. I have used it for development for years, so
 on the whole it stays in working order. However it is still under
-heavy development, so configuration is still subject to a fair bit
-of change. The loading heuristics are quite advanced, which accounts
-for the speed, but as a trade-off the loading procedure is more complex.
+development, so configuration is still subject to a fair bit of change.
+The loading heuristics are quite advanced, which accounts for the speed,
+but as a trade-off the loading procedure is more complex.
 
 
 == HOW TO USE
@@ -50,11 +52,11 @@ variable.
 
   $ export RUBYOPT="-roll"
 
-If you want to use RubyGems along side Rolls, this can be done too:
+If you want to use RubyGems as a fallback, this can be done too:
 
   $ export RUBYOPT="-roll -rubygems"
 
-The alternative to this is to add you gem locations to your roll 
+The alternative to this is to add your gem locations to your roll
 environment (see below).
 
 To support executables you will also need to add a line to your startup
@@ -66,28 +68,18 @@ This will add the +bin+ locations of the programs encompassed by your
 current roll environment.
 
 (NOTE: The way bin paths are handled might change to a symlink directory
-in the future if limitations of long environment variables prove problematic.)
+in the future if limitations of long environment variables prove problematic.
+So far I have not had any issues with the PATH approach.)
 
 === Preparing your Projects
 
-For a project to be detected by Rolls it must conform to a
+For a project to be detected by Roller it must conform to a
 minimal POM[http://proutils.github.com/pom] setup. Specifically,
-the project must have <code>.ruby/</code> entries. That is the bare
-minimum for a project to to be loadable via Rolls as of v1.3.
-
-The only exception is for Gem stores. If you point Rolls torwards
-a <code>gems/</code> location it will attempt to parse the name,
-version and loadpath from the gem's path and/or gemspec. It will
-then save this information to under <code>.ruby/</code> in the
-project's folder --so +sudo+ may be necessary when first adding
-a system-wide gem location.
-
-Also, note that #autoload is bypassed by Rolls. Ruby has a bug
-that is preventing #autoload from using custom defined #require
-methods. (Why this has never been fixed is beyond me, and is both
-annoying and frustrating to say the least.) In any case, Rolls simply
-loads any autoloads upfront. So everything should will still work. There
-simply won't be any lazy loading benefit.
+the project must have <code>.ruby/</code> file. That is the bare
+minimum for a project to be loadable via Roller.
+The only exception is for installed gems. If you point Roller torwards
+a gem home, Roller will gather the necessary metadata from the gem's
+.gemspec file instead.
 
 See POM[http://wiki.github.com/pom/proutils] for more information about
 the <code>.ruby/</code> directory.
@@ -125,7 +117,7 @@ For instance on my system:
 
   $ sudo roll in /usr/lib/ruby/gems/1.8/gems
 
-Note the use of +sudo+ here. Rolls will create <code>.ruby/</coide>
+Note the use of +sudo+ here. Roller will create <code>.ruby/</coide>
 entries automatically in each gem if not already present. Since these
 are system-wide gems +sudo+ is needed to give rolls write access.
 This is only necessary the first time any new gem is rolled in.
@@ -151,6 +143,12 @@ For see the rest of the +roll+ commands, use <code>roll help</code>.
 
 Now you are *read to roll*! 
 
+=== Autoload Caveat
+
+Ruby has a "bug" in that #autoload will not use a customized #require
+method. Roller will still work with autoload, if the a library has
+already been activated.
+
 
 == LEARNING MORE
 
@@ -170,12 +168,12 @@ You will of course need to unpack the file. For example,
   $ tar -xvzf roll-1.0.0
 
 If you already have Ruby Setup installed on your system you can
-use it to install Rolls (See: http://setup.rubyforge.org). 
+use it to install Roller (See: http://setup.rubyforge.org). 
 
   $ cd roll-1.0.0
   $ sudo setup.rb
 
-Otherwise, Rolls includes a copy of Ruby Setup that you can
+Otherwise, Roller includes a copy of Ruby Setup that you can
 use.
 
   $ cd roll-1.0.0
@@ -185,27 +183,27 @@ On Windows, this last line will need to be 'ruby script/setup'.
 
 === RubyGems Installation
 
-We strongly recommend installing Rolls manually b/c Rolls is a
-peer to RubyGems. However, the last we tested it, Rolls could
+We strongly recommend installing Roller manually b/c Roller is a
+peer to RubyGems. However, the last we tested it, Roller could
 be install via Gems as a means of trying it out --though you won't
 get the full benefits of the system.
 
   gem install roll
 
-If you like Rolls, then later you can uninstall the gem and
+If you like Roller, then later you can uninstall the gem and
 do a proper manual install.
 
 
 == BY THE WAY
 
-Roll was RubyForge project #1004. She's been around a while! ;)
+Roller was RubyForge project #1004. She's been around a while! ;)
 
 
 == LICENSE & COPYRIGHT
 
-Roll/Rolls Copyright (c) 2006,2007 Thomas Sawyer
+Roller Copyright (c) 2006,2009 Thomas Sawyer
 
-Rolls is distributed under the same terms as Ruby.
+Roller is distributed under the same terms as Ruby.
 
 See the LICENSE file details.
 

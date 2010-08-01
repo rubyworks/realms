@@ -1,0 +1,19 @@
+roll-merge(1) -- merge one environment into another
+===================================================
+
+## SYNOPSIS
+
+`roll-merge` [<to-name>] <name>
+
+## DESCRIPTION
+
+`roll-merge` merges the lookup list of a one environment into another.
+The `<name>` specifies from which environment to get the lookup list,
+and the `<to-name>` specifies to which environment to append the list.
+If `<to-name>` is not given then the current environment is assumed.
+
+## SEE ALSO
+
+roll(1), roll-copy(1),
+<http://proutils.github.com/roll>
+

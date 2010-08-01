@@ -1,0 +1,18 @@
+roll-copy(1) -- copy an environment to make a new environment
+=============================================================
+
+## SYNOPSIS
+
+`roll-copy` [<old-name>] <new-name>
+
+## DESCRIPTION
+
+`roll-copy` copys an environment to make a new environment with a `<new-name>`.
+If `<old-name>` is given then that environment will be copied. If `<old-name>`
+is not given then the current envionrment will be copied.
+
+## SEE ALSO
+
+roll(1), roll-merge(1),
+<http://proutils.github.com/roll>
+

@@ -1,0 +1,25 @@
+roll-in(1) -- add path to current environment lookup list
+=========================================================
+
+## SYNOPSIS
+
+`roll-in` [<path>]
+
+## DESCRIPTION
+
+`roll-in` adds a path to the current environments lookup list and then re-syncs
+the environment index automatically. If no `<path>` is given the present
+working directory is used.
+
+
+## OPTIONS
+
+    `-d --depth`   Set the depth to search below the PATH for a Ruby project.
+                   The default value is 2.
+
+
+## SEE ALSO
+
+roll(1), roll-out(1),
+<http://proutils.github.com/roll>
+

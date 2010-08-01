@@ -1,0 +1,18 @@
+roll-verify(1) -- verify the availablity of a projects dependencies
+===================================================================
+
+## SYNOPSIS
+
+`roll-verify`
+
+## DESCRIPTION
+
+`roll-verify` runs through each of a project depenedencies, and their
+subsequent dependencies to make sure that they can be met by the 
+current environment.
+
+## SEE ALSO
+
+roll(1), roll-isolate(1), roll-list(1),
+<http://proutils.github.com/roll>
+

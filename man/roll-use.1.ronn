@@ -1,0 +1,18 @@
+roll-use(1) -- list or change current environment
+=================================================
+
+## SYNOPSIS
+
+`roll-use` [<name>]
+
+## DESCRIPTION
+
+Without a `<name>`, `roll-use` prints out a list of available environments.
+An arrow (`=>`) indicates the current environment. The envioronment can be
+changed by supplying the desired environment's `<name>`.
+
+## SEE ALSO
+
+roll(1), roll-list(1),
+<http://proutils.github.com/roll>
+

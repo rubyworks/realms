@@ -1,0 +1,17 @@
+roll-list(1) -- list libraries in current environment
+=====================================================
+
+## SYNOPSIS
+
+`roll-list`
+
+## DESCRIPTION
+
+`roll-list` prints a multi-column list of the names of the available libraries
+in the current roll environment.
+
+## SEE ALSO
+
+roll(1), roll-use(1),
+<http://proutils.github.com/roll>
+
