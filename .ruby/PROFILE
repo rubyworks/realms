@@ -1,0 +1,22 @@
+---
+title: Roll
+suite: proutils
+summary: Ruby Object-Oriented Library Ledger
+contact: Trans <transfire@gmail.com>
+authors: Thomas Sawyer
+created: 2006-12-10
+
+description:
+  Roll is a library manager for Ruby. Code repositories
+  can be made visible to Ruby just by setting an
+  environment variable. Rolls effectively trivializes
+  Ruby package management.
+
+resources:
+  home: http://proutils.github.com/roll
+  repo: git://github.com/proutils/roll.git
+  mail: http://groups.google.com/group/proutils
+
+copyright:
+  Copyright (c) 2006 Thomas Sawyer
+
