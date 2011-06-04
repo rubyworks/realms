@@ -1,7 +1,7 @@
 module Roll
 
   class CommandWhich < Command
-    
+
     #
     def setup
       op.banner = "Usage: roll which <path>"

@@ -12,7 +12,7 @@ module Roll
     #
     def call
       path = File.expand_path(args.first || Dir.pwd)
-      path, file = *Roll::Environment.remove(path)
+      path, file = *Library::Environment.remove(path)
       puts "#{file}"
       puts "  '-> #{path} -> [x]"
     end

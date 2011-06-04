@@ -27,7 +27,7 @@ module Roll
 
     #
     def switch_environments(name)
-      #file = Roll::Library.use(name)
+      #file =::Library.use(name)
       #puts "Roll environment is now '#{File.read(file).strip}'."
 
       stack = "#{ENV['roll_environment_stack']} #{Library.environment.name}".strip
@@ -42,8 +42,8 @@ module Roll
 
     #
     def show_environment_list
-      curr = Roll::Library.environment.name
-      envs = Roll::Library.environments.sort
+      curr = ::Library.environment.name
+      envs = ::Library.environments.sort
       if envs.empty?
         puts "No environments."        
       else

@@ -13,7 +13,7 @@ module Roll
     #
     def call
       name = args.first
-      puts Environment[name].to_s_index
+      puts Library::Environment[name].to_s_index
     end
 
   end

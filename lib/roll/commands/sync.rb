@@ -14,7 +14,7 @@ module Roll
 
     #
     def call
-      name = args.first || Environment.current
+      name = args.first || Library::Environment.current
       if opts[:check]
         check_sync(name)
       else
@@ -24,7 +24,7 @@ module Roll
 
     #
     def check_sync(name)
-      result = Environment.check(name)
+      result = Library::Environment.check(name)
       if result
         puts "Index for `#{name}` is in-sync."
       else
@@ -34,16 +34,16 @@ module Roll
 
     # Synchronize ledgers.
     def synchronize(name)
-      name = args.first || Environment.current
+      name = args.first || Library::Environment.current
       case name
       when 'all'
-        list = Environment.list
+        list = Library::Environment.list
       else
         list = [name] # || Environment.current]
       end
 
       list.each do |name|
-        result = Environment.sync(name)
+        result = Library::Environment.sync(name)
         if result
           puts "Index for `#{name}` has been synced."
         else
@@ -55,4 +55,3 @@ module Roll
   end
 
 end
-
