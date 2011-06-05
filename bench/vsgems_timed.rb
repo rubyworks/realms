@@ -10,17 +10,24 @@ def time(cmd)
   Time.now - t
 end
 
-time_gems_opt = time %[ruby -rubygems -e'nil']
-time_roll_opt = time %[ruby -roll -e'nil']
+# primers
+time_gems_req = time %[ruby -rubygems -e'nil']
+time_roll_req = time %[ruby -roll -e'nil']
 
-time_gems_req = time %[ruby -e'require "rubygems"']
-time_roll_req = time %[ruby -e'require "roll"']
+time_gems_use = time %[ruby -rubygems -e'require "facets"']
+time_roll_use = time %[ruby -roll -e'require "facets"']
 
-time_gems_use = time %[ruby -e'require "rubygems"; require "facets"']
-time_roll_use = time %[ruby -e'require "roll"; require "facets"']
+# real
+time_gems_req = time %[ruby -rubygems -e'nil']
+time_roll_req = time %[ruby -roll -e'nil']
+
+time_gems_use = time %[ruby -rubygems -e'require "facets"']
+time_roll_use = time %[ruby -roll -e'require "facets"']
+
+time_gems_load = time_gems_use - time_gems_req
+time_roll_load = time_roll_use - time_roll_req
 
 puts "              %-16s %-16s" % [ 'Roll', 'Gems' ]
-puts "RUBYOPT :     %-16s %-16s" % [ time_roll_opt, time_gems_opt ]
 puts "REQUIRE :     %-16s %-16s" % [ time_roll_req, time_gems_req ]
-puts "UTILIZE :     %-16s %-16s" % [ time_roll_use, time_gems_use ]
-
+puts "UTILIZE :     %-16s %-16s" % [ time_roll_load, time_gems_load ]
+puts "COMBINED:     %-16s %-16s" % [ time_roll_use, time_gems_use ]
