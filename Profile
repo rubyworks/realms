@@ -1,6 +1,7 @@
 ---
-title: Roll
-suite: proutils
+name   : roll
+title  : Roll
+version: 1.3.0
 summary: Ruby Object-Oriented Library Ledger
 contact: Trans <transfire@gmail.com>
 authors: Thomas Sawyer
@@ -12,10 +13,20 @@ description:
   environment variable. Rolls effectively trivializes
   Ruby package management.
 
+requires:
+- syckle 1.0.0+ (build)
+- setup  5.0+   (build)
+- qed    2.2.2+ (test)
+- rdoc   2.5.8+ (doc)
+
 resources:
   home: http://proutils.github.com/roll
-  repo: git://github.com/proutils/roll.git
   mail: http://groups.google.com/group/proutils
+
+repositories:
+  public: git://github.com/proutils/roll.git
+
+organization: Rubyworks
 
 copyright:
   Copyright (c) 2006 Thomas Sawyer
