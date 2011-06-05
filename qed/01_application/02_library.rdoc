@@ -1,11 +1,6 @@
 = Library Instances
 
-Given a basic set of projects as defined here[qed://../helpers/projects.rdoc].
-We can use the the Library class to
-
-  require 'roll/library'
-
-A Library class can be initialized given the location of the project.
+The Library class can be initialized given the location of the project.
 
   tryme10 = Roll::Library.new('tmp/projects/tryme/1.0')
   tryme11 = Roll::Library.new('tmp/projects/tryme/1.1')
@@ -30,17 +25,31 @@ a script. With an Library instance in hand this can be achieved directly.
   tryme10.load('tryme.rb')
   $tryme_message.assert == "Try Me v1.0"
 
-  tryme11.load('tryme.rb')
-  $tryme_message.assert == "Try Me v1.1"
-
-When requiring files, if a file is required from two different versions of a 
-library a VersionConflict error will be rasied.
-
-  tryme11.require('tryme')
+But if we try to load from another version, we will get a VersionConflict
+error.
 
   expect Roll::VersionConflict do
-    tryme10.require('tryme')
+    tryme11.load('tryme.rb')
   end
 
+However, we can bypass this constraint (if we know what you are doing!) with
+the :force option.
 
+  tryme11.load('tryme.rb', :force=>true)
+  $tryme_message.assert == "Try Me v1.1"
+
+Notice that when requiring files directly via a Library instance, if a file
+is required from two different versions of a library, a VersionConflict
+error will be rasied.
+
+  expect Roll::VersionConflict do
+    tryme11.require('tryme')
+  end
+
+But there is no error if we use the active version.
+
+  tryme10.require('tryme')
+
+TODO: In the future, I think we will put in a version check, and a :force
+option to override.
 

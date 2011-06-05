@@ -1,12 +1,9 @@
 class Library
 
-  # = Version Number
-  #
-  # The Version class is essentially a tuple (immutable array) with special
-  # comparision operators.
+  # The Library::Version class is essentially a tuple (immutable array)
+  # with special comparision operators.
   #
   class Version
-
     include Comparable
     include Enumerable
 
@@ -16,6 +13,12 @@ class Library
     end
 
     # Parses a string constraint returning the operation as a lambda.
+    #
+    # @param constraint [String]
+    #   valid version constraint, e.g. ">1.0" and "1.0+"
+    #
+    # @return [Proc] procedure for making contraint comparisons
+    #
     def self.constraint_lambda(constraint)
       op, val = *parse_constraint(constraint)
       lambda do |t|
@@ -29,6 +32,11 @@ class Library
     end
 
     # Converts a constraint into an operator and value.
+    #
+    # @param [String]
+    #   valid version constraint , e.g. "= 2.1.3"
+    #
+    # @return [Array<String>] operator and version number pair
     def self.parse_constraint(constraint)
       constraint = constraint.strip
       re = %r{^(=~|~>|<=|>=|==|=|<|>)?\s*(\d+(:?\.\S+)*)$}
@@ -47,9 +55,29 @@ class Library
       return op, val
     end
 
-    # New version number.
+    # Parse common Hash-based version, i.e. Jeweler format.
     #
-    # TODO: parse YAML style versions
+    # @param [Hash] version hash
+    #
+    # @return [Library::Version] instance of Version
+    def self.parse_hash(data)
+      data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
+      if data[:major]
+        vers = data.values_at(:major, :minor, :patch, :build)
+      else
+        vers = data[:vers] || data[:version]
+      end
+      new vers
+    end
+
+    # Parse YAML-based version.
+    # TODO: deprecate ?
+    def parse_yaml(yaml)
+      require 'yaml'
+      parse_hash( YAML.load(yaml) )
+    end
+
+    # Instantiate new instance of Version.
     def initialize(*args)
       args   = args.flatten.compact
       args   = args.join('.').split(/\W+/)
@@ -57,11 +85,16 @@ class Library
     end
 
     # Returns string representation of version, e.g. "1.0.0".
+    #
+    # @return [String] version number in dot format
     def to_s
       @tuple.compact.join('.')
     end
 
-    # This is here only becuase File.join calls it instead of to_s.
+    # Library::Version is not technically a String-type. This is here
+    # only becuase `File.join` calls it instead of #to_s.
+    #
+    # @return [String] version number in dot format
     def to_str
       @tuple.compact.join('.')
     end
@@ -69,12 +102,22 @@ class Library
     #def inspect; to_s; end
 
     # Access indexed segment of version number.
-    # Returns 0 if index is non-existant.
-    def [](i)
-      @tuple.fetch(i,0)
+    # Returns `0` if index is non-existant.
+    #
+    # @param index [Integer] a segment index of the version
+    #
+    # @return [Integer, String] version segment
+    def [](index)
+      @tuple.fetch(index,0)
     end
 
     # "Spaceship" comparsion operator.
+    #
+    # @param other [Library::Version, Array] 
+    #   a Library::Version or equvalent Array to compare
+    #
+    # @return [Integer] 
+    #   `-1`, `0`, or `1` for less, equal or greater, respectively
     def <=>(other)
       [size, other.size].max.times do |i|
         c = self[i] <=> (other[i] || 0)
@@ -84,6 +127,11 @@ class Library
     end
 
     # Pessimistic constraint (like '~>' in gems).
+    #
+    # @param other [Library::Version]
+    #   another instance of version
+    #
+    # @return [Boolean] match pessimistic constraint?
     def =~(other)
       #other = other.to_t
       upver = other.tuple.dup
@@ -104,6 +152,8 @@ class Library
 
     # Build returns the remaining portions of the version
     # tuple after +patch+ joined by '.'.
+    #
+    # @return [String] version segments after the 3rd in point-format
     def build
       @tuple[3..-1].join('.')
     end
@@ -114,6 +164,8 @@ class Library
     end
 
     # Size of version tuple.
+    #
+    # @return [Integer] number of segments
     def size
       @tuple.size
     end
@@ -125,23 +177,11 @@ class Library
 
     protected
 
-    def tuple ; @tuple ; end
-
-    # Parse YAML-based VERSION.
-    def parse_version_yaml(yaml)
-      require 'yaml'
-      data = YAML.load(yaml)
-      data = data.inject({}){ |h,(k,v)| h[k.to_sym] = v; h }
-      self.name = data[:name] if data[:name]
-      self.date = data[:date] if data[:date]
-      # jeweler
-      if data[:major]
-        self.version = data.values_at(:major, :minor, :patch, :build).compact.join('.')
-      else
-        vers = data[:vers] || data[:version]
-        self.version = (Array === vers ? vers.join('.') : vers)
-      end
-      self.codename = data.values_at(:code, :codename).compact.first
+    # The internal tuple modeling the version number.
+    #
+    # @return [Array] internal tuple representing the version
+    def tuple
+      @tuple
     end
 
   end
@@ -153,10 +193,12 @@ class Library
   # VersionConflict is raised when selecting another version
   # of a library when a previous version has already been selected.
   class VersionConflict < ::LoadError  # :nodoc:
+    #
     def initialize(lib1, lib2=nil)
       @lib1 = lib1
       @lib2 = lib2
     end
+    #
     def message
       if @lib2
         @lib1.inspect + " vs. " + @lib2.inspect

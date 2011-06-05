@@ -1,4 +1,5 @@
 class Library
+  require 'roll/requirements'
 
   # The Metadata call encapsulates a library's package,
   # profile and requirements information.
@@ -28,6 +29,7 @@ class Library
 
     # TODO: Add other fields later
     def to_h
+      load_metadata
       { :location => location,
         :name     => name,
         :version  => version.to_s,
@@ -88,12 +90,12 @@ class Library
       @version = Version.new(string) if string
     end
 
-    # Is active, i.e. not omitted.
+    # Omit from any ledger?
     #
-    # TODO: Should we support +active+ setting, or should we add a way to 
+    # TODO: Should we support +omit+ setting, or should we add a way to 
     # exclude loctions from from the environment?
-    def active?
-      true
+    def omit?
+      @omit
     end
 
     # Does this location have .ruby entries?
@@ -101,6 +103,7 @@ class Library
       @dot_ruby ||= File.exist?(File.join(location, '.ruby'))
     end
 
+=begin
     # Does the project have a PROFILE?
     def profile?
       Dir.glob(File.join(location, 'PROFILE'), File::FNM_CASEFOLD).first
@@ -121,6 +124,7 @@ class Library
         end
       )
     end
+=end
 
     #
     def requirements
@@ -164,7 +168,7 @@ class Library
       return location if dotruby?
       if gemspec?
         gemspec_parse
-        dotruby_save
+        #dotruby_save
         return location
       else
         return nil
@@ -177,33 +181,28 @@ class Library
     def load_metadata
       @loaded = true
       if dotruby?
-        self.name     = dotruby_load_file('name')
-        self.version  = dotruby_load_file('version') #, '0.0.0')
-        self.loadpath = dotruby_load_file('loadpath', ['lib'])
+        data = YAML.load(File.new(File.join(location, '.ruby')))
+        if Hash === data
+          self.name     = data['name']
+          self.version  = data['version'] #|| '0.0.0')
+          self.loadpath = data['loadpath'] || ['lib']
+        else
+          {}
+        end
       elsif gemspec?
         gemspec_parse
       end
     end
 
-    # Load `.ruby/<name>` file and strip whitespace.
-    def dotruby_load_file(name, default=nil)
-      file = File.join(location, '.ruby', name)
-      if File.exist?(file)
-        File.read(file).strip
-      else
-        default
-      end
-    end
-
-    # Save minimal `.ruby` entries.
-    def dotruby_save
-      require 'fileutils'
-      dir = File.join(location, '.ruby')
-      FileUtils.mkdir(dir)
-      File.open(File.join(dir, 'name'), 'w'){ |f| f << name }
-      File.open(File.join(dir, 'version'), 'w'){ |f| f << version.to_s }
-      File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
-    end
+#    # Save minimal `.ruby` entries.
+#    def dotruby_save
+#      require 'fileutils'
+#      dir = File.join(location, '.ruby')
+#      FileUtils.mkdir(dir)
+#      File.open(File.join(dir, 'name'), 'w'){ |f| f << name }
+#      File.open(File.join(dir, 'version'), 'w'){ |f| f << version.to_s }
+#      File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
+#    end
 
     #
     def gemspec_parse

@@ -1,17 +1,17 @@
 #require 'roll/monitor'
 require 'roll/original'
 require 'roll/config'
-require 'roll/version'
 require 'roll/environment'
 require 'roll/library'
 require 'roll/ruby'
-require 'roll/bootstrap'
 
 Library.bootstrap
 
 module ::Kernel
 
   # In which library is the current file participating?
+  #
+  # @return [Library] currently loading Library instance
   def __LIBRARY__
     $LOAD_STACK.last
   end
@@ -19,48 +19,78 @@ module ::Kernel
   # Activate a library.
   # Same as #library_instance but will raise and error if the library is
   # not found. This can also take a block to yield on the library.
+  #
+  # @param name [String]
+  #   the library's name
+  #
+  # @param constraint [String]
+  #   a valid version constraint
+  #
+  # @return [Library] the Library instance
   def library(name, constraint=nil, &block) #:yield:
     Library.activate(name, constraint, &block)
   end
 
   module_function :library
 
-  # Load script.
-  def require(file, options={}, &block)
-    Library.require(file, options, &block)
+  # Acquire script. This is Roll's modern require/load method.
+  # It differs from the usual #require or #load primarily by
+  # the fact that it will search the currently loading library,
+  # i.e. the one on the top of the #LOAD_STACK for a script
+  # before looking elsewhere. The reason we can't just adjust
+  # `#require` to do this is becuase it can load a local script
+  # when a non-local script was intended. For example, if a 
+  # project contained 'fileutils.rb' then this would be loaded
+  # rather the Ruby's standard library. When using `#acquire`,
+  # one has to add the `ruby:` prefix to ensure the Ruby libray
+  # is loaded.
+  #
+  # @param file [String]
+  #   The script to load, optionally prefixed with `library-name:`.
+  #
+  # @param options [Hash]
+  #   Load options can be :wrap, :load, :legacy and :search.
+  #
+  # @return [true, false]
+  #   if script was newly required or successfully loaded depending
+  #   on the :load option settings
+  def acquire(file, options={}) #, &block)
+    Library.acquire(file, options) #, &block)
+  end
+
+  module_function :acquire
+
+  # Require script. This is the same as acquire except that the
+  # `:legacy` option is fixed as `true`.
+  #
+  # @param file [String]
+  #   The script to load, optionally prefixed with `library-name:`.
+  #
+  # @param options [Hash]
+  #   Load options can be :wrap, :load and :search.
+  #
+  # @return [true, false] if script was newly required
+  def require(file, options={}) #, &block)
+    Library.require(file, options) #, &block)
   end
 
   #
   module_function :require
 
-  # Load script.
-  def load(file, options={}, &block)
-    Library.load(file, options, &block)
+  # Load script. This is the same as acquire except that the
+  # `:legacy` and `:load` options are fixed as `true`.
+  #
+  # @param file [String]
+  #   The script to load, optionally prefixed with `library-name:`.
+  #
+  # @param options [Hash]
+  #   Load options can be :wrap and :search.
+  #
+  # @return [true, false] if script was successfully loaded
+  def load(file, options={}) #, &block)
+    Library.load(file, options) #, &block)
   end
 
   module_function :load
 
 end
-
-=begin
-class Module
-  # Autoload script.
-  #
-  # NOTE: Rolls has to neuter this functionality b/c og a "bug" in Ruby
-  # which doesn't allow autoload from using overridden require methods.
-  def autoload(constant, file)
-    #Library.ledger.autoload(constant, file)
-    $LEDGER.autoload(constant, file)
-  end
-
-  # Autoload script.
-  #
-  # NOTE: Rolls has to neuter this functionality b/c og a "bug" in Ruby
-  # which doesn't allow autoload from using overridden require methods.
-  def self.autoload(constant, file)
-    #Library.ledger.autoload(constant, file)
-    $LEDGER.autoload(constant, file)
-  end
-end
-=end
-

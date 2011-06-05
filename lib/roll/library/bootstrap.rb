@@ -23,16 +23,16 @@ class Library
       ledger[name] << library unless data[:omit]
     end
 
-    # TODO: fallback measure would put all libs on loadpath ?
-    #if ENV['ROLLOLD']
-    #  @index.each do |name, libs|
-    #    sorted_libs = [libs].flatten.sort
-    #    lib = sorted_libs.first
-    #    lib.loadpath.each do |lp|
-    #      $LOAD_PATH.unshift(File.join(lib.location, lp))
-    #    end
-    #  end
-    #end
+    # Legacy mode manages a traditional loadpath.
+    if LEGACY
+      ledger.each do |name, libs|
+        sorted_libs = [libs].flatten.sort
+        lib = sorted_libs.first
+        lib.absolute_loadpath.each do |path|
+          $LOAD_PATH.unshift(path)
+        end
+      end
+    end
 
     ledger['site_ruby'] = SiteRubyLibrary.new
     ledger['ruby']      = RubyLibrary.new

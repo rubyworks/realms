@@ -62,11 +62,40 @@ While #=~ provides *pessimistic* constraint comparison.
   assert(v1 =~ v2)
 
 The Version class also provides some useful singleton methods
-such as #parse_constraint.
+such as #parse_constraint. This method deciphers a comparision string.
 
   a = Roll::Version.parse_constraint("~> 1.0.0")
-  e = [ "=~", Roll::Version['1.0.0'] ]
-  e.assert == a
+  e = ["=~", Roll::Version['1.0.0']]
+  a.assert == e
 
-This is usefuly for parsing requirement configurations.
+Equality can be written with `==` or `=`.
+
+  a = Roll::Version.parse_constraint("= 0.9.0")
+  e = ["==", Roll::Version['0.9.0']]
+  a.assert == e
+
+Without an operator equality is implied.
+
+  a = Roll::Version.parse_constraint("1.1")
+  e = [ "==", Roll::Version['1.1'] ]
+  a.assert == e
+
+This is usefuly for parsing requirement configurations. Using it, the Version
+class can build contraint comparison procedures.
+
+  compare = Roll::Version.constraint_lambda("=1.0")
+  compare.call('1.0').assert == true
+  compare.call('0.9').assert == false
+
+Greater than
+
+  compare = Roll::Version.constraint_lambda(">1.0")
+  compare.call('1.1').assert == true
+  compare.call('0.9').assert == false
+
+Less than
+
+  compare = Roll::Version.constraint_lambda("<1.0")
+  compare.call('1.1').assert == false
+  compare.call('0.9').assert == true
 

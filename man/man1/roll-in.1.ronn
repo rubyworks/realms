@@ -14,8 +14,14 @@ working directory is used.
 
 ## OPTIONS
 
-    `-d --depth`   Set the depth to search below the PATH for a Ruby project.
-                   The default value is 2.
+    `-d --depth`   Set the depth to search below PATH for a Ruby project.
+                   The default value is 3.
+
+    `-l --live`    Live locations have their metadata refreshed at the start
+                   of every Ruby process. Non-live locations get their metadata
+                   solely from the pre-built index. The former is useful for
+                   developers, but is slower. The later is good for external
+                   dependencies and production.
 
 
 ## SEE ALSO

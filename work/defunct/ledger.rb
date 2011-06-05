@@ -6,6 +6,8 @@ require 'roll/ruby'
 
 module Roll
 
+  # IDEA: Simplify by making $LEDGER == Ledger#index
+
   # The Library Ledger, keeping track the an environment and
   # disptching the roll calls.
   #
@@ -28,16 +30,15 @@ module Roll
       #- current environment if name is +nil+.
       @environment = Environment.new(name)
 
-      @environment.each do |name, paths|
-        paths.each do |path, loadpath|
-          unless File.directory?(path)
-            warn "invalid path for #{name} -- #{path}"
-            next
-          end
-          # TODO: valid project directory?
-          lib = Library.new(path, :name=>name, :loadpath=>loadpath)
-          @index[name] << lib #unless lib.omit?
+      @environment.each do |data|
+        name = data['name']
+        path = data['location']
+        unless File.directory?(path)
+          warn "invalid path for #{name} -- #{path}"
+          next
         end
+        library = Library.new(path, data)
+        @index[name] << library unless data['omit']
       end
 
       # TODO: fallback measure would put all libs on loadpath ?
@@ -113,10 +114,12 @@ module Roll
     # to that is we do not have direct access the ledger object, but would
     # have to use $LEDGER.
     def activate(library)
+      name = library.name
+
       lib = $LEDGER.index[name]
-#p lib
+
       if Library === lib
-        raise VersionConflict if lib != self
+        raise VersionConflict.new(library, lib) if lib != library
       else
         library.absolute_loadpath.each do |path|
           $LOAD_PATH.unshift(path)
@@ -124,10 +127,11 @@ module Roll
 
         $LEDGER.index[name] = library
 
-        if library.requirements.exist?
-          library.requirements.verify(true)
-          # complete collapse
-        end
+# TODO
+        #if library.requirements.exist?
+        #  library.requirements.verify(true)
+        #  # complete collapse
+        #end
       end
     end
 
@@ -208,7 +212,8 @@ module Roll
     #   require('facets:string/margin', :load=>true)
     #
     # TODO: Should we also check $"? Eg. `return false if $".include?(path)`.
-    def require(path, options={})
+    def require(path, options={}, &block)
+      options.merge(block.call) if block
       if file = load_cache[path]
         if options[:load]
           file.load
@@ -235,21 +240,22 @@ module Roll
     # automatically appended.
     #
     # TODO: maybe swap #load and #require ?
-    def load(path, options={})
+    def load(path, options={}, &block)
+      options.merge(block.call) if block
       options[:load]   = true
       options[:suffix] = false
       require(path, options)
     end
 
     # Legacy require.
-    def require_legacy(path)
-      require(path, :legacy=>true)
-    end
+    #def require_legacy(path)
+    #  require(path, :legacy=>true)
+    #end
 
     # Legacy loading.
-    def load_legacy(path, wrap=nil)
-      load(path, :legacy=>true, :wrap=>wrap)
-    end
+    #def load_legacy(path, wrap=nil)
+    #  load(path, :legacy=>true, :wrap=>wrap)
+    #end
 
 =begin
     #
@@ -449,6 +455,19 @@ puts "  (7 fallback)" if MONITOR
     end
 
   public
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # -- T O O L S --
 

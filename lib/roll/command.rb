@@ -1,5 +1,5 @@
 #require File.dirname(File.dirname(__FILE__)) + '/roll.rb'
-require 'roll'
+#require 'roll'
 
 module Roll
 
@@ -76,4 +76,3 @@ module Roll
   end
 
 end
-

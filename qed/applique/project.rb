@@ -1,6 +1,6 @@
 require 'pathname'
 
-project_directory = Pathname.new('tmp/projects')
+project_directory = Pathname.new('projects')
 
 When 'Given a project directory "(((\S+)))"' do |name|
   @project_directory = project_directory + name

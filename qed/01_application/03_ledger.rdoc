@@ -1,51 +1,31 @@
-= Ledger Class
+= The Ledger
 
-The Ledger class
+At the heart of Rolls lies a ledger object. It is simply a Hash of
+library names indexing library objects.
 
-To demonstrate the Ledger class we will need a set of conforming projects
-as defined in projects.rdoc[qed://../helpers/projects.rdoc].
+  $LEDGER.keys.assert == ['foo', 'ruby', 'tryme']
 
-In the normal course of operation there is only one Ledger instance,
-stored in $LEDGER and reflecting the current environment. (It is
-possbile however to create secondary ledgers for testing, or other
-esoteric purposes.)
-
-A Ledger is instantiated with a single argument, the name of the
-environment. If a name is not given the current environment will be used.
-The current environment is determined by looking for the roll_environment
-or RUBYENV environment variable, failing that the `default` file in the
-users roll config directory, and lastly if all else fails falling back to
-the static value "production".
-
-  $LEDGER.environment.name.assert == 'production'
-
-The Library class actually redirects most calls to the $LEDGER, so we
+The Library class redirects a number of calls to the $LEDGER, so we
 could invoke the same methods on it instead.
 
-  Roll::Library.environment.name.assert == 'production'
+  Roll::Library.names.assert == $LEDGER.keys
 
-Which you choose to use is really a matter of taste. The Roll::Library
-rendition was made for readability, whereas $LEDGER is used internally.
+Which we choose to use is really a matter of taste. The Roll::Library
+methods were designed for readability, whereas $LEDGER is used internally.
 For the rest of this demo we will use $LEDGER since this demonstration
-is specifically about the Ledger class.
+is specifically about it.
 
-The Ledger provides a method for *rolling-in* lookup paths. It takes the
-path and the depth-of-search as it's arguments.
+The values of $LEDGER will always be either a Library object or an
+array of Library objects, of the same name but differnt versions.
 
-  $LEDGER.insert('tmp/projects', 2)
+When a particular library is activated for the first time the corresponding
+array value will be replaced by the library.
 
-This will add the path and depth to the internal lookup table. Then resync the
-internal index to the adjusted lookup table and save the result to disc.
-So now there should be a `production` file in the user's roll config folder.
-In our case this is a temporary location setup specifically for this
-demonstration.
+  $LEDGER['tryme'].assert.is_a?(Array)
 
-  text = File.read('tmp/config/roll/environments/production')
+  library('tryme')
 
-Normally the file will by in one's home directory under `.config/roll/`.
+  $LEDGER['tryme'].assert.is_a?(Roll::Library)
 
-Our projects are TryMe 1.0 and TryMe 1.1, saved in `tryme/` directories,
-so we can verify the insert worked by looking for this term.
-
-  text.assert.include?('tryme/')
+This is how Rolls handles versioning.
 

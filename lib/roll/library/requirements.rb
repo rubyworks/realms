@@ -7,7 +7,8 @@ class Library
 
     #
     def initialize(location)
-      @location = location
+      @location     = location
+      @dependencies = nil
     end
 
     # Location of project.
