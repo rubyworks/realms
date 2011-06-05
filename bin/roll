@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
-require 'roll/command'
+require 'roll'
+ARGV.shift if ARGV.first == '-'
 begin
   Roll::Command.main(*ARGV)
 rescue => err
   raise err if $DEBUG
   $stderr.puts(err.message)
+  exit -1
 end
 
