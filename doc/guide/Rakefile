@@ -1,0 +1,17 @@
+namespace 'guide' do
+  desc "build user guide"
+  task :build do
+    require 'erb'
+    require 'redcloth'
+    File.open('index.html', 'w') do |out|
+      out << erb('layout.rhtml') do
+        RedCloth.new(File.read('guide.tt')).to_html
+      end
+    end
+  end
+end
+
+def erb(file)
+  ERB.new(File.read(file)).result(binding)
+end
+
