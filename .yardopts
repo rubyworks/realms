@@ -1,0 +1,5 @@
+--title "Rolling with Ruby"
+--output "site/doc"
+--protected
+lib
+- [A-Z][A-Z]*
