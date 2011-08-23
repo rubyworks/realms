@@ -1,17 +1,16 @@
 module Roll
 
-  # Copy an environment.
+  # Copy roll file.
   class CommandCopy < Command
-
     #
     def setup
       op.banner = "Usage: roll copy [to]\n" +
                   "       roll copy [from] [to]" 
-      op.separator "Copy an environment."
-      op.on('--sync', '-s', "Resync after copying.") do
-        opts[:sync] = true
+      op.separator "Copy a roll."
+      op.on('--lock', '-l', "Lock after copying.") do
+        opts[:lock] = true
       end
-      op.on('--force', '-f', "Force overwrite of pre-existing environment.") do
+      op.on('--force', '-f', "Force overwrite of pre-existing roll.") do
         opts[:force] = true
       end
     end
@@ -19,38 +18,36 @@ module Roll
     #
     def call
       if args.size == 1
-        name_to = args.first
-        current = Library.environment
-
-        safegaurd_copy(current.name, name_to)
-
-        env_to  = current.copy(name_to)
+        src = Roll.roll_file
+        dst = Roll.construct_roll_file(args[0])
       else
-        name_from = args[0]
-        name_to   = args[1]
-
-        safegaurd_copy(name_from, name_to)
-
-        env_from  = Library.environment(name_from)
-        env_to    = env_from.copy(name_to)
+        src = Roll.construct_roll_file(args[0])
+        dst = Roll.construct_roll_file(args[1])
       end
-      env_to.sync if opts[:sync]
-      env_to.save
-      puts "Environment `#{name_to}` saved."
+
+      safe_copy(src, dst)
+
+      if opts[:lock]
+        Roll.lock(dst)
+        puts "Locked '#{dst}`."
+      else
+        puts "Saved '#{dst}`."
+      end
     end
 
+    # Copy a file safely.
     #
-    def safegaurd_copy(name_from, name_to)
-      if !Library.environments.include?(name_from)
-        $stderr.puts "Environment `#{name_from}` does not exist."
+    def safe_copy(src, dst)
+      if not File.exist?(src)
+        $stderr.puts "File does not exist -- '#{src}`"
         exit -1
       end
-      if Library.environments.include?(name_to) && !opts[:force]
-        $stderr.puts "`#{name_to}` already exists. Use --force option to overwrite."
+      if File.exist?(dst) && !opts[:force]
+        $stderr.puts "'#{dst}` already exists. Use --force option to overwrite."
         exit -1
       end
+      FileUtils.cp(src, dst)
     end
-
   end
 
 end

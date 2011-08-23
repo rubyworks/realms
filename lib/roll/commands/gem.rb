@@ -1,14 +1,15 @@
 module Roll
 
-  # Create an isolation index.
+  # Run a gem command then re-lock any locked rolls that contain
+  # paths in the current gem home.
   class CommandGem < Command
 
-    # Execute the command.
+    # Execute the command. This is overriden so that the
+    # remaining args are passed on to the gem command.
     def execute
       setup
       op.on_tail("--debug", "Run in debugging mode.") do
         $DEBUG   = true
-        $VERBOSE = true
       end
       op.on_tail("--help", "-h", "Display this help message.") do
         puts op
@@ -21,7 +22,7 @@ module Roll
     #
     def setup
       op.banner = "Usage: roll gem ..."
-      op.separator "Run gem command and resync environment afterward."
+      op.separator "Run gem command and relock roll afterwards."
       op.on("--sudo", "-s", "Run gem command as super user.") do
         opts[:sudo] = true
       end
@@ -29,16 +30,19 @@ module Roll
 
     #
     def call
-      cmd = "gem " +  args.join(' ')
+      cmd = "gem "  + args.join(' ')
       cmd = "sudo " + cmd if opts[:sudo]
+
+      gem_rolls = Roll.lock_gem_rolls
+
       if success = system(cmd)
         puts
-        gem_envs = Library.sync_gem_environments
-        if gem_envs.empty?
-           puts "No environments required a resync."
+        if gem_rolls.empty?
+           puts "No rolls required re-locking."
         else
-          gem_envs.each do |name|
-            puts "Index for `#{name}` has been synced."
+          puts "Locked:"
+          gem_rolls.each do |name|
+            puts "- #{name}"
           end
         end
       end
@@ -47,4 +51,3 @@ module Roll
   end
 
 end
-

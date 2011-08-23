@@ -11,17 +11,19 @@ module Roll
                   "Use 'roll <COMMAND> --help' for command details."
       op.separator " "
       op.separator "COMMANDS:"
-      op.separator spacer % ["list               ", "List available environments."]
-      op.separator spacer % ["use NAME           ", "Change current environment. (Setting RUBYENV is better!)"]
-      op.separator spacer % ["in  [DIR]          ", "Roll directory into current environment."]
-      op.separator spacer % ["out [DIR]          ", "Remove directory from current environment."]
-      op.separator spacer % ["show               ", "Show current environment."]
-      op.separator spacer % ["sync               ", "Synchronize environment indexes."]
-      op.separator spacer % ["copy NAME1 [NAME2] ", "Copy environment to new environment."]
-      op.separator spacer % ["verify             ", "Verify project dependencies are in current environment."]
-      op.separator spacer % ["isolate            ", "Create an isolation index for present project."]
-      op.separator spacer % ["gem                ", "Run gem command, then resync any related environments."]
-      op.separator spacer % ["path               ", "Output bin PATH list."]
+      op.separator spacer % ["list                ", "List available roll files."]
+      op.separator spacer % ["use NAME            ", "Change current roll file. (Setting ROLL_FILE is better!)"]
+      op.separator spacer % ["in  [DIR]           ", "Insert directory into current roll file."]
+      op.separator spacer % ["out [DIR]           ", "Remove directory from current roll file."]
+      op.separator spacer % ["show                ", "Show current roll file."]
+      op.separator spacer % ["lock                ", "Lock roll(s)."]
+      op.separator spacer % ["copy NAME1 [NAME2]  ", "Copy roll file to new roll file."]
+      op.separator spacer % ["merge NAME1 [NAME2] ", "Merge one roll file into another."]
+      op.separator spacer % ["verify              ", "Verify project requirements are in current roll file."]
+      op.separator spacer % ["isolate             ", "Create an isolating roll file for present project."]
+      op.separator spacer % ["gem                 ", "Run gem command, then re-lock any effected roll files."]
+      op.separator spacer % ["path                ", "Output executeables PATH list."]
+      op.separator spacer % ["where               ", "Locate a library script."]
       op.separator " "
       op.separator "OPTIONS:"
     end

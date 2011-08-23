@@ -2,15 +2,20 @@ module Roll
 
   # This script builds a list of all roll-ready bin locations
   # and writes that list as an environment setting shell script.
-  # On Linux a call to this to you .bashrc file. Eg.
+  # On Linux, add a call to this in your .bashrc file, e.g.
   #
-  #   if [ -f ~/.rollrc ]; then
-  #       . roll
+  #   export PATH="$(roll path):$PATH"
+  #
+  # Or better, put this in a `.config/bashrc/ruby.sh` file. And then 
+  # in your `.bashrc file:
+  #
+  #   if [ -f ~/.config/bashrc/ruby.sh ]; then
+  #       . ~/.config/bashrc/ruby.sh
   #   fi
   #
   # Currently this only supports bash.
   #
-  # TODO: It would be better to "install" executables
+  # TODO: Would it be better to "install" executables
   # to an appropriate bin dir, using links (soft if possible).
   # There could go in ~/.bin or .config/roll/<ledger>.bin/
   #

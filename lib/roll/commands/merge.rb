@@ -1,55 +1,56 @@
 module Roll
 
-  # Copy an environment.
+  # Merge one roll with another.
   class CommandMerge < Command
 
     #
     def setup
       op.banner = "Usage: roll merge [from]\n" +
                   "       roll merge [from] [to]" 
-      op.separator "Merge environments."
-      op.on('--sync', '-s', "Resync after merging.") do
-        opts[:sync] = true
+      op.separator "Merge roll files."
+      op.on('--lock', '-l', "Lock after merging.") do
+        opts[:lock] = true
       end
-    end
-
-    # TODO:
-    def call
-      if args.size == 1
-        name_from = args.first
-        name_to   = Library.environment.name
-
-        safegaurd(name_from, name_to)
-
-        env_from  = Library.environment(name_from)
-        env_to    = Library.environment
-
-        env_to.merge!(env_from)
-      else
-        name_from = args[0]
-        name_to   = args[1]
-
-        safegaurd(name_from, name_to)
-
-        env_from  = Library.environment(name_from)
-        env_to    = Library.environment(name_to)
-
-        env_to.merge!(env_from)
-      end
-      env_to.sync if opts[:sync] # TODO: maybe better just to always do it
-      env_to.save
-      puts "Environment `#{env_to.name}` saved."
     end
 
     #
-    def safegaurd(name_from, name_to)
-      if !Library.environments.include?(name_from)
-        $stderr.puts "Environment `#{name_from}` does not exist."
+    def call
+      if args.size == 1
+        src = Roll.roll_file
+        dst = Roll.construct_roll_file(args[0])
+      else
+        src = Roll.construct_roll_file(args[0])
+        dst = Roll.construct_roll_file(args[1])
+      end
+
+      safe_merge(src, dst)
+
+      if opts[:lock]
+        Roll.lock(dst)
+        puts "Locked '#{dst}`."
+      else
+        puts "Saved '#{dst}`."
+      end
+    end
+
+    # Merge files safely.
+    #
+    def safe_merge(src, dst)
+      if not File.exist?(src)
+        $stderr.puts "File does not exist -- '#{src}`"
         exit -1
       end
-      if !Library.environments.include?(name_to)
-        $stderr.puts "Environment `#{name_to}` does not exist."
+
+      if not File.exist?(dst)
+        $stderr.puts "'#{dst}` already exists. Use --force option to overwrite."
         exit -1
+      end
+
+      src_txt = File.read(src).strip
+      dst_txt = File.read(src).strip
+
+      File.open(dst, 'w') do |file|
+        file << dst_txt + "\n" + src_txt
       end
     end
 

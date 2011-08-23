@@ -1,11 +1,11 @@
 module Roll
 
-  class CommandWhich < Command
+  class CommandWhere < Command
 
     #
     def setup
-      op.banner = "Usage: roll which <path>"
-      op.separator "Display absolute path of library path."
+      op.banner = "Usage: roll where <script>"
+      op.separator "Display absolute path to a script."
       #op.on('--all', '-a', "Search all environments.") do
       #  opts[:all] = true
       #end
@@ -13,12 +13,12 @@ module Roll
 
     #
     def call
-      path = args.first
-      file = library_find(path)
-      if file
-        puts file.fullname
+      script = args.first
+      path = Library.find(script)
+      if path
+        $stdout.puts path
       else
-        puts "Not found."
+        $stderr.puts "Not found."
       end
     end
 

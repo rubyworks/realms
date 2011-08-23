@@ -1,18 +1,17 @@
 module Roll
 
-  #
+  # Verify that a project's requirements are in the current roll call.
   class CommandVerify < Command
-
     #
     def setup
       op.banner = "Usage: roll verify [path]"
-      op.separator "Verify dependencies in current environment."
+      op.separator "Verify dependencies in current roll."
     end
 
     # TODO: lookup root by matching .ruby relative to path?
     def call
-      loc = args.first || Dir.pwd
-      lib = Library.new(loc)
+      root = args.first || Dir.pwd
+      lib  = Library.new(root)
       if lib.requirements.empty?
         puts "Project #{lib.name} has no requirements."
       else

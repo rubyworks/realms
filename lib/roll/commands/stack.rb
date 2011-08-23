@@ -1,17 +1,18 @@
 module Roll
 
-  # Show environment.
-  class CommandStack < Command
+  #
+  class CommandShells < Command
 
     #
     def setup
-      op.banner = "Usage: roll stack"
-      op.separator "Display environment stack."
+      op.banner = "Usage: roll shells"
+      op.separator "Display roll shell stack."
     end
 
     #
     def call
-      puts ENV['roll_environment_stack'] || ''
+      stack = ENV['roll_shell_stack'] || ''
+      puts stack.split(':').join("\n")
     end
 
   end

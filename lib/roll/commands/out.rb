@@ -5,16 +5,17 @@ module Roll
 
     #
     def setup
-      op.banner = "Usage: roll out [PATH]"
-      op.separator "Remove path from current environment."
+      op.banner = "Usage: roll out [PATH ...]"
+      op.separator "Remove path(s) from current roll."
     end
 
     #
     def call
-      path = File.expand_path(args.first || Dir.pwd)
-      path, file = *Library::Environment.remove(path)
-      puts "#{file}"
-      puts "  '-> #{path} -> [x]"
+      paths     = args || [Dir.pwd]
+      roll_file = Roll.remove(*paths)
+
+      puts paths.join("\n")
+      puts "  '-> #{roll_file} -> [x]"
     end
 
   end
