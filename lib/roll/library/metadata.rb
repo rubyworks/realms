@@ -1,5 +1,5 @@
 class Library
-  require 'roll/requirements'
+  require 'roll/library/requirements'
 
   # The Metadata call encapsulates a library's package,
   # profile and requirements information.
@@ -178,6 +178,9 @@ class Library
     private #------------------------------------------------------------------
 
     # Load metadata.
+    #
+    # Changes
+    # * 2011-08-23 `loadpath` was renamed to `load_path`.
     def load_metadata
       @loaded = true
       if dotruby?
@@ -185,7 +188,7 @@ class Library
         if Hash === data
           self.name     = data['name']
           self.version  = data['version'] #|| '0.0.0')
-          self.loadpath = data['loadpath'] || ['lib']
+          self.loadpath = data['load_path'] || ['lib']
         else
           {}
         end
