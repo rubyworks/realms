@@ -1,11 +1,11 @@
 #require 'roll/monitor'
 require 'roll/original'
-require 'roll/config'
-require 'roll/environment'
+#require 'roll/config'
+#require 'roll/environment'
 require 'roll/library'
 require 'roll/ruby'
 
-Library.bootstrap
+Roll.bootstrap
 
 module ::Kernel
 

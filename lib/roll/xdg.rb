@@ -1,6 +1,6 @@
 require 'roll/core_ext/rbconfig'
 
-class Library
+module Roll
 
   # XDG utility functions.
   #

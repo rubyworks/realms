@@ -1,6 +1,7 @@
+require 'rbconfig'
 require 'roll/library'
 
-class Library
+module Roll
 
   # RubyLibrary is a specialized subclass of Library specifically designed
   # to sever Ruby's standard library. It is used to speed up load times for
@@ -14,7 +15,7 @@ class Library
 
     # New library.
     def initialize #(location, name=nil, options={})
-      @location = ::Config::CONFIG['rubylibdir']
+      @location = ::RbConfig::CONFIG['rubylibdir']
       @name     = 'ruby'
       @options  = {} #?
     end
@@ -25,7 +26,7 @@ class Library
     end
 
     # Arch directory relative to the ruby lib dir.
-    ARCHPATH = ::Config::CONFIG['archdir'].sub(::Config::CONFIG['rubylibdir']+'/', '')
+    ARCHPATH = ::RbConfig::CONFIG['archdir'].sub(::RbConfig::CONFIG['rubylibdir']+'/', '')
 
     # TODO: 1.9+ need to remove rugbygems ?
     def loadpath
@@ -127,7 +128,7 @@ class Library
 
     # New library.
     def initialize #(location, name=nil, options={})
-      @location = ::Config::CONFIG['sitelibdir']
+      @location = ::RbConfig::CONFIG['sitelibdir']
       @name     = 'site_ruby'
       @options  = {} #?
     end
@@ -138,7 +139,7 @@ class Library
     end
 
     # Arch directory relative to the site_ruby lib dir.
-    ARCHPATH = ::Config::CONFIG['sitearchdir'].sub(::Config::CONFIG['sitelibdir']+'/', '')
+    ARCHPATH = ::RbConfig::CONFIG['sitearchdir'].sub(::RbConfig::CONFIG['sitelibdir']+'/', '')
 
     # TODO: 1.9+ need to remove rugbygems ?
     def loadpath
