@@ -6,13 +6,9 @@ class Library
   require 'roll/library/script'
   require 'roll/library/requirements'
   require 'roll/library/version'
-  require 'roll/library/bootstrap'
-
-  #
-  LEGACY = ENV['ROLL_LEGACY'] != 'false'
 
   # Dynamic link extension.
-  #DLEXT = '.' + ::Config::CONFIG['DLEXT']
+  #DLEXT = '.' + ::RbConfig::CONFIG['DLEXT']
 
   # TODO: Some extensions are platform specific --only
   # add the ones needed for the current platform.
@@ -32,26 +28,29 @@ class Library
   # @param data [Hash]
   #   priming matadata (to circumvent loading it from `.ruby` file)
   #
-  def initialize(location, data={})
+  def initialize(location, free=false) #, data={})
     @location = location
     @active   = false
 
-    data = data.rekey
+    #data = data.rekey
 
-    if data.empty?
-      load_metadata
-    else
-      @name     = data[:name]
-      @version  = Version.new(data[:version])
-      @loadpath = data[:loadpath]
-      @date     = data[:date]  # TODO: convert to Time
-      @omit     = data[:omit]
-    end
+    #if data.empty?
+    #  load_metadata
+    #else
+    #  @name     = data[:name]
+    #  @version  = Version.new(data[:version])
+    #  @loadpath = data[:loadpath]
+    #  @date     = data[:date]  # TODO: convert to Time
+    #  @omit     = data[:omit]
+    #end
 
-    # refresh metadata if a development location
-    load_metadata if data[:development]
+    load_metadata
 
-    if $LEDGER
+    raise "Non-conforming library (missing name) -- `#{location}'" unless name
+    raise "Non-conforming library (missing version) -- `#{location}'" unless version
+
+    ## if not free and another version is not already active add to ledger
+    if $LEDGER && !free
       entry = $LEDGER[name]
       if Array === entry
         entry << self unless entry.include?(self)
@@ -70,7 +69,7 @@ class Library
     if Library === vers
       raise VersionConflict.new(self, vers) if vers != self
     else
-      if LEGACY
+      if Roll::LEGACY
         lib = vers.first
         if lib != self
           lib.absolute_loadpath.each do |path|
@@ -115,6 +114,10 @@ class Library
   def location
     @location
   end
+
+  # TODO: If Metadata only came from .ruby file then code could 
+  #       be much simplified. Or DotRuby::Spec could be used and gemspec
+  #       imported if dotruby-rubygems installed.
 
   # Access to library metadata.
   #

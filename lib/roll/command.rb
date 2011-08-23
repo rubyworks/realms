@@ -53,7 +53,7 @@ module Roll
       end
       op.on_tail("--debug", "Run in debugging mode.") do
         $DEBUG   = true
-        $VERBOSE = true
+        #$VERBOSE = true
       end
       op.on_tail("--help", "-h", "Display this help message.") do
         puts op
