@@ -479,7 +479,7 @@ class Library
 $MONITOR = ENV['roll_monitor']
 
   # Find matching libary files. This is the "mac daddy" method used by
-  # the #require and #load methods to find the sepcified +path+ among
+  # the #require and #load methods to find the specified +path+ among
   # the various libraries and their loadpaths.
   def self.find(path, options={})
     path   = path.to_s
@@ -639,6 +639,27 @@ $stderr.puts "  (7 fallback)" if $MONITOR
     select ? matches.uniq : matches.first
   end
 
+  # Search Roll system for current or latest library files. This is useful
+  # for plugin loading.
+  #
+  # This only searches activated libraries or the most recent version
+  # of any given library.
+  #
+  def self.find_files(match, options={})
+    matches = []
+    ledger.each do |name, lib|
+      lib = lib.sort.first if Array===lib
+      lib.loadpath.each do |path|
+        find = File.join(lib.location, path, match)
+        list = Dir.glob(find)
+        list = list.map{ |d| d.chomp('/') }
+        matches.concat(list)
+      end
+    end
+    matches
+  end
+
+
   # Current ledger.
   def self.ledger
     $LEDGER
@@ -716,7 +737,7 @@ $stderr.puts "  (7 fallback)" if $MONITOR
     unless library
       raise LoadError, "no library -- #{name}"
     end
-    libarary.activate
+    library.activate
     yield(library) if block_given?
     library
   end
