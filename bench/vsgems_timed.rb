@@ -1,7 +1,9 @@
 require 'open3'
 
+$bench_env = File.dirname(__FILE__) + '/rubygems.roll'
+
 def time(cmd)
-  cmd = %[export RUBYENV="rubygems"; export RUBYOPT=""; ] + cmd 
+  cmd = %[export RUBYENV="#{$bench_env}"; export RUBYOPT=""; ] + cmd 
   t = Time.now
   Open3.popen3(cmd) do |stdin, stdout, stderr|  
     puts stdout unless stdout.read.empty?

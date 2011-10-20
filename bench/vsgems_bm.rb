@@ -5,8 +5,10 @@ require 'benchmark'
 #require 'facets'
 #require 'nokogiri'
 
+$bench_env = File.dirname(__FILE__) + '/rubygems.roll'
+
 def run(cmd)
-  cmd = %[export RUBYENV="rubygems"; export RUBYOPT=""; ] + cmd 
+  cmd = %[export RUBYENV="#{$bench_env}"; export RUBYOPT=""; ] + cmd 
   Open3.popen3(cmd) do |stdin, stdout, stderr|  
     out = stdout.read
     err = stderr.read
