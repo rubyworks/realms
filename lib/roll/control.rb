@@ -1,11 +1,5 @@
 module Roll
 
-  #
-  LEGACY = ENV['ROLL_LEGACY'] != 'false'
-
-  #
-  DEFAULT_ROLL = 'master'
-
   # Setup the ledger.
   #
   def self.bootstrap(name=nil)
@@ -27,8 +21,9 @@ module Roll
       $LEDGER = {}
     end
 
+=begin
     # Legacy mode manages a traditional loadpath.
-    if LEGACY
+    if legacy?
       $LEDGER.each do |name, libs|
         #next if name == 'ruby'
         #next if name == 'site_ruby'
@@ -39,6 +34,7 @@ module Roll
         end
       end
     end
+=end
 
     $LEDGER['site_ruby'] = SiteRubyLibrary.new
     $LEDGER['ruby']      = RubyLibrary.new
@@ -47,19 +43,42 @@ module Roll
   end
 
   #
+  #def self.legacy?
+  #  ENV['roll.legacy'] != 'false'
+  #end
+
+  #
+  def self.hack_for_autoload?
+    ENV['roll.autoload']
+  end
+
+  #
   def self.config_home
     File.join(XDG.config_home, 'roll')
   end
 
   #
+  DEFAULT_ROLL = 'current'
+
+  #
   def self.roll_file
-    file = ENV['RUBYENV'] || ENV['roll_file'] || DEFAULT_ROLL
+    file = (
+      ENV['RUBYENV'] ||
+      ENV['roll.file'] ||
+        (File.exist?(default_file) && File.read(default_file).strip) ||
+      DEFAULT_ROLL
+    )
     construct_roll_file(file)
   end
 
   #
   def self.lock_file
     roll_file.chomp('.roll') + '.lock'
+  end
+
+  #
+  def self.default_file
+    File.join(config_home, 'default')
   end
 
   # Construct ledger using pathnames in given `file`.
@@ -70,6 +89,8 @@ module Roll
   # Construct a ledger.
   def self.make_ledger(paths)
     ledger = Hash.new{|h,k| h[k] = []}
+
+    paths = paths.map{ |g| Dir[g.strip] }.flatten
 
     paths.each do |path|
       path = path.strip
@@ -157,16 +178,6 @@ module Roll
     file
   end
 
-  # Is the given file a path (as opposed to just a name)?
-  def self.path?(file)
-    /\W/ =~ file
-  end
-
-  # Is the given file just a name (as opposed to  a path)?
-  def self.name?(file)
-    /\W/ !~ file
-  end
-
   # Does this location have .ruby/ entries?
   #--
   # TODO: Really it should at probably have a `version` too.
@@ -182,6 +193,18 @@ module Roll
     Dir[File.join(config_home, '*.lock')].map do |file|
       file.chomp('.lock') + '.roll'
     end
+  end
+
+private
+
+  # Is the given file a path (as opposed to just a name)?
+  def self.path?(file)
+    /\W/ =~ file
+  end
+
+  # Is the given file just a name (as opposed to  a path)?
+  def self.name?(file)
+    /\W/ !~ file
   end
 
 end

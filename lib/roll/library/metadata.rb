@@ -207,7 +207,7 @@ class Library
 #      File.open(File.join(dir, 'loadpath'), 'w'){ |f| f << loadpath.join("\n") }
 #    end
 
-    #
+    # TODO: YAML-based gemspecs?
     def gemspec_parse
       #require('rubygems/specifcation'){{:legacy=>true}}
       require 'rubygems'

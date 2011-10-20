@@ -1,12 +1,11 @@
 class Library
 
-  # The LibFile class represents a single file in a library.
+  # The Script class represents a single file in a library.
   #
-  # TODO: Rename to Script?
   # TODO: Err... what is extension for?
-  class LibFile
+  class Script
 
-    # Create a new LibFile instance.
+    # Create a new Script instance.
     #
     # @param library [Library]
     #   the Library object to which the file belongs
@@ -126,7 +125,7 @@ class Library
 
     # Compare this scripts full path name to another using `#==`.
     #
-    # @param [LibFile, String] another script or file path.
+    # @param [Script, String] another script or file path.
     #
     # @return [true, false] if scripts are the same file
     def ==(other)
@@ -135,7 +134,7 @@ class Library
 
     # Same as `#==`.
     #
-    # @param [LibFile, String] another script or file path.
+    # @param [Script, String] another script or file path.
     #
     # @return [true, false] if scripts are the same file
     def eql?(other)

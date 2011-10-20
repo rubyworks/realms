@@ -1,5 +1,6 @@
 # Library class encapsulates a location on disc that contains a Ruby
 # project, with loadable lib files, of course.
+#
 class Library
   require 'roll/core_ext/file'
   require 'roll/library/metadata'
@@ -69,26 +70,28 @@ class Library
     if Library === vers
       raise VersionConflict.new(self, vers) if vers != self
     else
-      if Roll::LEGACY
-        lib = vers.first
-        if lib != self
-          lib.absolute_loadpath.each do |path|
-            $LOAD_PATH.delete(path)
-          end
-          absolute_loadpath.each do |path|
-            $LOAD_PATH.unshift(path)
-          end
-        end
-        $LEDGER[name] = self
-      else
-        # NOTE: we are only doing this for the sake of autoload
-        # which does not honor a customized require method.
+#      if Roll::LEGACY
+#        lib = vers.first
+#        if lib != self
+#          lib.absolute_loadpath.each do |path|
+#            $LOAD_PATH.delete(path)
+#          end
+#          absolute_loadpath.each do |path|
+#            $LOAD_PATH.unshift(path)
+#          end
+#        end
+#        $LEDGER[name] = self
+#      else
+      # NOTE: we are only doing this for the sake of autoload
+      # which does not honor a customized require method.
+      if Roll.hack_for_autoload?
         absolute_loadpath.each do |path|
           $LOAD_PATH.unshift(path)
         end
-        $LEDGER[name] = self
       end
+      $LEDGER[name] = self
     end
+#    end
     # TODO: activate runtime dependencies
     #verify
     @active = true
@@ -222,7 +225,8 @@ class Library
     end
   end
 
-  # Does this library have a matching +file+.
+  # Does a library contain a relative +file+ within it's loadpath.
+  # If so return the libary file object for it, otherwise +false+.
   #
   # file    - file path to find [to_s]
   # options - Hash of optional settings to adjust search behavior
@@ -232,119 +236,45 @@ class Library
   # NOTE: This method was designed to maximize speed.
   def find(file, options={})
     main   = options[:main]
-    legacy = options[:legacy]
+    #legacy = options[:legacy]
     suffix = options[:suffix] || options[:suffix].nil?
     #suffix = false if options[:load]
     suffix = false if SUFFIXES.include?(::File.extname(file))
     if suffix
-      SUFFIXES.each do |ext|
-        loadpath.each do |lpath|
+      loadpath.each do |lpath|
+        SUFFIXES.each do |ext|
           f = ::File.join(location, lpath, file + ext)
-          return libfile(lpath, file, ext) if ::File.file?(f)
-        end unless legacy
-        legacy_loadpath.each do |lpath|
+          return script(lpath, file, ext) if ::File.file?(f)
+        end
+      end #unless legacy
+      legacy_loadpath.each do |lpath|
+        SUFFIXES.each do |ext|
           f = ::File.join(location, lpath, file + ext)
-          return libfile(lpath, file, ext) if ::File.file?(f)
-        end unless main
-      end
+          return script(lpath, file, ext) if ::File.file?(f)
+        end
+      end unless main
     else
       loadpath.each do |lpath|
-        f = ::File.join(location, lpath, file)        
-        return libfile(lpath, file) if ::File.file?(f)
-      end unless legacy
+        f = ::File.join(location, lpath, file)
+        return script(lpath, file) if ::File.file?(f)
+      end #unless legacy
       legacy_loadpath.each do |lpath|
         f = ::File.join(location, lpath, file)        
-        return libfile(lpath, file) if ::File.file?(f)
+        return script(lpath, file) if ::File.file?(f)
       end unless main
     end
     nil
   end
 
-=begin
-  def find(file, options={})
-    legacy = options[:legacy]
-    suffix = options[:suffix] || options[:suffix].nil?
-    #suffix = false if options[:load]
-    suffix = false if SUFFIXES.include?(::File.extname(file))
-    lp = loadpath()
-    if suffix
-      if legacy
-        SUFFIXES.each do |ext|
-          lp.each do |lpath|
-            f = ::File.join(location, lpath, file + ext)
-            return libfile(lpath, file, ext) if ::File.file?(f)
-          end
-        end
-      else
-        SUFFIXES.each do |ext|
-          lp.each do |lpath|
-            f = ::File.join(location, lpath, file + ext)
-            return libfile(lpath, file, ext) if ::File.file?(f)
-            #f = ::File.join(location, lpath, name, file + ext)               
-            #return libfile(::File.join(lpath, name), file, ext) if ::File.file?(f)
-          end
-        end
-      end
-    else
-      if legacy
-        lp.each do |lpath|
-          f = ::File.join(location, lpath, file)
-          return libfile(lpath, file) if ::File.file?(f)
-        end
-      else
-        lp.each do |lpath|
-          f = ::File.join(location, lpath, file)        
-          return libfile(lpath, file) if ::File.file?(f)
-          #f = ::File.join(location, lpath, name, file)
-          #return libfile(::File.join(lpath, name), file) if ::File.file?(f)
-        end
-      end
-    end
-    nil
-  end
-=end
-
   # Alias for #find.
   alias_method :include?, :find
-
-=begin
-  # Does a library contain a relative +file+ within it's loadpath.
-  # If so return the libary file object for it, otherwise +false+.
-  def include?(file, options={})
-    legacy = options[:legacy]
-    suffix = options[:suffix] || options[:suffix].nil?
-    #suffix = false if options[:load]
-    suffix = false if SUFFIXES.include?(::File.extname(file))
-    if suffix
-      SUFFIXES.each do |ext|
-        loadpath.each do |lpath|
-          f = ::File.join(location, lpath, file + ext)
-          return libfile(lpath, file, ext) if ::File.file?(f)
-        end unless legacy
-        legacy_loadpath.each do |lpath|
-          f = ::File.join(location, lpath, file + ext)
-          return libfile(lpath, file, ext) if ::File.file?(f)
-        end         
-      end
-    else
-      loadpath.each do |lpath|
-        f = ::File.join(location, lpath, file)        
-        return libfile(lpath, file) if ::File.file?(f)
-      end unless legacy
-      legacy_loadpath.each do |lpath|
-        f = ::File.join(location, lpath, file)        
-        return libfile(lpath, file) if ::File.file?(f)
-      end
-    end
-    nil
-  end
-=end
 
   #
   def legacy?
     !legacy_loadpath.empty?
   end
 
+  #
   def legacy_loadpath
     @legacy_loadpath ||= (
       path = []
@@ -357,9 +287,9 @@ class Library
     )
   end
 
-  # Create a new LibFile object from +lpath+, +file+ and +ext+.
-  def libfile(lpath, file, ext=nil)
-    LibFile.new(self, lpath, file, ext)
+  # Create a new Script object from +lpath+, +file+ and +ext+.
+  def script(lpath, file, ext=nil)
+    Script.new(self, lpath, file, ext)
   end
 
   #
@@ -473,10 +403,11 @@ class Library
     }
   end
 
+
   # C L A S S  M E T H O D S
 
 # temporary
-$MONITOR = ENV['roll_monitor']
+$MONITOR = ENV['roll.monitor']
 
   # Find matching libary files. This is the "mac daddy" method used by
   # the #require and #load methods to find the specified +path+ among
@@ -484,35 +415,57 @@ $MONITOR = ENV['roll_monitor']
   def self.find(path, options={})
     path   = path.to_s
 
-    suffix = options[:suffix]
+    #suffix = options[:suffix]
     search = options[:search]
-    legacy = options[:legacy]
+    local  = options[:local]
 
 $stderr.print path if $MONITOR
 
     # Ruby appears to have a special exception for enumerator!!!
     #return nil if path == 'enumerator' 
 
-    # absolute path
-    if /^\// =~ path
-$stderr.puts "  (0 absolute)" if $MONITOR
+=begin
+    # forced local lookup
+    if path.start_with?('//')
+      if script = $LOAD_STACK.last
+        lib = script.library
+        if file = lib.include?(path, options)
+          unless $LOAD_STACK.include?(file)
+$stderr.puts "  (forced stack)" if $MONITOR
+            return file
+          end
+        else
+          raise LoadError, "no such file to load -- #{path}"
+        end
+      else
+        raise LoadError, "load stack is empty"
+      end
+    end
+=end
+
+    # absolute, home or current path
+    case path[0,1]
+    when '/', '~', '.'
+$stderr.puts "  (absolute)" if $MONITOR
       return nil
     end
 
+=begin
     if path.index(':') # a specified library
       name, fname = path.split(':')
       lib  = library(name)
       file = lib.include?(fname, options)
       raise LoadError, "no such file to load -- #{path}" unless file
-$stderr.puts "  (1 direct)" if $MONITOR
+$stderr.puts "  (direct)" if $MONITOR
       return file
     end
+=end
 
-    if not legacy
+    if local
       # try the load stack (TODO: just last or all?)
-      if libfile = $LOAD_STACK.last
-      #$LOAD_STACK.reverse_each do |libfile|
-        lib = libfile.library
+      if script = $LOAD_STACK.last
+      #$LOAD_STACK.reverse_each do |script|
+        lib = script.library
         #if file = lib.include?(fname, options)
         if file = lib.include?(path, options)
           unless $LOAD_STACK.include?(file)
@@ -526,9 +479,9 @@ $stderr.puts "  (1 direct)" if $MONITOR
     name, fname = ::File.split_root(path)
 
     # if the head of the path is the library
-    if fname #path.index('/') or path.index('\\')
+    if fname
       lib = Library[name]
-      if lib && file = lib.include?(fname, options)
+      if lib && file = lib.include?(path, options) || lib.include?(fname, options)
 $stderr.puts "  (3 indirect)" if $MONITOR
         return file
       end
@@ -541,22 +494,6 @@ $stderr.puts "  (5 plain library name)" if $MONITOR
         return file
       end
     end
-
-=begin
-    # try site_ruby
-    lib = Library['site_ruby']
-    if file = lib.include?(path, options)
-$stderr.puts "  (4 ruby core)" if $MONITOR
-      return file
-    end
-
-    # try ruby
-    lib = Library['ruby']
-    if file = lib.include?(path, options)
-$stderr.puts "  (4 ruby core)" if $MONITOR
-      return file
-    end
-=end
 
     # fallback to brute force search, if desired
     if search #or legacy
@@ -615,13 +552,15 @@ $stderr.puts "  (7 fallback)" if $MONITOR
       end
     end
 
+    # TODO: Should we be doing this at all?
+
     ## last ditch attempt, search all $LOAD_PATH
     if suffix
       SUFFIXES.each do |ext|
         $LOAD_PATH.each do |location|
           file = ::File.join(location, path + ext)
           if ::File.file?(file)
-            return Library::LibFile.new(location, '.', path, ext)
+            return Library::Script.new(location, '.', path, ext)
             matches << file 
           end
         end
@@ -630,7 +569,7 @@ $stderr.puts "  (7 fallback)" if $MONITOR
       $LOAD_PATH.each do |location|
         file = ::File.join(location, file)
         if ::File.file?(file)
-          return Library::LibFile.new(location, '.', path, ext) unless select
+          return Library::Script.new(location, '.', path, ext) unless select
           matches << file
         end
       end
@@ -749,9 +688,8 @@ $stderr.puts "  (7 fallback)" if $MONITOR
   #
   # @param options [Hash]
   #
-  #
   # @return [true, false] if script was newly required or successfully loaded
-  def self.acquire(path, options)
+  def self.require(path, options)
     if file = $LOAD_CACHE[path]
       if options[:load]
         return file.load
@@ -773,27 +711,6 @@ $stderr.puts "  (7 fallback)" if $MONITOR
     end
   end
 
-  # Roll-style loading. First it looks for a specific library via `:`.
-  # If `:` is not present it then tries the current loading library.
-  # Failing that it fallsback to Ruby itself.
-  #
-  #   require('facets:string/margin')
-  #
-  # To "load" the library, rather than "require" it, set the +:load+
-  # option to true.
-  #
-  #   require('facets:string/margin', :load=>true)
-  #
-  # @param path [String]
-  #   file name of script relative to library's loadpath
-  #
-  # @return [true, false] if script was newly required
-  def self.require(path, options={}) #, &block)
-    #options.merge!(block.call) if block
-    options[:legacy] = true
-    acquire(path, options)
-  end
-
   # Load file path. This is just like #require except that previously
   # loaded files will be reloaded and standard extensions will not be
   # automatically appended.
@@ -808,9 +725,9 @@ $stderr.puts "  (7 fallback)" if $MONITOR
     options[:wrap]   = true if options and !(Hash===options)
     options[:load]   = true
     options[:suffix] = false
-    options[:legacy] = true
+    options[:local]  = false
 
-    acquire(path, options)
+    require(path, options)
 
     #if file = $LOAD_CACHE[path]
     #  return file.load
@@ -827,6 +744,27 @@ $stderr.puts "  (7 fallback)" if $MONITOR
     ##else
     ##  require_without_rolls(path)
     ##end
+  end
+
+  # Roll-style loading. First it looks for a specific library via `:`.
+  # If `:` is not present it then tries the current loading library.
+  # Failing that it fallsback to Ruby itself.
+  #
+  #   require('facets:string/margin')
+  #
+  # To "load" the library, rather than "require" it, set the +:load+
+  # option to true.
+  #
+  #   require('facets:string/margin', :load=>true)
+  #
+  # @param path [String]
+  #   file name of script relative to library's loadpath
+  #
+  # @return [true, false] if script was newly required
+  def self.acquire(path, options={}) #, &block)
+    #options.merge!(block.call) if block
+    options[:local] = true
+    require(path, options)
   end
 
   # Return Array of environment names.

@@ -87,9 +87,9 @@ module Roll
       File.exist?(datadir)
     end
 
-    # Require library +file+ given as a LibFile instance.
+    # Require library +file+ given as a Script instance.
     #
-    # file - Instance of LibFile.
+    # file - Instance of Script.
     #
     # Returns Boolean success of requiring the file.
     def require_absolute(file)
@@ -100,9 +100,9 @@ module Roll
       success
     end
 
-    # Load library +file+ given as a LibFile instance.
+    # Load library +file+ given as a Script instance.
     #
-    # file - Instance of LibFile.
+    # file - Instance of Script.
     #
     # Returns Boolean success of loading the file.
     def load_absolute(file, wrap=nil)
@@ -117,9 +117,9 @@ module Roll
       loadpath.sort{ |a,b| b.size <=> a.size }
     end
 
-    # Construct a LibFile match.
+    # Construct a Script match.
     def libfile(lpath, file, ext=nil)
-      Library::LibFile.new(self, lpath, file, ext) 
+      Library::Script.new(self, lpath, file, ext) 
     end
   end
 
