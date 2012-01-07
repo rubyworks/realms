@@ -1,5 +1,5 @@
 require 'rbconfig'
-require 'roll/library'
+require 'library'
 
 module Roll
 

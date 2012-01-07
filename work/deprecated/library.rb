@@ -407,7 +407,7 @@ class Library
   # C L A S S  M E T H O D S
 
 # temporary
-$MONITOR = ENV['roll.monitor']
+$MONITOR = ENV['roll_monitor']
 
   # Find matching libary files. This is the "mac daddy" method used by
   # the #require and #load methods to find the specified +path+ among
@@ -423,25 +423,6 @@ $stderr.print path if $MONITOR
 
     # Ruby appears to have a special exception for enumerator!!!
     #return nil if path == 'enumerator' 
-
-=begin
-    # forced local lookup
-    if path.start_with?('//')
-      if script = $LOAD_STACK.last
-        lib = script.library
-        if file = lib.include?(path, options)
-          unless $LOAD_STACK.include?(file)
-$stderr.puts "  (forced stack)" if $MONITOR
-            return file
-          end
-        else
-          raise LoadError, "no such file to load -- #{path}"
-        end
-      else
-        raise LoadError, "load stack is empty"
-      end
-    end
-=end
 
     # absolute, home or current path
     case path[0,1]
@@ -496,13 +477,13 @@ $stderr.puts "  (5 plain library name)" if $MONITOR
     end
 
     # fallback to brute force search, if desired
-    if search #or legacy
+    #if search #or legacy
       #options[:legacy] = true
       if file = search(path, options)
 $stderr.puts "  (6 brute search)" if $MONITOR
         return file
       end
-    end
+    #end
 
 $stderr.puts "  (7 fallback)" if $MONITOR
     nil
@@ -520,10 +501,12 @@ $stderr.puts "  (7 fallback)" if $MONITOR
   def self.search(path, options={})
     matches = []
 
+    options = options.merge(:main=>true)
+
     select  = options[:select]
-    suffix  = options[:suffix] || options[:suffix].nil?
-    #suffix = false if options[:load]
-    suffix = false if Library::SUFFIXES.include?(::File.extname(path))
+#    suffix  = options[:suffix] || options[:suffix].nil?
+#    #suffix = false if options[:load]
+#    suffix = false if Library::SUFFIXES.include?(::File.extname(path))
 
     # TODO: Perhaps the selected and unselected should be kept in separate lists?
     unselected, selected = *$LEDGER.partition{ |name, libs| Array === libs }
@@ -552,6 +535,7 @@ $stderr.puts "  (7 fallback)" if $MONITOR
       end
     end
 
+=begin
     # TODO: Should we be doing this at all?
 
     ## last ditch attempt, search all $LOAD_PATH
@@ -574,6 +558,7 @@ $stderr.puts "  (7 fallback)" if $MONITOR
         end
       end
     end
+=end
 
     select ? matches.uniq : matches.first
   end
@@ -584,7 +569,7 @@ $stderr.puts "  (7 fallback)" if $MONITOR
   # This only searches activated libraries or the most recent version
   # of any given library.
   #
-  def self.find_files(match, options={})
+  def self.search_latest(match) #, options={})
     matches = []
     ledger.each do |name, lib|
       lib = lib.sort.first if Array===lib
@@ -598,6 +583,10 @@ $stderr.puts "  (7 fallback)" if $MONITOR
     matches
   end
 
+  # @deprecated
+  def self.find_files(match)
+    search_latest(match)
+  end
 
   # Current ledger.
   def self.ledger
