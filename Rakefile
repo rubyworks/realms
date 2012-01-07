@@ -1,13 +1,5 @@
-require 'pom'
-PROJECT = POM::Project.new(Dir.pwd)
-
-desc "Generate RDocs"
-task :rdoc => 'doc/rdoc' do
-end
-
-directory 'doc/rdoc' do
-  system %[rdoc -o doc/rdoc -m README -t "Ruby Rolls" README lib]
-end
+#require 'pom'
+#PROJECT = POM::Project.new(Dir.pwd)
 
 desc "Install Rolls"
 task :install do
@@ -19,7 +11,7 @@ task "man" do
   cmd = []
   cmd << "RONN_STYLE='./.config/ronn'"
   cmd << "ronn -br5"
-  cmd << "--organization=PROUTILS"
+  cmd << "--organization=RUBYWORKS"
   cmd << "--style='man,toc,center'"
   cmd << "--manual='Roll Manual' man/man1/*.ronn"
 
