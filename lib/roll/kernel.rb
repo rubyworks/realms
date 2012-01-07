@@ -1,20 +1,17 @@
-#require 'roll/monitor'
-require 'roll/original'
+#require 'facets/load/monitor' # used for debugging
+
+#require 'roll/original'
 #require 'roll/config'
 #require 'roll/environment'
-require 'roll/library'
-require 'roll/ruby'
+require 'library'
+require 'library/rubylib'
 
 Roll.bootstrap
 
-module ::Kernel
+require 'library/kernel'
 
-  # In which library is the current file participating?
-  #
-  # @return [Library] currently loading Library instance
-  def __LIBRARY__
-    $LOAD_STACK.last
-  end
+=begin
+module ::Kernel
 
   # Activate a library.
   # Same as #library_instance but will raise and error if the library is
@@ -36,24 +33,24 @@ module ::Kernel
   # Acquire script. This is Roll's modern require/load method.
   # It differs from the usual #require or #load primarily by
   # the fact that it will search the currently loading library,
-  # i.e. the one on the top of the #LOAD_STACK for a script
+  # i.e. the one on the top of the #LOAD_STACK, for a script
   # before looking elsewhere. The reason we can't just adjust
   # `#require` to do this is becuase it can load a local script
   # when a non-local script was intended. For example, if a 
   # project contained 'fileutils.rb' then this would be loaded
   # rather the Ruby's standard library. When using `#acquire`,
-  # one has to add the `ruby:` prefix to ensure the Ruby libray
+  # one has to add the `ruby/` prefix to ensure the Ruby library
   # is loaded.
   #
   # @param file [String]
-  #   The script to load, optionally prefixed with `library-name:`.
+  #   The script to load.
   #
   # @param options [Hash]
-  #   Load options can be :wrap, :load, :legacy and :search.
+  #   Load options are `:wrap`, `:load`, `:legacy` and `:search`.
   #
   # @return [true, false]
-  #   if script was newly required or successfully loaded depending
-  #   on the :load option settings
+  #   Was the script newly required or successfully loaded depending
+  #   on the :load option settings.
   def acquire(file, options={}) #, &block)
     Library.acquire(file, options) #, &block)
   end
@@ -74,7 +71,6 @@ module ::Kernel
     Library.require(file, options) #, &block)
   end
 
-  #
   module_function :require
 
   # Load script. This is the same as acquire except that the
@@ -94,3 +90,5 @@ module ::Kernel
   module_function :load
 
 end
+=end
+

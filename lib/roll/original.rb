@@ -1,4 +1,4 @@
-# Rubinius
+# TODO: Make a global variable
 RUBY_IGNORE_CALLERS = [] unless defined? RUBY_IGNORE_CALLERS
 RUBY_IGNORE_CALLERS << %r{roll/kernel\.rb$}
 RUBY_IGNORE_CALLERS << %r{roll/original\.rb$}

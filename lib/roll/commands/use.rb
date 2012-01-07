@@ -44,8 +44,8 @@ module Roll
 
     #
     def show_rolls
-      curr = ::Library.environment.name
-      envs = ::Library.environments.sort
+      curr = ::Roll.environment.name
+      envs = ::Roll.environments.sort
       if envs.empty?
         puts "No environments."        
       else

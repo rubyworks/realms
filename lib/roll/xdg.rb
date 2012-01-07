@@ -1,4 +1,4 @@
-require 'roll/core_ext/rbconfig'
+#require 'library/core_ext/rbconfig'
 
 module Roll
 

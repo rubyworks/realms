@@ -7,57 +7,68 @@ module Roll
     def setup
       op.banner = "Usage: roll show [NAME]"
       op.separator "Show environment."
-      op.on('--roll', '-r', "Show roll paths.") do
-        opts[:format] = :roll
+      op.on('--roll', '-r', "Show list of available rolls.") do
+        opts[:format] = :rolls
       end
-      op.on('--index', '-i', "Show index listing.") do
-        opts[:format] = :index
-      end
-      op.on('--yaml', '-y', "Dump in YAML format (implies -i).") do
-        opts[:format] = :yaml
+      op.on('--ledger', '-l', "Show current ledger.") do
+        opts[:format] = :ledger
       end
     end
 
     #
     def call
       name = args.first
-      if name and !Library.environments.include?(name)
+
+      if name and !Roll.environments.include?(name)
         $stderr.puts "Environment not found."
         return
       end
 
-      env = Library::Environment[name]
+      #env = Roll::Environment[name]
+
       case opts[:format]
-      when :yaml
-        puts env.to_yaml
-      when :index
-        show_libraries
+      when :rolls
+        puts Roll.environments.join("\n")
+      when :ledger
+        show_ledger
       when :roll
-        show_roll_file
+        show_rolls
       else
-        puts env.to_s
+        name = args.first
+        if name 
+          if Roll.environments.include?(name)
+          else
+            $stderr.puts "Environment not found."
+          end
+        else
+          show_roll_paths
+        end
       end
     end
 
     # Display roll paths. TODO: name
-    def show_roll_file
-      puts File.read(Ruby.roll_file).join("\n")
-    end
-
-    #
-    def show_
+    def show_roll_paths
+      puts File.read(Roll.roll_file)
     end
 
     # Show all the libraries.
-    def show_libraries
+    def show_ledger
       max  = ::Hash.new{|h,k| h[k]=0 }
-      list = index.dup
+      list = []
 
-      list.each do |data|
-        data[:loadpath] = data[:loadpath].join(' ')
-        data[:date]     = iso(data[:date])
-        data.each do |k,v|
-          max[k] = v.to_s.size if v.to_s.size > max[k]
+      $LEDGER.each do |name, libs|
+        libs = [libs] unless Array === libs
+
+        libs.each do |lib|
+          data = lib.to_h
+          data[:loadpath] = data[:loadpath].join(' ')
+          #data[:date]     = iso(data[:date])
+
+          data.each do |k,v|
+            max[k] = v.to_s.size if v.to_s.size > max[k]
+          end
+
+          list << data
         end
       end
 
@@ -79,9 +90,9 @@ module Roll
         str = mask % [name, vers, date, locs, lpath]
         out << str 
       end
-      out
-    end
 
+      puts out
+    end
 
   end
 

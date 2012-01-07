@@ -10,8 +10,10 @@ module Roll
 
     # TODO: lookup root by matching .ruby relative to path?
     def call
-      root = args.first || Dir.pwd
-      lib  = Library.new(root)
+      location = args.first || Dir.pwd
+
+      lib  = Library.new(location)
+
       if lib.requirements.empty?
         puts "Project #{lib.name} has no requirements."
       else

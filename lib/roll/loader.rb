@@ -1,3 +1,5 @@
+# TODO: Should we use loabable, instead of overriding Kernel methods directly?
+
 require 'loadable'
 
 module Roll

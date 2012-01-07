@@ -35,8 +35,10 @@ module Roll
       else
         div = ':'
       end
+
       env_path = ENV['PATH'].split(/[#{div}]/)
-      # Go thru each roll lib and make sure bin path is in path.
+
+      # go thru each roll lib and make sure bin path is in path
       binpaths = []
       Library.list.each do |name|
         lib = Library[name]

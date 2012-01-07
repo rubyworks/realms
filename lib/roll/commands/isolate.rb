@@ -29,9 +29,9 @@ module Roll
       require 'fileutils'
 
       #if opts[:all]
-      #  list = Library.environments
+      #  list = Roll.environments
       #else
-      #  list = [Library.environment.name]
+      #  list = [Roll.environment.name]
       #end
 
       library = Library.new(location)

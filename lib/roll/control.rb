@@ -3,43 +3,27 @@ module Roll
   # Setup the ledger.
   #
   def self.bootstrap(name=nil)
-    require_without_rolls 'roll/ruby'
+    #require_without_library 'library/ruby'
 
     $ROLL_FILE = roll_file
 
     #$LOAD_GROUP = []
-    $LOAD_STACK = []
-    $LOAD_CACHE = {}
+
+    $LEDGER = Library::Ledger.new
 
     if File.exist?(lock_file)
       ledger = YAML.load(File.new(lock_file))  
-      $LEDGER = Hash.new{|h,k| h[k] = []}
       $LEDGER.merge!(ledger)
     elsif File.exist?($ROLL_FILE)
-      $LEDGER = load_ledger($ROLL_FILE)
-    else
-      $LEDGER = {}
+      load_ledger($ROLL_FILE)
+    #else
+    #  $LEDGER = {}
     end
 
-=begin
-    # Legacy mode manages a traditional loadpath.
-    if legacy?
-      $LEDGER.each do |name, libs|
-        #next if name == 'ruby'
-        #next if name == 'site_ruby'
-        sorted_libs = [libs].flatten.sort
-        lib = sorted_libs.first
-        lib.absolute_loadpath.each do |path|
-          $LOAD_PATH.unshift(path)
-        end
-      end
-    end
-=end
+    #bootstrap_legacy if legacy?
 
-    $LEDGER['site_ruby'] = SiteRubyLibrary.new
+    #$LEDGER['site_ruby'] = RubySiteLibrary.new
     $LEDGER['ruby']      = RubyLibrary.new
-
-    #$LEDGER = ledger
   end
 
   #
@@ -47,28 +31,72 @@ module Roll
   #  ENV['roll.legacy'] != 'false'
   #end
 
+  ## Legacy mode manages a traditional loadpath.
+  #def bootstrap_legacy
+  #  return unless legacy?
+  #  $LEDGER.each do |name, libs|
+  #    #next if name == 'ruby'
+  #    #next if name == 'site_ruby'
+  #    sorted_libs = [libs].flatten.sort
+  #    lib = sorted_libs.first
+  #    lib.absolute_loadpath.each do |path|
+  #      $LOAD_PATH.unshift(path)
+  #    end
+  #  end
+  #end
+
   #
-  def self.hack_for_autoload?
-    ENV['roll.autoload']
-  end
+  #def self.autoload_hack?
+  #  ENV['roll_autoload']
+  #end
 
   #
   def self.config_home
-    File.join(XDG.config_home, 'roll')
+    @config_home ||= (
+      path = File.expand_path("~/.roll")
+      if File.exist(path)
+        path
+      else
+        File.join(XDG.config_home, 'roll')
+      end
+    )
+  end
+
+  #
+  def self.search_config(file)
+    XDG.search_config(File.join('roll', file))
   end
 
   #
   DEFAULT_ROLL = 'current'
 
+  # Return Array of environment names.
+  def self.environments
+    @environments ||= search_config('*.roll').map { |r| File.basename(r).chomp('.roll') }
+  end
+
+#  #
+#  def self.environment(name=nil)
+#    Environment[name]
+#  end
+
   #
   def self.roll_file
-    file = (
-      ENV['RUBYENV'] ||
-      ENV['roll.file'] ||
-        (File.exist?(default_file) && File.read(default_file).strip) ||
-      DEFAULT_ROLL
-    )
-    construct_roll_file(file)
+    roll = ENV['roll'] || ENV['RUBYENV'] || rollenv_from_file ||  DEFAULT_ROLL
+
+    file = nil
+
+    if name?(roll)
+      file = search_config(roll + '.roll').first
+    else
+      file = File.expand_path(roll)
+      file = file + '.roll' if File.extname(file) != 'roll' && !File.exist?(file)
+      file = nil unless File.exist?(file)
+    end
+
+    # TODO: what to do if file is nil ?
+
+    file
   end
 
   #
@@ -77,8 +105,17 @@ module Roll
   end
 
   #
-  def self.default_file
-    File.join(config_home, 'default')
+  def self.rollenv_from_file
+    if File.exist?(rollenv_file)
+      File.read(rollenv_file).strip
+    else
+      nil
+    end
+  end
+
+  #
+  def self.rollenv_file
+    @rollenv_file ||= search_config('rollenv')    
   end
 
   # Construct ledger using pathnames in given `file`.
@@ -88,29 +125,60 @@ module Roll
 
   # Construct a ledger.
   def self.make_ledger(paths)
-    ledger = Hash.new{|h,k| h[k] = []}
+    #ledger = Library::Ledger.new #Hash.new{|h,k| h[k] = []}
 
     paths = paths.map{ |g| Dir[g.strip] }.flatten
 
     paths.each do |path|
       path = path.strip
+
       next if path[0,1] == '#'
       next if path.empty?
-      if File.directory?(path)
-        begin
-          library = Library.new(path, true)
-          ledger[library.name] << library
-        rescue Exception => error
-          warn error.message if ENV['roll_debug']
-          #warn "invalid library path -- `#{path}'" if ENV['roll_debug']
-        end
-      else
-        warn "invalid library path -- `#{path}'" if ENV['roll_debug']
+
+      if !File.directory?(path)
+        warn "invalid library path -- `#{path}'" if ENV['debug']
+        next
+      end
+
+      begin
+        Library.add(path)
+        #library = Library.new(path)
+        #ledger[library.name] << library
+      rescue Exception => error
+        warn error.message if ENV['debug']
+        #warn "invalid library path -- `#{path}'" if ENV['roll_debug']
       end
     end
 
-    ledger
+    #ledger
   end
+
+
+#    # Load up the ledger with a given set of paths.
+#    def load_ledger(paths)
+#      # TODO: should we be globbing here?
+#      paths = paths.map{ |g| Dir[g.strip] }.flatten
+#
+#      paths.each do |path|
+#        path = path.strip
+#
+#        next if path[0,1] == '#'
+#        next if path.empty?
+#
+#        if !File.directory?(path)
+#          warn "invalid library path -- `#{path}'" if ENV['debug']
+#          next
+#        end
+#
+#        $LEDGER << path
+#      end
+#    end
+#
+#    #
+#    def library_path?(path)
+#      return false unless File.directory?(path)
+#    end
+
 
   # Lock a ledger.
   #
@@ -164,24 +232,7 @@ module Roll
     roll_file
   end
 
-  #
-  def self.construct_roll_file(path)
-    if name?(path)
-      file = File.join(config_home, path) + '.roll'
-    else
-      file = File.expand_path(path)
-      ## TODO: should we bother with this?
-      if File.extname(file) != 'roll' && !File.exist?(file)
-        file = file + '.roll' if File.exist?(file + '.roll')
-      end
-    end
-    file
-  end
-
-  # Does this location have .ruby/ entries?
-  #--
-  # TODO: Really it should at probably have a `version` too.
-  #++
+  # Does this location have a .ruby file?
   def self.dotruby?(location)
     file = ::File.join(location, '.ruby')
     return false unless File.file?(file)

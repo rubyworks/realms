@@ -49,11 +49,11 @@ module Roll
     #
     def list_verbose 
       name = args.first
-      if name and !Library.environments.include?(name)
+      if name and !Roll.environments.include?(name)
         $stderr.puts "Environment not found."
         return
       end
-      env = Library::Environment[name]
+      env = Roll::Environment[name]
       puts env.to_s_index
     end
 
