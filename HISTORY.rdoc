@@ -1,5 +1,19 @@
 = RELEASE HISTORY
 
+== 2.0.0 / 2012-01-08
+
+Ruby Rolls and spun-off the underlying Library and Library::Ledger
+classes as a separate project. This serves two important purposes.
+First, Library reserves it's namespace in gem space. And second,
+the separation helps focus the purpose of each project. Where Library
+provides the object basis of working with libraries. Whereas Rolls
+provides the higher level system for managing library sets ("gem sets").
+
+Changes:
+
+* Spin-off Library and Library::Ledger classes.
+
+
 == 1.2.0 / 2010-06-15
 
 This release gets roll command working and improves
