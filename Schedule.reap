@@ -17,8 +17,8 @@ task "man" do
 
   sh cmd.join(' ')
 
-  sh "mkdir -p site/manual/"
-  sh "mv man1/*.html site/manual/"
+  sh "mkdir -p web/manual/"
+  sh "mv man1/*.html web/manual/"
 
   sh "gzip -f man/man1/*.1"
 end
