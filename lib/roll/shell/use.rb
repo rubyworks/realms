@@ -1,10 +1,11 @@
 module Roll
 
-  # Show/Change current environment.
-  class CommandUse < Command
+  module Shell
 
     #
-    def setup
+    # Show/Change current environment.
+    #
+    def use
       op.banner = "Usage: roll use [name]"
       op.separator "Display/Switch current roll."
       op.separator " "
@@ -13,17 +14,19 @@ module Roll
       #op.on("--clear", "-c") do
       #  args.unshift 'system'
       #end
-    end
 
-    #
-    def call
+      parse
+
       name = args.first
+
       if name
         switch_rolls(name)
       else
         show_rolls
       end
     end
+
+  private
 
     #
     def switch_rolls(name)

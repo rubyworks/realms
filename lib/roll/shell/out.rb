@@ -1,17 +1,18 @@
 module Roll
 
-  #
-  class CommandOut < Command
+  module Shell
 
     #
-    def setup
+    # Remove path from current roll.
+    #
+    def out
       op.banner = "Usage: roll out [PATH ...]"
       op.separator "Remove path(s) from current roll."
-    end
 
-    #
-    def call
-      paths     = args || [Dir.pwd]
+      parse
+
+      paths = argv || [Dir.pwd]
+
       roll_file = Roll.remove(*paths)
 
       puts paths.join("\n")

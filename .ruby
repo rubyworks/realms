@@ -42,7 +42,7 @@ created: '2006-12-10'
 summary: Ruby Object-Oriented Library Ledger
 title: Roll
 version: 2.0.0
-name: roll
+name: rolls
 description: ! 'Rolls is a library set manager for Ruby built on top of the Library
   gem.
 

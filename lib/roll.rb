@@ -3,9 +3,7 @@ module Roll
 end
 
 require 'yaml'
+require 'roll/console'
+require 'roll/shell'
 
-require 'roll/xdg'
-require 'roll/control'
-require 'roll/command'
-require 'roll/kernel'  # require last
-
+Roll.bootstrap

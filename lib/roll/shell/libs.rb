@@ -1,28 +1,32 @@
 module Roll
 
-  # List available environments.
-  class CommandList < Command
+  module Shell
 
     #
-    def setup
-      op.banner = "Usage: roll list"
+    # List available environments.
+    #
+    def libs
+      opts = {}
+
+      op.banner = "Usage: roll libs"
       op.separator "List available libraries in environment."
       op.on('--verbose', '-v', "Show detailed listing.") do
         opts[:verbose] = true
       end
-    end
 
-    #
-    def call
+      parse
+
       if opts[:verbose]
-        list_verbose
+        libs_verbose
       else
-        list_names
+        libs_names
       end
     end
 
+  private
+
     #
-    def list_names
+    def libs_names
       names = $LEDGER.keys.sort
       if names.empty?
         puts "No libraries found."
@@ -47,10 +51,10 @@ module Roll
     end
 
     #
-    def list_verbose 
-      name = args.first
-      if name and !Roll.environments.include?(name)
-        $stderr.puts "Environment not found."
+    def libs_verbose 
+      name = argv.first
+      if name and !Roll.available_rolls.include?(name)
+        $stderr.puts "Roll not found."
         return
       end
       env = Roll::Environment[name]

@@ -2,7 +2,7 @@
 require 'roll'
 ARGV.shift if ARGV.first == '-'
 begin
-  Roll::Command.main(*ARGV)
+  Roll::Console.main(*ARGV)
 rescue => err
   raise err if $DEBUG
   $stderr.puts(err.message)

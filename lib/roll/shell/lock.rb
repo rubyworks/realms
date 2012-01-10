@@ -1,22 +1,26 @@
 module Roll
 
-  #
-  class CommandLock < Command
+  module Shell
 
     # TODO: Ultimately allow for caching a different group
-    def setup
-      op.banner = "Usage: roll cache [ROLL-FILE]"
-      op.separator "Cache load group."
+
+    #
+    # Lock current roll. This caches all the neccessary information
+    # about the current roll, so start-up times are much faster for
+    # subsequent start-ups.
+    #
+    def lock
+      op.banner = "Usage: roll lock [ROLL]"
+      op.separator "Serialize ledger and save."
       #op.on('--check', '-c', "Check cache to see if it is current.") do
       #  opts[:check] = true
       #end
-      op.on('--output', '-o [FILE]', "store cache in given file") do |file|
+      op.on('--output', '-o [FILE]', "save to alternate file") do |file|
         opts[:output] = file
       end
-    end
 
-    #
-    def call
+      parse
+
       #if opts[:check]
       #  check
       #else

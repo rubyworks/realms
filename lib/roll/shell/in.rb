@@ -1,16 +1,18 @@
 module Roll
 
-  # Insert paths into the roll call file.
-  class CommandIn < Command
-    #
-    def setup
-      op.banner = "Usage: roll in [PATH ...]"
-      op.separator "Insert path(s) into current environment."
-    end
+  module Shell
 
     #
-    def call
-      paths     = args || [Dir.pwd]
+    # Insert paths into the roll call file.
+    #
+    def in
+      op.banner = "Usage: roll in [PATH ...]"
+      op.separator "Insert path(s) into current environment."
+
+      parse
+
+      paths     = argv || [Dir.pwd]
+
       roll_file = Roll.insert(*paths)
 
       puts paths.join("\n")

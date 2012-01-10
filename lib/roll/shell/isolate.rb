@@ -1,26 +1,29 @@
 module Roll
 
-  # Create an isolation index.
-  class CommandIsolate < Command
+  module Shell
 
     #
-    def setup
+    # Create an isolation index.
+    #
+    def isolate
       op.banner = "Usage: roll isolate"
       op.separator "Create an project isolation index."
       op.on('--all', '-a', "Search all environments.") do
         opts[:all] = true
       end
-    end
 
-    #
-    def call
-      location = args.first || Dir.pwd
+      parse
+
+      location = argv.first || Dir.pwd
+
       if File.directory?(File.join(location, '.ruby'))
         generate_isolate_index(location)
       else
         $stderr.puts "Directory is not a Ruby project."
       end
     end
+
+  private
 
     # TODO: Load in all environments if +all+ option as resource for lookup.
     #

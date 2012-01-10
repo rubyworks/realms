@@ -1,21 +1,21 @@
 module Roll
 
-  # Merge one roll with another.
-  class CommandMerge < Command
+  module Shell
 
     #
-    def setup
+    # Merge one roll with another.
+    #
+    def merge
       op.banner = "Usage: roll merge [from]\n" +
                   "       roll merge [from] [to]" 
       op.separator "Merge roll files."
       op.on('--lock', '-l', "Lock after merging.") do
         opts[:lock] = true
       end
-    end
 
-    #
-    def call
-      if args.size == 1
+      parse
+
+      if argv.size == 1
         src = Roll.roll_file
         dst = Roll.construct_roll_file(args[0])
       else
@@ -32,6 +32,8 @@ module Roll
         puts "Saved '#{dst}`."
       end
     end
+
+  private
 
     # Merge files safely.
     #

@@ -1,4 +1,5 @@
 ---
+- library
 - qed           (test)
 - detroit       (build)
 - setup  5.0+   (build)
