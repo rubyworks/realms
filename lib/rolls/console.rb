@@ -28,7 +28,7 @@ module Roll
       $LEDGER = Library::Ledger.new
 
       if !roll_file
-        warn "no such roll -- `#{rubyroll}'"
+        warn "no such roll -- `#{rollname}'"
         return
       end
 
@@ -323,7 +323,7 @@ module Roll
       end
     end
 
-    private
+  private
 
     #
     # Copy a file safely.
@@ -357,6 +357,6 @@ module Roll
   end
 
   # Extend Roll with Management functions.
-  extend Management
+  extend Console
 
 end
