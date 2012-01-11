@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
-require 'roll'
+require 'rolls' unless defined?(::Roll)
+
 ARGV.shift if ARGV.first == '-'
+
 begin
   Roll::Shell.main(*ARGV)
 rescue => err

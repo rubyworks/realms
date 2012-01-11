@@ -9,9 +9,13 @@ the separation helps focus the purpose of each project. Where Library
 provides the object basis of working with libraries. Whereas Rolls
 provides the higher level system for managing library sets ("gem sets").
 
+This realease also renames the package name from `roll` to `rolls`.
+It's rolls off the tounge better ;)
+
 Changes:
 
 * Spin-off Library and Library::Ledger classes.
+* Rename gem from `roll` to `rolls`.
 
 
 == 1.2.0 / 2010-06-15
