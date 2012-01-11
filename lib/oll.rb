@@ -1,1 +1,1 @@
-require 'roll' #File.dirname(__FILE__) + '/roll.rb'
+require 'rolls' #File.dirname(__FILE__) + '/roll.rb'

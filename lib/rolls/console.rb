@@ -43,9 +43,9 @@ module Roll
         paths = load_roll(roll_file)
 
         # TODO: Use semicolon on Windows ?
-        ENV['RUBYENV'] = paths.join(':')
+        ENV['RUBYLIBS'] = paths.join(':')
 
-        Library.prime(*paths)
+        Library.prime(*paths) #, :exound=>true)
       end
 
       #bootstrap_legacy if legacy?

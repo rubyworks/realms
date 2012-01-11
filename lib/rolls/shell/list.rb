@@ -11,7 +11,15 @@ module Roll
 
       parse
 
-      puts Roll.available_rolls.join("\n")
+      lines = []
+      Roll.available_rolls.each do |r|
+        if Roll.rollname == r
+          lines << "=> #{r}"
+        else
+          lines << "   #{r}"
+        end
+      end
+      puts lines.join("\n")
     end
 
   end

@@ -17,10 +17,10 @@ module Roll
       cmd = idx ? argv.delete_at(idx) : 'help'
 
       begin
-        require "roll/shell/#{cmd}"
+        require "rolls/shell/#{cmd}"
       rescue LoadError
         cmd = 'help'
-        require "roll/shell/#{cmd}"
+        require "rolls/shell/#{cmd}"
       end
 
       @argv = argv
@@ -72,22 +72,22 @@ module Roll
 
 end
 
-require 'roll/shell/copy'
-require 'roll/shell/gem'
-require 'roll/shell/help'
-require 'roll/shell/in'
-require 'roll/shell/isolate'
-require 'roll/shell/libs'
-require 'roll/shell/list'
-require 'roll/shell/lock'
-require 'roll/shell/merge'
-require 'roll/shell/out'
-require 'roll/shell/path'
-require 'roll/shell/shells'
-require 'roll/shell/show'
-require 'roll/shell/ledger'
-require 'roll/shell/unlock'
-require 'roll/shell/use'
-require 'roll/shell/verify'
-require 'roll/shell/where'
+require 'rolls/shell/copy'
+require 'rolls/shell/gem'
+require 'rolls/shell/help'
+require 'rolls/shell/in'
+require 'rolls/shell/isolate'
+require 'rolls/shell/libs'
+require 'rolls/shell/list'
+require 'rolls/shell/lock'
+require 'rolls/shell/merge'
+require 'rolls/shell/out'
+require 'rolls/shell/path'
+require 'rolls/shell/shells'
+require 'rolls/shell/show'
+require 'rolls/shell/ledger'
+require 'rolls/shell/unlock'
+require 'rolls/shell/use'
+require 'rolls/shell/verify'
+require 'rolls/shell/where'
 
