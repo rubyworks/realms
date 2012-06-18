@@ -50,7 +50,11 @@ module Roll
 
       #bootstrap_legacy if legacy?
 
-      $LEDGER['ruby'] = RubyLibrary.new
+      # We can not do this b/c it prevents gems from working
+      # when a file has the same name as something in the
+      # ruby lib and site locations. For example, if we intsll
+      # the test-unit gem and require `test/unit`.
+      #$LEDGER['ruby'] = RubyLibrary.new
 
       require 'library/kernel'
     end
@@ -124,10 +128,10 @@ module Roll
     #
     # The Roll file to use.
     #
-    def roll_file
+    def roll_file(name=nil)
       @roll_file ||= {}
 
-      name = rollname()
+      name ||= rollname()
 
       return @roll_file[name] unless @roll_file[name].nil?
 
@@ -158,7 +162,7 @@ module Roll
     # or it can be a pathname to an otherwise located file.
     #
     def rollname
-      @rubyroll ||= ENV[ENVIRNMENT_VARIABLE] || rollname_from_file ||  DEFAULT_ROLLNAME
+      @rollname ||= ENV[ENVIRNMENT_VARIABLE] || rollname_from_file ||  DEFAULT_ROLLNAME
     end
 
     #
@@ -246,13 +250,23 @@ module Roll
     end
 
     #
-    # Remove the current ledger's lock.
+    # Remove a ledger lock.
     #
-    # @return [String] full pathname of cache file
+    # @param [String] name
+    #   Name of roll. If not given the curent roll is used.
     #
-    def unlock
-      FileUtils.rm(lock_file) if File.exist?(lock_file)
-      return lock_file
+    # @return [String] Full pathname of cache file.
+    #
+    def unlock(name=nil)
+      file = roll_file(name)
+      raise IOError, "#{name} is not a roll" unless file
+      lock_file = file.chomp('.roll') + '.lock'
+      if File.exist?(lock_file)
+        File.delete(lock_file)
+        lock_file
+      else
+        nil
+      end
     end
 
     #

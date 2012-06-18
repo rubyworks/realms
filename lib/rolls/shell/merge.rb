@@ -17,19 +17,19 @@ module Roll
 
       if argv.size == 1
         src = Roll.roll_file
-        dst = Roll.construct_roll_file(args[0])
+        dst = Roll.construct_roll_file(argv[0])
       else
-        src = Roll.construct_roll_file(args[0])
-        dst = Roll.construct_roll_file(args[1])
+        src = Roll.construct_roll_file(argv[0])
+        dst = Roll.construct_roll_file(argv[1])
       end
 
       safe_merge(src, dst)
 
       if opts[:lock]
         Roll.lock(dst)
-        puts "Locked '#{dst}`."
+        puts "Saved & Locked: #{dst}"
       else
-        puts "Saved '#{dst}`."
+        puts "Saved: #{dst}"
       end
     end
 

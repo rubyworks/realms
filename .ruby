@@ -11,6 +11,7 @@ copyrights:
 replacements: []
 alternatives: []
 requirements:
+- name: library
 - name: qed
   groups:
   - test
@@ -50,4 +51,4 @@ description: ! 'Rolls is a library set manager for Ruby built on top of the Libr
 
   an environment variable.'
 organization: Rubyworks
-date: '2012-01-07'
+date: '2012-01-12'

@@ -11,9 +11,15 @@ module Roll
 
       parse
 
-      file = Roll.unlock
+      name = argv.first
 
-      puts "Unlocked `#{file}'."
+      file = Roll.unlock(name)
+
+      if file
+        puts "Unlocked: #{file}"
+      else
+        puts "Not locked."
+      end
     end
 
   end

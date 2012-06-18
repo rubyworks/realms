@@ -1,5 +1,9 @@
 module Roll
 
+  # Shell commands.
+  #
+  # TODO: This should probably be a class.
+  #
   module Shell
     extend self
 
@@ -31,21 +35,21 @@ module Roll
   private
 
     #
-    #
+    # Available commands are simply the plublic instance methods.
     #
     def self.commands
       public_instance_metods(false)
     end
 
     #
-    #
+    # Instance of OptionParser.
     #
     def op
       @op ||= OptionParser.new
     end
 
     #
-    #
+    # Command line arguments.
     #
     def argv
       @argv
@@ -54,7 +58,9 @@ module Roll
     #
     # Execute the command.
     #
-    def parse(argv=ARGV)
+    def parse(argv=nil)
+      @argv = argv if argv
+
       op.on_tail("--warn", "-w", "Show warnings.") do
         $VERBOSE = true
       end
@@ -65,7 +71,7 @@ module Roll
         puts op
         exit
       end
-      op.parse!(argv)
+      op.parse!(@argv)
     end
 
   end

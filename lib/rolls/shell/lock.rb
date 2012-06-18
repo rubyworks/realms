@@ -10,22 +10,26 @@ module Roll
     # subsequent start-ups.
     #
     def lock
+      output = nil
+
       op.banner = "Usage: roll lock [ROLL]"
       op.separator "Serialize ledger and save."
       #op.on('--check', '-c', "Check cache to see if it is current.") do
       #  opts[:check] = true
       #end
       op.on('--output', '-o [FILE]', "save to alternate file") do |file|
-        opts[:output] = file
+        output = file
       end
 
       parse
 
+      roll = argv.first
+
       #if opts[:check]
       #  check
       #else
-        file = Roll.lock(args.first, :output=>opts[:output])
-        $stdout.puts "Locked `#{file}'"
+        file = Roll.lock(roll, :output=>output)
+        $stdout.puts "Locked: #{file}"
       #end
     end
 

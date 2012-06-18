@@ -6,18 +6,23 @@ module Roll
     # Create an isolation index.
     #
     def isolate
+      development=false
+
       op.banner = "Usage: roll isolate"
       op.separator "Create an project isolation index."
-      op.on('--all', '-a', "Search all environments.") do
-        opts[:all] = true
+      #op.on('--all', '-a', "Search all rolls.") do
+      #  opts[:all] = true
+      #end
+      op.on('--development', '-d', "Include development dependencies.") do
+        development = true
       end
 
       parse
 
       location = argv.first || Dir.pwd
 
-      if File.directory?(File.join(location, '.ruby'))
-        generate_isolate_index(location)
+      if File.file?(File.join(location, '.ruby'))
+        generate_isolate_index(location, development)
       else
         $stderr.puts "Directory is not a Ruby project."
       end
@@ -28,7 +33,7 @@ module Roll
     # TODO: Load in all environments if +all+ option as resource for lookup.
     #
     # TODO: Move most of this code into library somewhere.
-    def generate_isolate_index(location)
+    def generate_isolate_index(location, development=nil)
       require 'fileutils'
 
       #if opts[:all]
@@ -38,8 +43,9 @@ module Roll
       #end
 
       library = Library.new(location)
+      ledger  = $LEDGER.dup
 
-      results = library.requirements.verify
+      results = ledger.activate_requirements(library, development)
 
       fails, libs = results.partition{ |r| Array === r }
 
@@ -55,11 +61,11 @@ module Roll
 
         dir = Roll.config.local_environment_directory
 
-        FileUtils.mkdir_p(dir)
+        #FileUtils.mkdir_p(dir)
 
-        file = File.join(dir, 'local')
+        #file = File.join(dir, 'local')
 
-        File.open(file, 'w'){ |f| f << out }
+        #File.open(file, 'w'){ |f| f << out }
 
         $stdout.puts out
         $stderr.puts
