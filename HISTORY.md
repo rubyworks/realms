@@ -1,6 +1,6 @@
-= RELEASE HISTORY
+# RELEASE HISTORY
 
-== 2.0.0 / 2012-01-08
+## 2.0.0 / 2012-01-08
 
 Ruby Rolls and spun-off the underlying Library and Library::Ledger
 classes as a separate project. This serves two important purposes.
@@ -18,7 +18,7 @@ Changes:
 * Rename gem from `roll` to `rolls`.
 
 
-== 1.2.0 / 2010-06-15
+## 1.2.0 / 2010-06-15
 
 This release gets roll command working and improves
 the reliability of the system as a whole, including making
@@ -32,7 +32,7 @@ Changes:
 * Improved search heuristics (usually much faster now).
 
 
-== 1.1.0 / 2010-03-01
+## 1.1.0 / 2010-03-01
 
 This release fix a few bugs and makes a few adjustments,
 but mostly cleans up code behind the scenes.
@@ -43,7 +43,7 @@ Changes:
 * Support for Rubinius RUBY_IGNORE_CALLERS
 
 
-== 1.0.0 / 2010-02-11
+## 1.0.0 / 2010-02-11
 
 This release overhauls the underlying system, which is now very
 fast. It supports customizable library environments, and banashes
@@ -57,7 +57,7 @@ Changes:
 * Environments provide selectable sets of available libraries.
 
 
-== 0.9.4 / 2008-06-05
+## 0.9.4 / 2008-06-05
 
 The .roll file is no longer used. Instead Rolls is now
 using a VERSION file combined with meta/ entries for
@@ -68,7 +68,7 @@ Changes:
 * VERSION and meta/ entries are used instead of '.roll'.
 
 
-== 0.9.3 / 2007-02-10
+## 0.9.3 / 2007-02-10
 
 Changes:
 
@@ -76,7 +76,7 @@ Changes:
 * Relative require with #use should now work.
 
 
-== 0.9.2 / 2007-12-17
+## 0.9.2 / 2007-12-17
 
 Changes:
 
@@ -84,7 +84,7 @@ Changes:
 * The name change enabled an order of magnitude increase in startup time!
 
 
-== 0.9.1 / 2007-11-27
+## 0.9.1 / 2007-11-27
 
 Changes:
 
@@ -92,7 +92,7 @@ Changes:
 * Improved parsing of ROLLRC file, #release is now a Time object.
 
 
-== 0.9.0 / 2007-11-12
+## 0.9.0 / 2007-11-12
 
 Changes:
 

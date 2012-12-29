@@ -1,4 +1,4 @@
-= 2010-10-07 | A Big Question
+# 2010-10-07 | A Big Question
 
 A Big Question I had to answer in the development of Rolls was whether
 to first allow Ruby to try to require a file, and failing that then let

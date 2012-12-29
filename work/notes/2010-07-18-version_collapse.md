@@ -1,7 +1,6 @@
-= 2010-07-18 Version Collapse
+# 2010-07-18 Version Collapse
 
-As I working with the Rolls code, wrestling it into a precision tool,
-...
+As I working with the Rolls code, wrestling it into a precision tool ...
 
 There is a question of how best to deal with library versions. After watching
 Mislav's presentation[http://vimeo.com/12615297], I considered the approaches.
@@ -31,21 +30,21 @@ Thinking about Rolls, I wonder if it would be possible to gain the benefits
 of upfront version resolution without resorting to lenghthy managment
 overhead? Consider what happens when Rolls loads.
 
-  require 'roll'
+    require 'roll'
 
 Roll locates the current environment file and instantiates a reference to
 each library version. It stores these in a simple Hash of Arrays in
 Leger#index. Inspecting theis index looks something like this:
 
-  {'foo'=>[<Library foo/1.1.0>, <Library foo/1.0.0>], 'bar'=>[<Library bar/1.2>]}
+    {'foo'=>[<Library foo/1.1.0>, <Library foo/1.0.0>], 'bar'=>[<Library bar/1.2>]}
 
 When a library is activated the particular version replaces the subarray, e.g.
 
-  library('foo', '=1.1')
+    library('foo', '=1.1')
 
 Would reduce the index to:
 
-  {'foo'=><Library foo/1.1.0>, 'bar'=>[<Library bar/1.2>]}
+    {'foo'=><Library foo/1.1.0>, 'bar'=>[<Library bar/1.2>]}
 
 This is how Rolls keeps track of active versions.
 
@@ -72,10 +71,5 @@ of these special files. The issue of libraries not supporting the special
 file is actually moot, because in that case they are not versioning anyway
 (unless they are using #gem in there library, which would break things
 regardless). Nonetheless we still must be able to load files until then.
-
-
-
-
-
 
 
