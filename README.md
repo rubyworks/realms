@@ -26,10 +26,9 @@
 
 ROLLS is a library management system for Ruby. In fact, the name is
 an anacronym which stands for *Ruby Objectified Library Ledger System*.
-
 Okay, it sounds neat, but what does Rolls actually do?
 
-Rolls' core functionality is to take a list of file system locations, sift
+Rolls core functionality is to take a list of file system locations, sift
 through them to find Ruby projects and make them available via Ruby's `require`
 and `load` methods. It does this in such a way that is *customizable* and *fast*.
 
@@ -46,11 +45,12 @@ possibilities to Ruby developers:
 
 ## Status
 
-Rolls works fairly well. The core system has been in use for years.
-So, on the whole, the underlying functionality is in good working order.
-But the system is still undergoing development, in particular, work
-on simplifying configuration and management, so some things are still
-subject to change.
+Rolls works fairly well. The core system has been in use for years. most of 
+which now resides in a secondary backend project called, simply enough, 
+*[Library](http://github.com/rubyworks/library)*. So, on the whole, the
+underlying functionality is in good working order. But the system is still
+undergoing development, in particular, work on simplifying configuration and
+management, so some things are still subject to change.
 
 
 ## Limitations
