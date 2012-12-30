@@ -1,15 +1,12 @@
-#require 'facets/load/monitor' # used for debugging
+module Rolls
 
-module Roll
-
-  # Roll management console.
+  # Roll management console module extends the Rolls module
+  # with general purpose functions.
   #
   module Console
 
-    # TODO: What about supporting multiple roll files at once? Call it a "ROLLSTACK".
-
     #
-    # The environment variable used to specify the current roll.
+    # The environment variable used to specify a named roll.
     #
     ENVIRNMENT_VARIABLE = 'RUBYROLL'
 
@@ -19,13 +16,14 @@ module Roll
     DEFAULT_ROLLNAME = 'default'
 
     #
-    # Setup the Ruby on Rolls.
+    # Setup Rolls.
     #
-    def bootstrap(name=nil)
+    def bootstrap!(name=nil)
       require 'library'
-      require 'library/rubylib'
 
-      $LEDGER = Library::Ledger.new
+      $LEDGER = Ledger.new
+      $LOAD_STACK = []
+      $LOAD_CACHE = {}
 
       if !roll_file
         warn "no such roll -- `#{rollname}'"
@@ -45,7 +43,7 @@ module Roll
         # TODO: Use semicolon on Windows ?
         ENV['RUBYLIBS'] = paths.join(':')
 
-        Library.prime(*paths) #, :exound=>true)
+        Ledger.prime(*paths) #, :exound=>true)
       end
 
       #bootstrap_legacy if legacy?
@@ -56,7 +54,7 @@ module Roll
       # the test-unit gem and require `test/unit`.
       #$LEDGER['ruby'] = RubyLibrary.new
 
-      require 'library/kernel'
+      require 'rolls/kernel'
     end
 
     #
@@ -125,6 +123,7 @@ module Roll
       search_config('*.roll').map { |r| File.basename(r).chomp('.roll') }
     end
 
+=begin
     #
     # The Roll file to use.
     #
@@ -148,9 +147,17 @@ module Roll
         file || false
       )
     end
+=end
 
     #
-    # Lock file is the same a roll_file but will `.lock` extension.
+    #
+    #
+    def roll_file
+      File.expand_path(ENV['RUBY_ROLL'] || '~/.ruby/current.roll')
+    end
+
+    #
+    # Lock file is the same as roll_file but will `.lock` extension.
     #
     def lock_file
       roll_file.chomp('.roll') + '.lock'
@@ -299,10 +306,10 @@ module Roll
     end
 
     #
-    # Does this location have a .ruby file?
+    # Does this location have a .index file?
     #
-    def dotruby?(location)
-      file = ::File.join(location, '.ruby')
+    def index?(location)
+      file = ::File.join(location, '.index')
       return false unless File.file?(file)
       return true
     end
@@ -421,9 +428,78 @@ module Roll
       end
     end
 
+
+
+
+
+    #
+    # Go thru each library and make sure bin path is in path.
+    #
+    # @todo Should this be defined on Ledger?
+    #
+    def PATH()
+      path = []
+      list.each do |name|
+        lib = Library[name]
+        path << lib.bindir if lib.bindir?
+      end
+      path.join(windows_platform? ? ';' : ':')
+    end
+
+    #
+    #
+    #
+    def lock
+      output = roll_file + '.lock'
+      File.open(output, 'w+') do |f|
+        f << $LEDGER.to_yaml
+      end
+    end
+
+    #
+    #
+    #
+    def unlock
+      FileUtils.rm(roll_file.lock)
+    end
+
+    #
+    #
+    #
+    def reset!
+      #list = ENV['RUBYLIBS'].to_s.split(/[:;]/)
+      roll_file = roll_file()
+      lock_file = roll_file + '.lock'
+      if File.exist?(lock_file)
+        ledger = YAML.load_file(lock_file)
+        $LEDGER.replace(ledger)
+      elsif File.exist?(roll_file)
+        list = File.readlines(roll_file).map{ |x| x.strip }
+        Library.prime(*list, :expound=>true)
+      else
+        $stderr.puts "no such roll file `#{roll_file}'" unless roll_file == ""
+      end
+    end
+
+    alias :bootstrap! :reset!
+
+  private
+
+    #
+    # TODO: Better definition of `RbConfig#windows_platform?`.
+    #
+    def windows_platform?
+      case RUBY_PLATFORM
+      when /mswin/, /wince/
+        true
+      else
+        false
+      end
+    end
+
   end
 
-  # Extend Roll with Management functions.
+  # Extend Rolls namespace with management console functions.
   extend Console
 
 end

@@ -2,7 +2,7 @@ module Roll
 
   module Shell
 
-    # TODO: lookup root by matching .ruby relative to path?
+    # TODO: lookup root by matching .index relative to path?
 
     #
     # Verify that a project's requirements are in the current roll call.

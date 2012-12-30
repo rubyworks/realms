@@ -1,9 +1,14 @@
-module Roll
-  VERSION = "2.0.0"  # TODO: make verison reference dynamic ?
+# Rolls
+#
+module Rolls
+  require 'yaml'
+  require 'library'
+
+  require 'rolls/index'
+  require 'rolls/console'
+  #require 'rolls/shell'
+
+  # Bootstrap the system.
+  bootstrap!
 end
 
-require 'yaml'
-require 'rolls/console'
-require 'rolls/shell'
-
-Roll.bootstrap

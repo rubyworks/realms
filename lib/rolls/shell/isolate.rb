@@ -21,7 +21,7 @@ module Roll
 
       location = argv.first || Dir.pwd
 
-      if File.file?(File.join(location, '.ruby'))
+      if File.file?(File.join(location, '.index'))
         generate_isolate_index(location, development)
       else
         $stderr.puts "Directory is not a Ruby project."
