@@ -1,496 +1,458 @@
 module Rolls
 
-  # Roll management console module extends the Rolls module
-  # with general purpose functions.
+  # This module simply extends the Library class, giving it certain
+  # convenience methods for interacting with the current Ledger.
+  #
+  # TODO: Change name of module?
   #
   module Console
 
-    #
-    # The environment variable used to specify a named roll.
-    #
-    ENVIRNMENT_VARIABLE = 'RUBYROLL'
+    require 'tmpdir'
 
     #
-    # The default roll to use, if none is specified.
+    # Access to library ledger.
     #
-    DEFAULT_ROLLNAME = 'default'
-
+    # @return [Array] The `$LEDGER` array.
     #
-    # Setup Rolls.
-    #
-    def bootstrap!(name=nil)
-      require 'library'
-
-      $LEDGER = Ledger.new
-      $LOAD_STACK = []
-      $LOAD_CACHE = {}
-
-      if !roll_file
-        warn "no such roll -- `#{rollname}'"
-        return
-      end
-
-      if File.exist?(lock_file)
-        ledger = YAML.load(File.new(lock_file))  
-
-        # TODO: Put RUBYENV in serialized ledger
-        #ENV['RUBYENV'] = ledger.delete('RUBYENV')
-
-        $LEDGER.replace(ledger)
-      else
-        paths = load_roll(roll_file)
-
-        # TODO: Use semicolon on Windows ?
-        ENV['RUBYLIBS'] = paths.join(':')
-
-        Ledger.prime(*paths) #, :exound=>true)
-      end
-
-      #bootstrap_legacy if legacy?
-
-      # We can not do this b/c it prevents gems from working
-      # when a file has the same name as something in the
-      # ruby lib and site locations. For example, if we intsll
-      # the test-unit gem and require `test/unit`.
-      #$LEDGER['ruby'] = RubyLibrary.new
-
-      require 'rolls/kernel'
+    def ledger
+      $LEDGER
     end
 
     #
-    #def legacy?
-    #  ENV['roll_legacy'] != 'false'
-    #end
+    # Library names from ledger.
+    #
+    # @return [Array] The keys from `$LEDGER` array.
+    #
+    def names
+      $LEDGER.keys
+    end
 
-    ## Legacy mode manages a traditional loadpath.
-    #def bootstrap_legacy
-    #  return unless legacy?
-    #  $LEDGER.each do |name, libs|
-    #    #next if name == 'ruby'
-    #    #next if name == 'site_ruby'
-    #    sorted_libs = [libs].flatten.sort
-    #    lib = sorted_libs.first
-    #    lib.absolute_loadpath.each do |path|
-    #      $LOAD_PATH.unshift(path)
-    #    end
-    #  end
-    #end
-
-    # dirs = []
-    # dirs << ENV['XDG_CONFIG_HOME'] || File.join(home, '.config')
-    # dirs << ENV['XDG_CONFIG_DIRS'].to_s.split(/[:;]/)
-    # XDG_CONFIG_PATHS = dirs.flatten.map{ |dir| [File.expand_path(dir) }
+    alias_method :list, :names
 
     #
+    # A shortcut for #instance.
     #
+    # @return [Library,NilClass] The activated Library instance, or `nil` if not found.
     #
-    def config_paths
-      @config_paths ||= (
-        paths = []
-        paths << File.expand_path("~/.roll")
-        paths << File.expand_path("~/.config/roll")
-        paths << "/etc/roll"
-        paths.select{ |path| File.directory?(path) }
-      )
+    def [](name, constraint=nil)
+      $LEDGER.activate(name, constraint) if $LEDGER.key?(name)
     end
 
     #
-    # Find Roll configuration file.
+    # Get an instance of a library by name, or name and version.
+    # Libraries are singleton, so once loaded the same object is
+    # always returned.
     #
-    def find_config(file)
-      config_paths.each do |path|
-        f = File.join(path, file)
-        return f if File.exist?(f)
-      end
-      nil
+    # @todo This method might be deprecated.
+    #
+    # @return [Library,NilClass] The activated Library instance, or `nil` if not found.
+    #
+    def instance(name, constraint=nil)
+      $LEDGER.activate(name, constraint) if $LEDGER.key?(name)
     end
 
     #
-    # Search Roll's config locations for mathing file glob.
-    #
-    def search_config(glob)
-      list = []
-      config_paths.each do |path|
-        list.concat(Dir[File.join(path, glob)])
-      end
-      list
-    end
-
-    #
-    # Return array of available rolls.
-    #
-    def available_rolls
-      search_config('*.roll').map { |r| File.basename(r).chomp('.roll') }
-    end
-
-=begin
-    #
-    # The Roll file to use.
-    #
-    def roll_file(name=nil)
-      @roll_file ||= {}
-
-      name ||= rollname()
-
-      return @roll_file[name] unless @roll_file[name].nil?
-
-      @roll_file[name] = (
-        file = false
-        if name?(name)
-          file = find_config(name + '.roll')
-        else
-          file = File.expand_path(name)
-          file = file + '.roll' if File.extname(file) != '.roll' && !File.exist?(file)
-          file = false unless File.exist?(file)
-        end
-
-        file || false
-      )
-    end
-=end
-
-    #
-    #
-    #
-    def roll_file
-      File.expand_path(ENV['RUBY_ROLL'] || '~/.ruby/current.roll')
-    end
-
-    #
-    # Lock file is the same as roll_file but will `.lock` extension.
-    #
-    def lock_file
-      roll_file.chomp('.roll') + '.lock'
-    end
-
-    #
-    # Selected roll. This will either be a name coresponding to a file in the
-    # standard configuration locations (`~/.roll`, `~/.config/roll` or `/etc/roll`),
-    # or it can be a pathname to an otherwise located file.
-    #
-    def rollname
-      @rollname ||= ENV[ENVIRNMENT_VARIABLE] || rollname_from_file ||  DEFAULT_ROLLNAME
-    end
-
-    #
-    # Typically the roll is configured by environment variable (`RUBYROLL`) but
-    # if need be it can be configured via a config file of the same name.
-    #
-    def rollname_from_file
-      if file = find_config('RUBYROLL')
-        File.read(file).strip
-      else
-        nil
-      end
-    end
-
-    #
-    # Construct ledger using pathnames in given `file`.
-    #
-    #def load_ledger(file)
-    #  make_ledger(File.readlines(file))
-    #end
-
-    #
-    # Construct a ledger.
-    #
-    def load_roll(file)
-      list = []
-
-      paths = File.readlines(file)
-      paths = paths.map{ |g| Dir[g.strip] }.flatten
-
-      paths.each do |path|
-        path = path.strip
-
-        next if path[0,1] == '#'
-        next if path.empty?
-
-        if !File.directory?(path)
-          warn "invalid library path -- `#{path}'" if ENV['debug']
-          next
-        end
-
-        #begin
-          list << path
-        #rescue Exception => error
-        #  warn error.message if ENV['debug']
-        #  #warn "invalid library path -- `#{path}'" if ENV['roll_debug']
-        #end
-      end
-
-      list
-    end
-
-    #
-    # FIXME: This should be done via Library::Ledger somehow.
-    # Could use prime_expound.
-    #
-    def make_ledger(file)
-      list = load_roll(file)
-      ledger = Library::Ledger.new
-      list.each do |path|
-        ledger << path
-      end
-      ledger
-    end
-
-    #
-    # Lock a ledger.
-    #
-    # @return [String] full pathname of lock file.
-    #
-    def lock(file=nil, options={})
-      if file
-        ledger = make_ledger(file)
-        output = options[:output] || file + '.lock'
-      else
-        ledger = $LEDGER
-        output = options[:output] || lock_file
-      end
-
-      File.open(output, 'w+') do |f|
-        f << ledger.to_yaml
-      end
-
-      return output
-    end
-
-    #
-    # Remove a ledger lock.
+    # Activate a library. Same as #instance but will raise and error if the
+    # library is not found. This can also take a block to yield on the library.
     #
     # @param [String] name
-    #   Name of roll. If not given the curent roll is used.
+    #   Name of library.
     #
-    # @return [String] Full pathname of cache file.
+    # @param [String] constraint
+    #   Valid version constraint.
     #
-    def unlock(name=nil)
-      file = roll_file(name)
-      raise IOError, "#{name} is not a roll" unless file
-      lock_file = file.chomp('.roll') + '.lock'
-      if File.exist?(lock_file)
-        File.delete(lock_file)
-        lock_file
-      else
-        nil
-      end
+    # @raise [LoadError]
+    #   If library not found.
+    #
+    # @return [Library]
+    #   The activated Library object.
+    #
+    def activate(name, constraint=nil, &block) #:yield:
+      $LEDGER.activate(name, constraint, &block)
     end
 
     #
-    # Insert path into current roll.
+    # Like `#new`, but adds library to library ledger.
     #
-    # @return [String] roll file
+    # @todo Better name for this method?
     #
-    def insert(*paths)
-      paths.map!{ |path| File.expand_path(path) }
-      File.open(roll_file, 'a') do |file|
-        file << "\n"
-        file << paths.join("\n")
-      end
-      roll_file
+    # @return [Library] The new library.
+    #
+    def add(location)
+      $LEDGER.add(location)
     end
 
     #
-    # Remove path(s) from current roll.
+    # Find matching library features. This is the "mac daddy" method used by
+    # the #require and #load methods to find the specified +path+ among
+    # the various libraries and their load paths.
     #
-    # @return [String] roll file
-    #
-    def remove(*paths)
-      paths.map!{ |path| File.expand_path(path) }
-      list = File.readlines(roll_file)
-      list = list - paths
-      File.open(roll_file, 'w') do |file|
-        file << list.join("\n")
-      end
-      roll_file
+    def find(path, options={})
+      $LEDGER.find_feature(path, options)
     end
 
     #
-    # Does this location have a .index file?
+    # Brute force variation of `#find` looks through all libraries for a 
+    # matching features. This serves as the fallback method if `#find` comes
+    # up empty.
     #
-    def index?(location)
-      file = ::File.join(location, '.index')
-      return false unless File.file?(file)
-      return true
+    # @param [String] path
+    #   path name for which to search
+    #
+    # @param [Hash] options
+    #   Search options.
+    #
+    # @option options [Boolean] :latest
+    #   Search only the active or most current version of any library.
+    #
+    # @option options [Boolean] :suffix
+    #   Automatically try standard extensions if pathname has none.
+    #
+    # @option options [Boolean] :legacy
+    #   Do not match within library's +name+ directory, eg. `lib/foo/*`.
+    #
+    # @return [Feature,Array] Matching feature(s).
+    #
+    def find_any(path, options={})
+      $LEDGER.find_any(path, options)
     end
 
     #
-    # Return list of locked rolls.
+    # Brute force search looks through all libraries for matching features.
+    # This is the same as #find_any, but returns a list of matches rather
+    # then the first matching feature found.
     #
-    def locked_rolls
-      Dir[File.join(config_home, '*.lock')].map do |file|
-        file.chomp('.lock') + '.roll'
-      end
+    # @param [String] path
+    #   path name for which to search
+    #
+    # @param [Hash] options
+    #   Search options.
+    #
+    # @option options [Boolean] :latest
+    #   Search only the active or most current version of any library.
+    #
+    # @option options [Boolean] :suffix
+    #   Automatically try standard extensions if pathname has none.
+    #
+    # @option options [Boolean] :legacy
+    #   Do not match within library's +name+ directory, eg. `lib/foo/*`.
+    #
+    # @return [Feature,Array] Matching feature(s).
+    #
+    def search(path, options={})
+      $LEDGER.search(path, options)
     end
 
     #
+    # Search for all matching library files that match the given pattern.
+    # This could be of useful for plugin loader.
     #
+    # @param [Hash] options
+    #   Glob matching options.
     #
-    def copy(dst, src=nil, opts={})
-      if src
-        src = Roll.construct_roll_file(src)
-        dst = Roll.construct_roll_file(dst)
-      else
-        src = Roll.roll_file
-        dst = Roll.construct_roll_file(dst)
-      end
-
-      safe_copy(src, dst)
-
-      if opts[:lock]
-        Roll.lock(dst)
-        puts "Locked '#{dst}`."
-      else
-        puts "Saved '#{dst}`."
-      end
+    # @option options [Boolean] :latest
+    #   Search only activated libraries or the most recent version
+    #   of a given library.
+    #
+    # @return [Array] Matching file paths.
+    #
+    # @todo Should this return list of Feature objects instead of file paths?
+    #
+    def glob(match, options={})
+      $LEDGER.glob(match, options)
     end
 
     #
-    # Lock rolls that contain locations relative to the current gem home.
+    # @deprecated
     #
-    # @todo Better name for this method ?
-    #
-    # @return [Array<String>] list of roll files that were re-locked
-    #
-    def lock_gem_rolls
-      relock = []
+    def find_files(match, options={})
+      glob(match, options)
+    end
 
-      locked_rolls.each do |file|
-        File.each_line do |path|
-          path = path.strip
-          if gem_path?(path)
-            relock << file
-            break
+    #
+    # Access to global load stack.
+    # When loading files, the current library doing the loading is pushed
+    # on this stack, and then popped-off when it is finished.
+    #
+    # @return [Array] The `$LOAD_STACK` array.
+    #
+    def load_stack
+      $LOAD_STACK
+    end
+
+    #
+    # Require a feature from the library.
+    #
+    # @param [String] pathname
+    #   The pathname of feature relative to library's loadpath.
+    #
+    # @param [Hash] options
+    #
+    # @return [true,false] If feature was newly required or successfully loaded.
+    #
+    def require(pathname, options={})
+      $LEDGER.require(pathname, options)
+    end
+
+    #
+    # Load file path. This is just like #require except that previously
+    # loaded files will be reloaded and standard extensions will not be
+    # automatically appended.
+    #
+    # @param pathname [String]
+    #   pathname of feature relative to library's loadpath
+    #
+    # @return [true,false] if feature was successfully loaded
+    #
+    def load(pathname, options={}) #, &block)
+      $LEDGER.load(pathname, options)
+    end
+
+    #
+    # Like require but also with local lookup. It will first check to see
+    # if the currently loading library has the path relative to its load paths.
+    #
+    #   acquire('core_ext/margin')
+    #
+    # To "load" the library, rather than "require" it, set the +:load+
+    # option to true.
+    #
+    #   acquire('core_ext/string/margin', :load=>true)
+    #
+    # @param pathname [String]
+    #   Pathname of feature relative to library's loadpath.
+    #
+    # @return [true, false] If feature was newly required.
+    #
+    def acquire(pathname, options={}) #, &block)
+      $LEDGER.acquire(pathname, options)
+    end
+
+    #
+    # Lookup libraries that have a depenedency on the given library name
+    # and version.
+    #
+    # @todo Does not yet handle version constraint.
+    # @todo Sucky name.
+    #
+    # @return [Array<Library>] 
+    #
+    def depends_upon(match_name) #, constraint)
+      list = []
+      $LEDGER.each do |name, libs|
+        case libs
+        when Library
+          list << libs if libs.requirements.any?{ |r| match_name == r['name']  } 
+        else
+          libs.each do |lib|
+            list << lib if lib.requirements.any?{ |r| match_name == r['name']  } 
           end
         end
       end
-
-      relock.each do |file|
-        lock(file)
-      end
-
-      relock
-    end
-
-  private
-
-    #
-    # Copy a file safely.
-    #
-    def safe_copy(src, dst)
-      if not File.exist?(src)
-        $stderr.puts "File does not exist -- '#{src}`"
-        exit -1
-      end
-      if File.exist?(dst) && !opts[:force]
-        $stderr.puts "'#{dst}` already exists. Use --force option to overwrite."
-        exit -1
-      end
-      FileUtils.cp(src, dst)
+      list
     end
 
     #
-    # Is the given file a path (as opposed to just a name)?
-    #
-    def path?(file)
-      /\W/ =~ file
-    end
-
-    #
-    # Is the given file just a name (as opposed to  a path)?
-    #
-    def name?(file)
-      /\W/ !~ file
-    end
-
-    #
-    # Does the current roll include any entires that lie within
-    # the current gem home?
-    #
-    def gem_path?(path)
-      dir = ENV['GEM_HOME'] || gem_home
-      rex = ::Regexp.new("^#{Regexp.escape(dir)}\/")
-      rex =~ path
-    end
-
-    #
-    # Default gem home directory path.
-    #
-    # @return [String] Gem home path.
-    #
-    def gem_home
-      if defined? RUBY_FRAMEWORK_VERSION then
-        File.join File.dirname(CONFIG["sitedir"]), 'Gems', CONFIG["ruby_version"]
-      elsif CONFIG["rubylibprefix"] then
-        File.join(CONFIG["rubylibprefix"], 'gems', CONFIG["ruby_version"])
-      else
-        File.join(CONFIG["libdir"], ruby_engine, 'gems', CONFIG["ruby_version"])
-      end
-    end
-
-
-
-
-
-    #
-    # Go thru each library and make sure bin path is in path.
+    # Go thru each library and collect bin paths.
     #
     # @todo Should this be defined on Ledger?
     #
     def PATH()
       path = []
       list.each do |name|
-        lib = Library[name]
+        lib = $LEDGER.current(name)
         path << lib.bindir if lib.bindir?
       end
-      path.join(windows_platform? ? ';' : ':')
+      path.join(Utils.windows_platform? ? ';' : ':')
     end
 
     #
+    # Lock the ledger, by saving it to the temporary lock file.
     #
+    # @todo Should we update the ledger first?
     #
     def lock
-      output = roll_file + '.lock'
+      output = lock_file
+
+      dir = File.dirname(output)
+      FileUtils.mkdir_p(dir) unless File.directory?(dir)
+
       File.open(output, 'w+') do |f|
         f << $LEDGER.to_yaml
       end
     end
 
     #
-    #
+    # Remove lock file and reset ledger.
     #
     def unlock
-      FileUtils.rm(roll_file.lock)
+      FileUtils.rm(lock_file) if File.exist?(lock_file)
+      reset!
     end
 
     #
+    # Synchronize the ledger to the current system state and save.
+    # Also, returns the bin paths of all libraries.
     #
+    # @return [Array<String>] List of bin paths.
     #
-    def reset!
-      #list = ENV['RUBYLIBS'].to_s.split(/[:;]/)
-      roll_file = roll_file()
-      lock_file = roll_file + '.lock'
-      if File.exist?(lock_file)
-        ledger = YAML.load_file(lock_file)
-        $LEDGER.replace(ledger)
-      elsif File.exist?(roll_file)
-        list = File.readlines(roll_file).map{ |x| x.strip }
-        Library.prime(*list, :expound=>true)
+    def sync
+      unlock if locked?
+      lock
+      PATH()
+    end
+
+    #
+    # Library lock file.
+    #
+    # @return [String] Path to ledger lock file.
+    # 
+    def lock_file
+      File.join(tmpdir, "#{ruby_version}.ledger")
+    end
+
+    #
+    # Check is `RUBY_LIBRARY_LIVE` environment variable is set on.
+    #
+    # @return [Booelan] Using live mode?
+    #
+    def live?
+      case ENV['RUBY_LIBRARY_LIVE'].to_s.downcase
+      when 'on', 'true', 'yes', 'y'
+        true
       else
-        $stderr.puts "no such roll file `#{roll_file}'" unless roll_file == ""
+        false
       end
     end
 
-    alias :bootstrap! :reset!
+=begin
+    #
+    # Check is `RUBY_LIBRARY_DEVELOPMENT` environment variable is set on.
+    #
+    # @return [Booelan] Using development mode?
+    #
+    def development?
+      case ENV['RUBY_LIBRARY_DEVELOPMENT'].to_s.downcase
+      when 'on', 'true', 'yes', 'y'
+        true
+      else
+        false
+      end
+    end
+=end
+
+    #
+    # Is there a saved locked ledger?
+    #
+    def locked?
+      File.exist?(lock_file)
+    end
+
+    #
+    # Reset the Ledger.
+    #
+    def reset!
+      #$LEDGER = Ledger.new
+      #$LOAD_STACK = []
+      $LOAD_CACHE = {}
+
+      if File.exist?(lock_file) && ! live?
+        ledger = YAML.load_file(lock_file)
+        case ledger
+        when Ledger
+          $LEDGER = ledger
+          return $LEDGER
+        when Hash
+          $LEDGER.replace(ledger)
+          return $LEDGER
+        else
+          warn "Bad cached ledger at #{lock_file}"
+          #$LEDGER = Ledger.new
+        end
+      else
+        #$LEDGER = Ledger.new
+      end
+
+      $LEDGER.prime(*lookup_paths, :expound=>true)
+
+      #if development?
+        # find project root
+        # if root
+        #   $LEDGER.isolate_project(root)
+        # end
+      #end
+    end
 
   private
 
     #
-    # TODO: Better definition of `RbConfig#windows_platform?`.
+    # Bootstap the system, which is to say hit `#reset!` and
+    # load the Kernel overrides.
+    #
+    def bootstrap!
+      reset!
+      require_relative 'kernel'
+    end
+
+    #
+    # A temporary directory in which the locked ledger can be stored.
+    #
+    def tmpdir
+      File.join(Dir.tmpdir, 'ruby')
+    end
+
+    #
+    # Get an identifier for the current Ruby. This is taken from the basename of
+    # the `RUBY_ROOT` environment variable, if it exists, otherwise the `RUBY_VERSION`
+    # constant is returned.
+    #
+    # @return [String] Ruby version indentifier.
+    #
+    def ruby_version
+      if ruby = ENV['RUBY_ROOT']
+        File.basename(ruby)
+      else
+        RUBY_VERSION
+      end
+    end
+
+    #
+    # Library list file.
+    #
+    #def path_file
+    #  File.expand_path("~/.ruby/#{ruby_version}.path")
+    #  #File.expand_path('~/.ruby-path')
+    #end
+
+    #
+    # List of paths where the lookup of libraries should proceed.
+    # This come from the `RUBY_LIBRARY` environment variable, if set.
+    # Otherwise it fallback to `GEM_PATH` or `GEM_HOME`.
+    #
+    def lookup_paths
+      if list = ENV['RUBY_LIBRARY']
+        list.split(/[:;]/)
+      #elsif File.exist?(path_file)
+      #  File.readlines(path_file).map{ |x| x.strip }.reject{ |x| x.empty? || x =~ /^\s*\#/ }
+      elsif ENV['GEM_PATH']
+        ENV['GEM_PATH'].split(/[:;]/).map{ |dir| File.join(dir, 'gems', '*') }
+      elsif ENV['GEM_HOME']
+        ENV['GEM_HOME'].split(/[:;]/).map{ |dir| File.join(dir, 'gems', '*') }
+      else
+        warn "No Ruby libraries."
+        []
+      end
+    end
+
+    #
+    # Is the current platform a Windows-based OS?
+    #
+    # @todo This is one of those methods that probably can always
+    #       use a little improvement.
     #
     def windows_platform?
       case RUBY_PLATFORM
-      when /mswin/, /wince/
+      when /cygwin|mswin|mingw|bccwin|wince|emx/
         true
       else
         false
@@ -499,7 +461,6 @@ module Rolls
 
   end
 
-  # Extend Rolls namespace with management console functions.
   extend Console
 
 end
