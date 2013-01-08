@@ -29,8 +29,8 @@ end
 module Setup
   META_EXTENSION_DIR = '.setup'
   FILETYPES = %w( bin lib ext data etc man doc )
-  INSTALL_RECORD = 'SetupReceipt'
-  CONFIG_FILE = 'SetupConfig'
+  INSTALL_RECORD = '.setup/installed_files'
+  CONFIG_FILE    = '.setup/config.yml'
 end
 module Setup
   class Project
@@ -325,7 +325,7 @@ require 'yaml'
 require 'shellwords'
 module Setup
   class Configuration
-    RBCONFIG  = ::Config::CONFIG
+    RBCONFIG  = ::RbConfig::CONFIG
     META_CONFIG_FILE = META_EXTENSION_DIR + '/configuration.rb'
     def self.options
       @@options ||= []
@@ -363,12 +363,12 @@ module Setup
     option :root            , :path, 'install to alternate root location'
     option :installdirs     , :pick, 'install location mode (site,std,home)'  #, local)
     option :type            , :pick, 'install location mode (site,std,home)'
-    ::Config::CONFIG.each do |key,val|
+    ::RbConfig::CONFIG.each do |key,val|
       next if key == "configure_args"
       name = key.to_s.downcase
       define_method(name){ val }
     end
-    config_args = Shellwords.shellwords(::Config::CONFIG["configure_args"])
+    config_args = Shellwords.shellwords(::RbConfig::CONFIG["configure_args"])
     config_args.each do |ent|
       if ent.index("=")
         key, val = *ent.split("=")
