@@ -1,3 +1,5 @@
+# TODO: Con't use module_function, but define the class methods and have the instance methods call those.
+
 #require 'library' # this must be loaded in first
 
 $RUBY_IGNORE_CALLERS ||= []
@@ -5,28 +7,100 @@ $RUBY_IGNORE_CALLERS << /#{__FILE__}/  # TODO: should this be more general, e.g.
 
 module ::Kernel
 
+  #
+  # In which library is the current file participating?
+  #
+  # @return [Library] The library currently loading features.
+  #
+  def __LIBRARY__
+    $LOAD_STACK.last
+  end
+
+  #
+  # Activate a library, same as `Library.instance` but will raise and error
+  # if the library is not found. This can also take a block to yield on the
+  # library.
+  #
+  # @param name [String]
+  #   The library's name.
+  #
+  # @param constraint [String]
+  #   A valid version constraint.
+  #
+  # @return [Library] The Library instance.
+  #
+  def library(name, constraint=nil, &block) #:yield:
+    Library.activate(name, constraint, &block)
+  end
+
+  module_function :library
+
+
   unless method_defined?(:require_without_library)
 
     class << self
-      alias require_without_library require
-      alias load_without_library    load
+      alias require_without_rolls require
+      alias load_without_rolls    load
     end
 
-    alias require_without_library require
-    alias load_without_library    load
+    alias require_without_rolls require
+    alias load_without_rolls    load
 
     #
-    # Acquire feature - This is Roll's modern require/load method.
-    # It differs from the usual `#require` or `#load` primarily by
-    # the fact that it will search the current loading library,
-    # i.e. the one belonging to the feature on the top of the
-    # #LOAD_STACK, before looking elsewhere. The reason we can't 
-    # adjust `#require` to do this is becuase it could load a local
-    # feature when a non-local feature was intended. For example, if
-    # a library contained 'fileutils.rb' then this would be loaded
-    # rather the Ruby's standard library. When using `#acquire`,
-    # one would have to use the `ruby/` prefix to ensure the Ruby
-    # library gets loaded.
+    # Load feature.
+    #
+    # @param pathname [String]
+    #   The pathname of the feature to load.
+    #
+    # @param options [Hash]
+    #   Load options can be :wrap and :search.
+    #
+    # @return [true, false] if feature was successfully loaded
+    #
+    def load(pathname, options={})
+      $LEDGER.load(pathname, options)
+    end
+
+    module_function :load
+
+    #
+    # Require feature.
+    #
+    # @param pathname [String]
+    #   The pathname of the feature to require.
+    #
+    # @param options [Hash]
+    #   Load options can be `:wrap`, `:load` and `:search`.
+    #
+    # @return [true,false] if feature was newly required
+    #
+    def require(pathname, options={})
+      $LEDGER.require(pathname, options)
+    end
+
+    module_function :require
+
+    #
+    # Require relative to current library.
+    # @param pathname [String]
+    #   The pathname of the feature to acquire.
+    #
+    # @param options [Hash]
+    #   Acquire options.
+    #
+    # @return [true, false]
+    #   Was the feature newly required.
+    #
+    def require_local(pathname, options={})
+      $LEDGER.require_relative(pathname, options)
+    end
+
+    module_function :require_local
+
+    # TODO: require_relative ?
+
+    #
+    # Acquire feature.
     #
     # @param pathname [String]
     #   The pathname of the feature to acquire.
@@ -38,47 +112,11 @@ module ::Kernel
     #   Was the feature newly required or successfully loaded, depending
     #   on the `:load` option settings.
     #
-    def acquire(pathname, options={}) #, &block)
-      $LEDGER.acquire(pathname, options) #, &block)
-    end
+    #def acquire(pathname, options={}) #, &block)
+    #  $LEDGER.acquire(pathname, options) #, &block)
+    #end
 
-    module_function :acquire
-
-    #
-    # Require feature - This is the same as acquire except that the
-    # `:legacy` option is fixed as `true`.
-    #
-    # @param pathname [String]
-    #   The pathname of the feature to require.
-    #
-    # @param options [Hash]
-    #   Load options can be `:wrap`, `:load` and `:search`.
-    #
-    # @return [true,false] if feature was newly required
-    #
-    def require(pathname, options={}) #, &block)
-      $LEDGER.require(pathname, options) #, &block)
-    end
-
-    module_function :require
-
-    #
-    # Load feature - This is the same as acquire except that the
-    # `:legacy` and `:load` options are fixed as `true`.
-    #
-    # @param pathname [String]
-    #   The pathname of the feature to load.
-    #
-    # @param options [Hash]
-    #   Load options can be :wrap and :search.
-    #
-    # @return [true, false] if feature was successfully loaded
-    #
-    def load(pathname, options={}) #, &block)
-      $LEDGER.load(pathname, options) #, &block)
-    end
-
-    module_function :load
+    #module_function :acquire
 
   end
 

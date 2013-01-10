@@ -3,8 +3,15 @@ module Rolls
   module Utils
     extend self
 
-    SUFFIXES = Library::SUFFIXES
-    SUFFIXES_NOT = Library::SUFFIXES_NOT
+    #
+    # Possible suffixes for feature files, that #require will try automatically.
+    #
+    SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar'] #, '']
+
+    #
+    # The opposite of SUFFIXES. Using this helps DRY-up the find_feature code.
+    #
+    SUFFIXES_NOT = ['']
 
     #
     # TODO: Not sure RUBYLIB environment should be included in user_path.
@@ -101,6 +108,18 @@ module Rolls
       case RUBY_PLATFORM
       when /cygwin|mswin|mingw|bccwin|wince|emx/
         true
+      else
+        false
+      end
+    end
+
+    #
+    #
+    #
+    def absolute_path?(path)
+      case path[0,1]
+      when '/', '~', '.'
+        File.expand_path(path)
       else
         false
       end

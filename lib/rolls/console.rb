@@ -10,6 +10,13 @@ module Rolls
     require 'tmpdir'
 
     #
+    # State of monitoring setting. This is used for debugging.
+    #
+    def monitor?
+      ENV['monitor'] || ($MONITOR ||= false)
+    end
+
+    #
     # Access to library ledger.
     #
     # @return [Array] The `$LEDGER` array.
@@ -383,6 +390,26 @@ module Rolls
       #end
     end
 
+    #
+    # List of paths where the lookup of libraries should proceed.
+    # This come from the `RUBY_LIBRARY` environment variable, if set.
+    # Otherwise it fallback to `GEM_PATH` or `GEM_HOME`.
+    #
+    def lookup_paths
+      if list = ENV['RUBY_LIBRARY']
+        list.split(/[:;]/)
+      #elsif File.exist?(path_file)
+      #  File.readlines(path_file).map{ |x| x.strip }.reject{ |x| x.empty? || x =~ /^\s*\#/ }
+      elsif ENV['GEM_PATH']
+        ENV['GEM_PATH'].split(/[:;]/).map{ |dir| File.join(dir, 'gems', '*') }
+      elsif ENV['GEM_HOME']
+        ENV['GEM_HOME'].split(/[:;]/).map{ |dir| File.join(dir, 'gems', '*') }
+      else
+        warn "No Ruby libraries."
+        []
+      end
+    end
+
   private
 
     #
@@ -423,26 +450,6 @@ module Rolls
     #  File.expand_path("~/.ruby/#{ruby_version}.path")
     #  #File.expand_path('~/.ruby-path')
     #end
-
-    #
-    # List of paths where the lookup of libraries should proceed.
-    # This come from the `RUBY_LIBRARY` environment variable, if set.
-    # Otherwise it fallback to `GEM_PATH` or `GEM_HOME`.
-    #
-    def lookup_paths
-      if list = ENV['RUBY_LIBRARY']
-        list.split(/[:;]/)
-      #elsif File.exist?(path_file)
-      #  File.readlines(path_file).map{ |x| x.strip }.reject{ |x| x.empty? || x =~ /^\s*\#/ }
-      elsif ENV['GEM_PATH']
-        ENV['GEM_PATH'].split(/[:;]/).map{ |dir| File.join(dir, 'gems', '*') }
-      elsif ENV['GEM_HOME']
-        ENV['GEM_HOME'].split(/[:;]/).map{ |dir| File.join(dir, 'gems', '*') }
-      else
-        warn "No Ruby libraries."
-        []
-      end
-    end
 
   end
 

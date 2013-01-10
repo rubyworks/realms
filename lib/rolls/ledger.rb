@@ -12,13 +12,6 @@ module Rolls
     include Enumerable
 
     #
-    # State of monitoring setting. This is used for debugging.
-    #
-    def monitor?
-      ENV['monitor'] || ($MONITOR ||= false)
-    end
-
-    #
     def initialize
       @table = Hash.new(){ |h,k| h[k] = [] }
     end
@@ -219,6 +212,19 @@ $stderr.puts library.inspect
     end
 
     #
+    # Get an instance of a library by name, or name and version.
+    # Libraries are singleton, so once loaded the same object is
+    # always returned.
+    #
+    # @todo This method might be deprecated.
+    #
+    # @return [Library,NilClass] The activated Library instance, or `nil` if not found.
+    #
+    def instance(name, constraint=nil)
+      activate(name, constraint) if key?(name)
+    end
+
+    #
     # Activate a library, retrieving a Library instance by name, or name
     # and version, and ensuring only that instance will be returned for
     # all subsequent requests. Libraries are singleton, so once activated
@@ -280,30 +286,25 @@ $stderr.puts library.inspect
     # automatically appended.
     #
     # @param pathname [String]
-    #   pathname of feature relative to library's loadpath
+    #   Pathname of feature relative to library's loadpath.
     #
-    # @return [true,false] if feature was successfully loaded
+    # @return [true,false] If feature was successfully loaded.
     #
     def load(pathname, options={})
-      unless Hash === options
-        options = {}
-        options[:wrap] = options 
-      end
+      options = {:wrap => options} unless Hash === options
       options = options.rekey
 
-      #if feature = $LOAD_CACHE[pathname]
-      #  return feature.load if options[:load]
-      #  return false if feature.required?
-      #  return feature.require(options)
-      #end
+      from, path = File.split_root(pathname)
 
-      if feature = find_feature(pathname, options)
-        feature.load(options)
-      else  # fallback to Ruby's load system
-        feature = Library::LegacyFeature.new(pathname)
-        $LOAD_CACHE[pathname] = feature
-        success = feature.load(options)
+      library = instance(from)
+
+      if library
+        success = library.load(pathname, options)
+      else
+        success = load_without_rolls(pathname, options[:wrap])
       end
+
+      succcess
     end
 
     #
@@ -316,45 +317,51 @@ $stderr.puts library.inspect
     #
     # @return [true,false] If feature was newly required or successfully loaded.
     #
-
     def require(pathname, options={})
-      options[:require] = true
-      options[:suffix]  = true
+      options = options.rekey
 
-      load(pathname, options)
+      from, path = File.split_root(pathname)
 
-      #if file = $LOAD_CACHE[path]
-      #  return file.load
-      #end
+      library = instance(from)
 
-      #if file = Library.find(path, options)
-      #  #file.library_activate
-      #  $LOAD_CACHE[path] = file
-      #  return file.load(options) #acquire(options)
-      #end
+      if library
+        success = library.require(pathname, options)
+      else
+        success = require_without_rolls(pathname)
+      end
 
-      ##if options[:load]
-      #  load_without_library(path, options[:wrap])
-      ##else
-      ##  require_without_library(path)
-      ##end
+      success
     end
 
     #
     # Require from current library.
     #
     # @param pathname [String]
-    #   Pathname of feature relative to current library's loadpath.
+    #   Pathname of feature relative to current library's load path.
     #
     # @return [true, false] If feature is newly required.
     #
     # @todo better name for `#require_local`?
     #
-    def require_local(path, options={})
-      if feature = find_local_feature(path, options)
-        $stderr.puts "#{path} (local)" if monitor?  # debugging
-        return feature.require(options)
+    def require_local(pathname, options={})
+      library = $LOAD_STACK.last
+
+      if library
+        load_path  = $LOAD_PATH
+        $LOAD_PATH.replace(library.load_path)
+        begin
+          success = require_without_rolls(pathname)
+        rescue
+          from, subpath = File.root_split(pathname)
+          success = require_without_rolls(subpath)
+        ensure
+          $LOAD_PATH.replace(load_path)
+        end
+      else
+        success = require_without_rolls(pathname)
       end
+
+      success
     end
 
     #
@@ -365,123 +372,83 @@ $stderr.puts library.inspect
     #
     # @return [true, false] If feature is newly required.
     #
-    alias_method :acquire, :require_local
+    #alias_method :acquire, :require_local
 
     #
-    # Find matching library features. This is the "mac daddy" method used by
-    # the #require and #load methods to find the specified +path+ among
-    # the various libraries and their load paths.
+    # Find first matching file among libraies. If not found there, try the general $LOAD_PATH.
+    # This search method coorepsonds to the way in which #require and #load lookup files.
     #
-    def find_feature(path, options={})
-      path = path.to_s
+    # @return [String] Absolute file path.
+    #
+    def find(pathname, options={})
+      options = options.rekey
 
-      #suffix = options[:suffix]
-      #search = options[:search]
-      legacy = options[:legacy]
+      from, path = File.split_root(pathname)
 
-      ftr = $LOAD_CACHE[path]
-
-      return ftr if ftr 
-
-      $stderr.print path if monitor?  # debugging
-
-      # absolute, home or current path
-      #
-      # NOTE: Ideally we would try to find a matching path among avaliable libraries
-      # so that the library can be activated, however this would add extra overhead
-      # overhead and will by mostly a YAGNI, so we forgo this functionality, at least for now. 
-      case path[0,1]
-      when '/', '~', '.'
-        $stderr.puts "  (absolute)" if monitor?  # debugging
-        # TODO: expand path and ensure it exists?
-        ftr = Library::LegacyFeature.new(path)
-        $LOAD_CACHE[path] = ftr
-        return ftr
+      if absolute_path = Utils.absolute_path?(pathname)
+        return absolute_path
       end
 
-      # Look in user paths, there include -I and RUBYLIB environment locations,
-      # as well as manually added paths to $LOAD_PATH. Very hackish stuff!
-      if userpath = Utils.find_userpath(path, options)
-        return Library::LegacyFeature.new(userpath)
+      # TODO: Should `-I` locations be searched first? What about ENV['RUBYLIB'] locations?
+
+      library = current(from)
+
+      if library
+        file = library.find(pathname, options)
+      else
+        # TODO: Is searching all of $LOAD_PATH too much?
+        file = Utils.find_path($LOAD_PATH, pathname, options)
       end
 
-      from, subpath = ::File.split_root(path)
+      file
+    end
 
-      if from == 'ruby'  # ruby hack
-        $stderr.puts "  (ruby)" if monitor?  # debugging
-        #lib = RubyLibrary.singleton
-        if subpath
-          ftr = find_library_feature('ruby', subpath, options)
+    #
+    # Search for all matching library files that match the given pattern.
+    # This could be of useful for plugin loader.
+    #
+    # @param [Hash] match
+    #   File glob pattern to match against.
+    #
+    # @param [Hash] options
+    #   Glob matching options.
+    #
+    # @option options [Boolean] :all
+    #   Search all versions, not just the the most recent version of a given library.
+    #   Library versions are search in order from latest version to oldest version.
+    #
+    # @return [Array] Matching file paths.
+    #
+    # @todo Should search support implicit suffixes?
+    #
+    # @todo Should it search $LOAD_PATH as well?
+    #
+    def search(match, options={})
+      all = options[:all]
+
+      matches = []
+
+      each do |name, libs|
+        case libs
+        when Array
+          libs = [libs.max] unless all
         else
-          # what the hell is just `load 'ruby'` ;)
+          libs = [libs]
         end
-      else
-        if lib = key?(from) && activate(from)   # TODO: this activates, should it only do so if it has the feature? `Array(self[from]).max` instead?
-          $stderr.puts "  (from)" if monitor?  # debugging
-          if subpath  # library name with subpath (path == from)
-            ftr = lib.find_feature(path, options) || lib.find_feature(subpath, options)
-            # TODO: activate library here? if ftr?
-          else  # just library name
-            ftr = lib.default_feature
-            # TODO: activate library here? if ftr?
-          end
+
+        libs.sort.each do |lib|
+          matches.concat(lib.search(match))
         end
       end
 
-      return $LOAD_CACHE[path] = ftr if ftr
-
-      # legacy brute force search
-      # (This is very bad b/c it is the source of name clashes between libraries.)
-      if legacy
-        #options[:legacy] = true
-        if ftr = find_any(path, options)
-          $stderr.puts "  (6 legacy search)" if monitor?  # debugging
-          return($LOAD_CACHE[path] = ftr)
-        end
-      end
-
-      $stderr.puts "  (7 fallback)" if monitor?  # debugging
-
-      nil
+      matches.uniq
     end
 
-    #
-    #
-    #
-    def find_library_feature(lib, path, options={})
-      case lib
-      when Library
-      when :ruby, 'ruby'
-        lib = RubyLibrary.singleton    # sort of a hack to let rubygems edge in
-      else                             # b/c if RubyLibary is in the regular ledger
-        lib = self[lib] #library(lib)  # then it prevents gems working for anything 
-      end                              # with the same name in ruby site locations.
-      ftr = lib.find_feature(path, options)
-      raise LoadError, "no such file to load -- #{path}" unless ftr
-      $stderr.puts "  (direct)" if monitor?  # debugging
-      # TODO: activate library here if ftr?
-      return ftr
-    end
 
-    #
-    # Find a feature from the currently loading library.
-    #
-    def find_local_feature(path, options={})
-      if lib = __LIBRARY__
-        if ftr = lib.find(path, options)
-          return nil if $LOAD_STACK.include?(ftr)  # prevent recursive loading
-          return ftr
-        end
-      else
-        # can this even happen?
-        nil
-      end
-    end
-
+=begin
     #
     # Brute force variation of `#find` looks through all libraries for a 
-    # matching features. This serves as the fallback method if `#find` comes
-    # up empty.
+    # matching features.
     #
     # @param [String] path
     #   path name for which to search
@@ -501,18 +468,15 @@ $stderr.puts library.inspect
     # @return [Feature] Matching feature.
     #
     def find_any(path, options={})
-      options = options.merge(:main=>true)
-
-      latest = options[:latest]
+      #options = options.merge(:main=>true)
 
       # TODO: Perhaps the selected and unselected should be kept in separate lists?
       unselected, selected = *partition{ |name, libs| Array === libs }
 
       # broad search of pre-selected libraries
       selected.each do |(name, lib)|
-        if ftr = lib.find(path, options)
-          next if Library.load_stack.last == ftr
-          return ftr
+        if path = lib.find(path, options)
+          return path
         end
       end
 
@@ -521,8 +485,9 @@ $stderr.puts library.inspect
         libs = libs.sort
         libs = [libs.first] if latest
         libs.each do |lib|
-          ftr = lib.find(path, options)
-          return ftr if ftr
+          if path = lib.find(path, options)
+            return path
+          end
         end
       end
 
@@ -531,7 +496,7 @@ $stderr.puts library.inspect
 
     #
     # Brute force search looks through all libraries for matching features.
-    # This is the same as #find_any, but returns a list of matches rather
+    # This is the same as #find, but returns a list of matches rather
     # then the first matching feature found.
     #
     # @param [String] path
@@ -551,7 +516,7 @@ $stderr.puts library.inspect
     #
     # @return [Feature,Array] Matching feature(s).
     #
-    def search(path, options={})
+    def search_any(path, options={})
       options = options.merge(:main=>true)
 
       latest = options[:latest]
@@ -563,9 +528,8 @@ $stderr.puts library.inspect
 
       # broad search of pre-selected libraries
       selected.each do |(name, lib)|
-        if ftr = lib.find(path, options)
-          next if Library.load_stack.last == ftr
-          matches << ftr
+        if path = lib.find(path, options)
+          matches << path
         end
       end
 
@@ -581,47 +545,7 @@ $stderr.puts library.inspect
       matches.uniq
     end
 
-    #
-    # Search for all matching library files that match the given pattern.
-    # This could be of useful for plugin loader.
-    #
-    # @param [Hash] options
-    #   Glob matching options.
-    #
-    # @option options [Boolean] :latest
-    #   Search only activated libraries or the most recent version
-    #   of a given library.
-    #
-    # @return [Array] Matching file paths.
-    #
-    # @todo Should this return list of Feature objects instead of file paths?
-    #
-    def glob(match, options={})
-      latest = options[:latest]
-
-      matches = []
-
-      each do |name, libs|
-        case libs
-        when Array
-          libs = libs.sort
-          libs = [libs.first] if latest
-        else
-          libs = [libs]
-        end
-          
-        libs.each do |lib|
-          lib.loadpath.each do |path|
-            find = File.join(lib.location, path, match)
-            list = Dir.glob(find)
-            list = list.map{ |d| d.chomp('/') }
-            matches.concat(list)
-          end
-        end
-      end
-
-      matches
-    end
+=end
 
     #
     # Load up the ledger with a given set of paths.
@@ -646,7 +570,7 @@ $stderr.puts library.inspect
         begin
           add(path) if library_path?(path)
         rescue => err
-          $stderr.puts err.message if ENV['debug']
+          $stderr.puts err.message if Rolls.monitor?
         end
       end
 

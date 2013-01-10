@@ -1,12 +1,18 @@
+require 'yaml'  # TODO: replace with JSON or Marshal?
 require 'rbconfig'
-require 'autoload'
-require 'library'
+#require 'autoload'
+require 'versus'
 
 require 'rolls/index'
-require 'rolls/utils'
-require 'rolls/library'
-require 'rolls/ledger'
+require 'rolls/core_ext'
 require 'rolls/console'
+require 'rolls/utils'
+require 'rolls/errors'
+require 'rolls/library'
+require 'rolls/metadata'
+require 'rolls/version'
+require 'rolls/ledger'
+
 #require 'rolls/shell'
 
 $LEDGER = Rolls::Ledger.new
