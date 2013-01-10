@@ -95,6 +95,13 @@ $stderr.puts library.inspect
     end
 
     #
+    # Get the most current library by name. This does not activate!
+    #
+    def current(name)
+      Array(@table[name.to_s]).max
+    end
+
+    #
     # Replace current ledger with table from another.
     #
     def replace(ledger)
@@ -154,6 +161,9 @@ $stderr.puts library.inspect
     def keys
       @table.keys
     end
+
+    #
+    alias :names :keys
 
     #
     # Get a list of libraries and library version sets in the ledger.
@@ -232,6 +242,7 @@ $stderr.puts library.inspect
     #   The activated Library object.
     #
     # @todo Should we also check $"? Eg. `return false if $".include?(path)`.
+    #       Consdider require_relative with this.
     #
     def activate(name, constraint=nil) #:yield:
       raise LoadError, "no such library -- #{name}" unless key?(name)
@@ -289,7 +300,7 @@ $stderr.puts library.inspect
       if feature = find_feature(pathname, options)
         feature.load(options)
       else  # fallback to Ruby's load system
-        feature = LegacyFeature.new(pathname)
+        feature = Library::LegacyFeature.new(pathname)
         $LOAD_CACHE[pathname] = feature
         success = feature.load(options)
       end
@@ -383,7 +394,7 @@ $stderr.puts library.inspect
       when '/', '~', '.'
         $stderr.puts "  (absolute)" if monitor?  # debugging
         # TODO: expand path and ensure it exists?
-        ftr = LegacyFeature.new(path)
+        ftr = Library::LegacyFeature.new(path)
         $LOAD_CACHE[path] = ftr
         return ftr
       end
@@ -391,7 +402,7 @@ $stderr.puts library.inspect
       # Look in user paths, there include -I and RUBYLIB environment locations,
       # as well as manually added paths to $LOAD_PATH. Very hackish stuff!
       if userpath = Utils.find_userpath(path, options)
-        return LegacyFeature.new(userpath)
+        return Library::LegacyFeature.new(userpath)
       end
 
       from, subpath = ::File.split_root(path)
@@ -405,7 +416,7 @@ $stderr.puts library.inspect
           # what the hell is just `load 'ruby'` ;)
         end
       else
-        if lib = Library[from]   # TODO: this activates, should it only do so if it has the feature? self[from].max instead?
+        if lib = key?(from) && activate(from)   # TODO: this activates, should it only do so if it has the feature? `Array(self[from]).max` instead?
           $stderr.puts "  (from)" if monitor?  # debugging
           if subpath  # library name with subpath (path == from)
             ftr = lib.find_feature(path, options) || lib.find_feature(subpath, options)

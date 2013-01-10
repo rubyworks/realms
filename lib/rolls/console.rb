@@ -444,21 +444,6 @@ module Rolls
       end
     end
 
-    #
-    # Is the current platform a Windows-based OS?
-    #
-    # @todo This is one of those methods that probably can always
-    #       use a little improvement.
-    #
-    def windows_platform?
-      case RUBY_PLATFORM
-      when /cygwin|mswin|mingw|bccwin|wince|emx/
-        true
-      else
-        false
-      end
-    end
-
   end
 
   extend Console

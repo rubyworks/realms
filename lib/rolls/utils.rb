@@ -3,6 +3,9 @@ module Rolls
   module Utils
     extend self
 
+    SUFFIXES = Library::SUFFIXES
+    SUFFIXES_NOT = Library::SUFFIXES_NOT
+
     #
     # TODO: Not sure RUBYLIB environment should be included in user_path.
     #
@@ -86,6 +89,21 @@ module Rolls
     #
     def gem_paths
       @_gem_paths ||= (ENV['GEM_PATH'] || ENV['GEM_HOME']).split(/[:;]/)
+    end
+
+    #
+    # Is the current platform a Windows-based OS?
+    #
+    # @todo This is one of those methods that probably can always
+    #       use a little improvement.
+    #
+    def windows_platform?
+      case RUBY_PLATFORM
+      when /cygwin|mswin|mingw|bccwin|wince|emx/
+        true
+      else
+        false
+      end
     end
 
   end

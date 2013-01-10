@@ -4,6 +4,7 @@ require 'library'
 
 require 'rolls/index'
 require 'rolls/utils'
+require 'rolls/library'
 require 'rolls/ledger'
 require 'rolls/console'
 #require 'rolls/shell'
