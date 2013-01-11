@@ -285,7 +285,9 @@ module Rolls
       FileUtils.mkdir_p(dir) unless File.directory?(dir)
 
       File.open(output, 'w+') do |f|
-        f << $LEDGER.to_yaml
+        #f << JSON.fast_generate($LEDGER.to_h)
+        f << JSON.pretty_generate($LEDGER.to_h)
+        #f << Marshal.dump($LEDGER)
       end
     end
 
@@ -364,7 +366,8 @@ module Rolls
       $LOAD_CACHE = {}
 
       if File.exist?(lock_file) && ! live?
-        ledger = YAML.load_file(lock_file)
+        ledger = JSON.load(File.new(lock_file))
+        #ledger = Marshal.load(File.new(lock_file))
         case ledger
         when Ledger
           $LEDGER = ledger
