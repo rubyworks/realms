@@ -1,4 +1,5 @@
 require 'yaml'  # TODO: replace with JSON or Marshal?
+require 'json'
 require 'rbconfig'
 #require 'autoload'
 require 'versus'
@@ -17,7 +18,9 @@ require 'rolls/ledger'
 
 $LEDGER = Rolls::Ledger.new
 $LOAD_STACK = []
-$LOAD_CACHE = {}
+#$LOAD_CACHE = {}
+$SCOPED_FEATURES = Hash.new{ |h,k| h[k] = [] }
+$HOLD_PATH = $LOAD_PATH.dup
 
 module Rolls
   extend Console

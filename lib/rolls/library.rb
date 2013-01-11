@@ -23,9 +23,10 @@ module Rolls
       @location = location.to_s
 
       if metadata
+        metadata[:location] = location
         @metadata = Metadata.new(metadata)
       else
-        @metadata = Metadata.new(:location=>location)
+        @metadata = Metadata.new(location)
       end
 
       validate!
@@ -136,6 +137,13 @@ module Rolls
     alias_method :release_date, :date
 
     #
+    #
+    #
+    def paths
+      metadata.paths
+    end
+
+    #
     # Library's internal load path(s). This will default to `['lib']`
     # if not otherwise given.
     #
@@ -151,7 +159,8 @@ module Rolls
     # @return [Array<String>] list of expanded load paths
     #
     def load_path
-      metadata.load_path
+      @load_paths ||= lib_paths.map{ |path| File.realpath(File.join(location, path)) }
+      #metadata.load_path
     end
 
     alias_method :loadpath, :load_path
@@ -233,8 +242,10 @@ module Rolls
     # Load feature form library.
     #
     def load(pathname, options={})
-      sload_path = $LOAD_PATH
-      $LOAD_STACK << self
+      stacked = ($LOAD_STACK.last == self)
+
+      stash_path = $LOAD_PATH
+      $LOAD_STACK << self unless stacked
       $LOAD_PATH.replace(load_path)
       begin
         success = load_without_rolls(pathname, options[:wrap])
@@ -242,8 +253,8 @@ module Rolls
         root, subpath = File.split_root(pathname)
         success = load_without_rolls(subpath, options[:wrap])
       ensure
-        $LOAD_PATH.replace(sload_path)
-        $LOAD_STACK.pop
+        $LOAD_PATH.replace(stash_path)
+        $LOAD_STACK.pop unless stacked
       end
       success
     end
@@ -252,8 +263,10 @@ module Rolls
     # Requre feature from library.
     #
     def require(pathname, options={})
-      sload_path = $LOAD_PATH
-      $LOAD_STACK << self
+      stacked = ($LOAD_STACK.last == self)
+
+      stash_path = $LOAD_PATH
+      $LOAD_STACK << self unless stacked
       $LOAD_PATH.replace(load_path)
       begin
         success = require_without_rolls(pathname)
@@ -261,8 +274,8 @@ module Rolls
         root, subpath = File.split_root(pathname)
         success = require_without_rolls(subpath, options[:wrap])
       ensure
-        $LOAD_PATH.replace(sload_path)
-        $LOAD_STACK.pop
+        $LOAD_PATH.replace(stash_path)
+        $LOAD_STACK.pop unless stacked
       end
       success
     end
@@ -326,7 +339,7 @@ module Rolls
     def search(pattern, options={})
       matches = []
       load_path.each do |path|
-        list = Dir.glob(File.join(path, match)
+        list = Dir.glob(File.join(path, match))
         list = list.map{ |d| d.chomp('/') }
         matches.concat(list)
       end
@@ -414,7 +427,7 @@ module Rolls
         :location     => location,
         :name         => name,
         :version      => version.to_s,
-        :loadpath     => loadpath,
+        :paths        => paths,
         :date         => date.to_s,
         :requirements => requirements
       }

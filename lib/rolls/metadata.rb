@@ -6,6 +6,15 @@ module Rolls
   class Metadata
 
     #
+    #
+    #
+    def self.load(location)
+      m = new(:location=>location)
+      m.load_metadata
+      m
+    end
+
+    #
     # Setup new metadata object.
     #
     # @param [Hash] metadata
@@ -19,11 +28,13 @@ module Rolls
     def initialize(metadata={})
       @table = {}
 
-      if @location = metadata[:location]
+      case metadata
+      when Hash
+        update(metadata)
+      else
+        @table[:location] = metadata.to_s
         load_metadata
       end
-
-      update(metadata)
     end
 
     #
@@ -42,7 +53,7 @@ module Rolls
     # Get library location.
     #
     def location
-      @location #||= @table[:location]
+      @table[:location]
     end
 
     #
@@ -148,6 +159,7 @@ module Rolls
       paths[:lib] = paths
     end
 
+=begin
     #
     # Load path with library location.
     #
@@ -156,6 +168,7 @@ module Rolls
     end
 
     alias_method :loadpath, :load_path
+=end
 
     #
     # Runtime and development requirements combined.

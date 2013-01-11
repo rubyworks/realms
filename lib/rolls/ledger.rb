@@ -13,7 +13,7 @@ module Rolls
 
     #
     def initialize
-      @table = Hash.new(){ |h,k| h[k] = [] }
+      @table = {} #Hash.new(){ |h,k| h[k] = [] }
     end
 
     #
@@ -31,18 +31,16 @@ module Rolls
 
       #raise TypeError unless Library === library
       #begin
-        entry = @table[library.name]
+        entry = (@table[library.name] ||= [])
 
         case entry
-        when NilClass
-          raise "serious shit! nil entry in ledger table!"
+        #when NilClass
+        #  raise "serious shit! nil entry in ledger table!"
         when Array
           entry << library unless entry.include?(library)
         else
           # Library is already active so compare and make sure they are the
           # same, otherwise warn. (Should this ever raise an error?)
-$stderr.puts entry.inspect
-$stderr.puts library.inspect
           if entry != library  # TODO: Is this the right equals comparison?
             warn "Added library has already been activated."
           end
@@ -68,10 +66,10 @@ $stderr.puts library.inspect
     # @param [String] name
     #   Name of library.
     #
-    # @return [Library,Array] Library or lihbrary set referenced by name.
+    # @return [Library,Array] Library or version set of libraries.
     #
     def [](name)
-      @table[name.to_s]
+      @table[name.to_s] || []
     end
 
     #
@@ -104,8 +102,21 @@ $stderr.puts library.inspect
       when Hash
         initialize  # reinitialize
         ledger.each do |name, value|
-          raise TypeError unless Array === value || Library === value
-          @table[name.to_s] = value
+          @table[name.to_s] = (
+            case value
+            when Library then value
+            when Hash    then Library.new(value['location'], value)
+            when Array
+              value.map do |val|
+                case val
+                when Library then val
+                when Hash    then Library.new(val['location'], val)
+                else raise TypeError
+                end
+              end
+            else raise TypeError
+            end
+          )
         end
       else
         raise TypeError
@@ -301,11 +312,22 @@ $stderr.puts library.inspect
       if library
         success = library.load(pathname, options)
       else
-        success = load_without_rolls(pathname, options[:wrap])
+        stash_path = $LOAD_PATH
+        #$LOAD_STACK << self
+        $LOAD_PATH.replace($HOLD_PATH)
+        begin
+          success = load_without_rolls(pathname, options[:wrap])
+        ensure
+          $LOAD_PATH.replace(stash_path)
+          #$LOAD_STACK.pop
+        end
       end
 
-      succcess
+      success
     end
+
+    # TODO: There is one issue with this design, users expect -I paths
+    #       to be checked first.
 
     #
     # Require a feature from the library.
@@ -327,7 +349,15 @@ $stderr.puts library.inspect
       if library
         success = library.require(pathname, options)
       else
-        success = require_without_rolls(pathname)
+        stash_path = $LOAD_PATH
+        #$LOAD_STACK << self
+        $LOAD_PATH.replace($HOLD_PATH)
+        begin
+          success = require_without_rolls(pathname)
+        ensure
+          $LOAD_PATH.replace(stash_path)
+          #$LOAD_STACK.pop
+        end
       end
 
       success
@@ -347,18 +377,27 @@ $stderr.puts library.inspect
       library = $LOAD_STACK.last
 
       if library
-        load_path  = $LOAD_PATH
-        $LOAD_PATH.replace(library.load_path)
+        success = library.require(pathname, options)
+        #load_path = $LOAD_PATH
+        #$LOAD_PATH.replace(library.load_path)
+        #begin
+        #  success = require_without_rolls(pathname)
+        #rescue
+        #  from, subpath = File.root_split(pathname)
+        #  success = require_without_rolls(subpath)
+        #ensure
+        #  $LOAD_PATH.replace(load_path)
+        #end
+      else
+        stash_path = $LOAD_PATH
+        #$LOAD_STACK << self
+        $LOAD_PATH.replace($HOLD_PATH)
         begin
           success = require_without_rolls(pathname)
-        rescue
-          from, subpath = File.root_split(pathname)
-          success = require_without_rolls(subpath)
         ensure
-          $LOAD_PATH.replace(load_path)
-        end
-      else
-        success = require_without_rolls(pathname)
+          $LOAD_PATH.replace(stash_path)
+          #$LOAD_STACK.pop
+        end       
       end
 
       success
@@ -372,7 +411,16 @@ $stderr.puts library.inspect
     #
     # @return [true, false] If feature is newly required.
     #
-    #alias_method :acquire, :require_local
+    def acquire(scope, pathname, options={})
+      if path = find(pathname)
+        unless $SCOPED_FEATURES[scope].include?(path)
+          $SCOPED_FEATURES[scope] << path
+          scope.module_eval(File.read(path), path)
+        end
+      else
+        raise LoadError, "no such file -- #{pathname}"
+      end
+    end
 
     #
     # Find first matching file among libraies. If not found there, try the general $LOAD_PATH.
@@ -560,11 +608,9 @@ $stderr.puts library.inspect
     def loadup(*paths)
       options = Hash === paths.last ? paths.pop : {}
 
-      @table = Hash.new(){ |h,k| h[k] = [] }
+      @table = {} #Hash.new(){ |h,k| h[k] = [] }
 
       paths = expound_paths(*paths) if options[:expound]
-
-      #require 'library/rubylib'  # TODO: What's the reason rubylib.rb is loaded here?
 
       paths.each do |path|
         begin
@@ -681,6 +727,32 @@ $stderr.puts library.inspect
       end
 
       return library
+    end
+
+    #
+    #
+    #
+    #def to_json
+    #  #JSON.dump(to_h)
+    #  JSON.pretty_generate(to_h)
+    #end
+
+    #
+    #
+    #
+    def to_h
+      h = {}
+      @table.each do |name, libs|
+        h[name] = (
+          case libs
+          when Array
+            libs.map{ |lib| lib.to_h }
+          else
+            libs.to_h
+          end
+        )
+      end
+      h
     end
 
   protected
