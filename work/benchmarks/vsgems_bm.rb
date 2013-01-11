@@ -8,7 +8,7 @@ require 'benchmark'
 $bench_env = File.dirname(__FILE__) + '/rubygems.roll'
 
 def run(cmd)
-  cmd = %[export RUBYENV="#{$bench_env}"; export RUBYOPT=""; ] + cmd 
+  cmd = %[export RUBY_LIBRARY="#{$bench_env}"; export RUBYOPT=""; ] + cmd 
   Open3.popen3(cmd) do |stdin, stdout, stderr|  
     out = stdout.read
     err = stderr.read
@@ -30,9 +30,9 @@ puts
 puts "Ruby Roll"
 
 Benchmark.bm(25) do |x|
-  x.report("  Reqiure Roll:          "){ run %[ruby -roll -e'nil'] }
-  x.report("  Require Facets:        "){ run %[ruby -roll -e'require "facets"'] }
-  x.report("  Require Nokogiri:      "){ run %[ruby -roll -e'require "nokogiri"'] }
+  x.report("  Reqiure Roll:          "){ run %[ruby -rolls -e'nil'] }
+  x.report("  Require Facets:        "){ run %[ruby -rolls -e'require "facets"'] }
+  x.report("  Require Nokogiri:      "){ run %[ruby -rolls -e'require "nokogiri"'] }
 end
 
 puts

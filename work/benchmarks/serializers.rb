@@ -1,5 +1,7 @@
 require 'benchmark'
 require 'csv'
+require 'yaml'
+require 'json'
 require 'tmpdir'
 
 count = 1000
@@ -69,6 +71,34 @@ Benchmark.bm(25) do |x|
   x.report("  Marshal Read:          ") do
     count.times do
       Marshal.load(File.new(file + '.marshal'))
+    end
+  end
+
+  x.report("  YAML Write:         ") do
+    count.times do
+      File.open(file + '.yaml', "wb") do |w|
+        w << data.to_yaml
+      end
+    end
+  end
+
+  x.report("  YAML Read:          ") do
+    count.times do
+      YAML.load(File.new(file + '.yaml'))
+    end
+  end
+
+  x.report("  JSON Write:         ") do
+    count.times do
+      File.open(file + '.yaml', "wb") do |w|
+        w << JSON.dump(data)
+      end
+    end
+  end
+
+  x.report("  JSON Read:          ") do
+    count.times do
+      JSON.load(File.new(file + '.yaml'))
     end
   end
 

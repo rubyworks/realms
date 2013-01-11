@@ -10,5 +10,5 @@ def run(cmd)
   end
 end
 
-run %[export RUBYENV="rubygems"; export RUBYOPT=""; ruby -roll -e'require "nokogiri"']
+run %[export RUBY_LIBRARY="$GEM_PATH"; export RUBYOPT="-rolls"; ruby -e'require "nokogiri"']
 
