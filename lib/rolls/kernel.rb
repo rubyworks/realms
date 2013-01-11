@@ -36,7 +36,7 @@ module ::Kernel
   module_function :library
 
 
-  unless method_defined?(:require_without_library)
+  unless method_defined?(:require_without_rolls)
 
     class << self
       alias require_without_rolls require
@@ -97,27 +97,33 @@ module ::Kernel
 
     module_function :require_local
 
-    # TODO: require_relative ?
+    # TODO: Do we need to do anything with require_relative ?
 
-    #
-    # Acquire feature.
-    #
-    # @param pathname [String]
-    #   The pathname of the feature to acquire.
-    #
-    # @param options [Hash]
-    #   Load options are `:wrap`, `:load`, `:legacy` and `:search`.
-    #
-    # @return [true, false]
-    #   Was the feature newly required or successfully loaded, depending
-    #   on the `:load` option settings.
-    #
-    #def acquire(pathname, options={}) #, &block)
-    #  $LEDGER.acquire(pathname, options) #, &block)
-    #end
 
     #module_function :acquire
 
   end
 
 end
+
+class Module
+  private
+
+  #
+  # Acquire feature.
+  #
+  # @param pathname [String]
+  #   The pathname of the feature to acquire.
+  #
+  # @param options [Hash]
+  #   Aquire options (if any).
+  #
+  # @return [true,false]
+  #   Was the feature newly acquired or not.
+  #
+  def acquire(pathname, options={}) #, &block)
+    $LEDGER.acquire(self, pathname, options) #, &block)
+  end
+
+end
+
