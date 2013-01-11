@@ -1,4 +1,4 @@
-module Rolls
+module Realms
 
   # This module simply extends the Library class, giving it certain
   # convenience methods for interacting with the current Ledger.

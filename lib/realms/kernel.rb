@@ -36,15 +36,15 @@ module ::Kernel
   module_function :library
 
 
-  unless method_defined?(:require_without_rolls)
+  unless method_defined?(:require_without_realms)
 
     class << self
-      alias require_without_rolls require
-      alias load_without_rolls    load
+      alias require_without_realms require
+      alias load_without_realms    load
     end
 
-    alias require_without_rolls require
-    alias load_without_rolls    load
+    alias require_without_realms require
+    alias load_without_realms    load
 
     #
     # Load feature.

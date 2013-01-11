@@ -1,4 +1,4 @@
-module Rolls
+module Realms
 
   # Ledger class track available libraries by library name.
   # It is essentially a hash object, but with a special way
@@ -316,7 +316,7 @@ module Rolls
         #$LOAD_STACK << self
         $LOAD_PATH.replace($HOLD_PATH)
         begin
-          success = load_without_rolls(pathname, options[:wrap])
+          success = load_without_realms(pathname, options[:wrap])
         ensure
           $LOAD_PATH.replace(stash_path)
           #$LOAD_STACK.pop
@@ -353,7 +353,7 @@ module Rolls
         #$LOAD_STACK << self
         $LOAD_PATH.replace($HOLD_PATH)
         begin
-          success = require_without_rolls(pathname)
+          success = require_without_realms(pathname)
         ensure
           $LOAD_PATH.replace(stash_path)
           #$LOAD_STACK.pop
@@ -381,10 +381,10 @@ module Rolls
         #load_path = $LOAD_PATH
         #$LOAD_PATH.replace(library.load_path)
         #begin
-        #  success = require_without_rolls(pathname)
+        #  success = require_without_realms(pathname)
         #rescue
         #  from, subpath = File.root_split(pathname)
-        #  success = require_without_rolls(subpath)
+        #  success = require_without_realms(subpath)
         #ensure
         #  $LOAD_PATH.replace(load_path)
         #end
@@ -393,7 +393,7 @@ module Rolls
         #$LOAD_STACK << self
         $LOAD_PATH.replace($HOLD_PATH)
         begin
-          success = require_without_rolls(pathname)
+          success = require_without_realms(pathname)
         ensure
           $LOAD_PATH.replace(stash_path)
           #$LOAD_STACK.pop
@@ -616,7 +616,7 @@ module Rolls
         begin
           add(path) if library_path?(path)
         rescue => err
-          $stderr.puts err.message if Rolls.monitor?
+          $stderr.puts err.message if Realms.monitor?
         end
       end
 
@@ -624,7 +624,7 @@ module Rolls
       # when a file has the same name as something in the
       # ruby lib or site locations. For example, if we intsll
       # the test-unit gem and require `test/unit`. Of course,
-      # it Ruby ever adopted the "Rolls Way" then this could
+      # it Ruby ever adopted the "Realms Way" then this could
       # be restored.
       #add_library(RubyLibrary.new)
 

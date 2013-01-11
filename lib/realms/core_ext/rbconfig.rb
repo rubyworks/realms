@@ -10,7 +10,7 @@ module ::RbConfig
   #
   #   "#{Config::CONFIG['datadir']}/#{name}"
   #
-  # But it may be modified by packages like RubyGems and Rolls to handle
+  # But it may be modified by packages like RubyGems and Realms to handle
   # versioned data directories.
   #
   def self.datadir(name, versionless=false)

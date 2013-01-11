@@ -1,4 +1,4 @@
-module Roll
+module Realms
 
   # Shell commands.
   #
@@ -21,10 +21,10 @@ module Roll
       cmd = idx ? argv.delete_at(idx) : 'help'
 
       begin
-        require "rolls/shell/#{cmd}"
+        require "realms/shell/#{cmd}"
       rescue LoadError
         cmd = 'help'
-        require "rolls/shell/#{cmd}"
+        require "realms/shell/#{cmd}"
       end
 
       @argv = argv
@@ -78,22 +78,22 @@ module Roll
 
 end
 
-require 'rolls/shell/copy'
-require 'rolls/shell/gem'
-require 'rolls/shell/help'
-require 'rolls/shell/in'
-require 'rolls/shell/isolate'
-require 'rolls/shell/libs'
-require 'rolls/shell/list'
-require 'rolls/shell/lock'
-require 'rolls/shell/merge'
-require 'rolls/shell/out'
-require 'rolls/shell/path'
-require 'rolls/shell/shells'
-require 'rolls/shell/show'
-require 'rolls/shell/ledger'
-require 'rolls/shell/unlock'
-require 'rolls/shell/use'
-require 'rolls/shell/verify'
-require 'rolls/shell/where'
+require 'realms/shell/copy'
+require 'realms/shell/gem'
+require 'realms/shell/help'
+require 'realms/shell/in'
+require 'realms/shell/isolate'
+require 'realms/shell/libs'
+require 'realms/shell/list'
+require 'realms/shell/lock'
+require 'realms/shell/merge'
+require 'realms/shell/out'
+require 'realms/shell/path'
+require 'realms/shell/shells'
+require 'realms/shell/show'
+require 'realms/shell/ledger'
+require 'realms/shell/unlock'
+require 'realms/shell/use'
+require 'realms/shell/verify'
+require 'realms/shell/where'
 

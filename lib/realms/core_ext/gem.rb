@@ -3,7 +3,7 @@ if not defined?(Gem)
   module Gem
     # Some libraries, such as RDoc search through
     # all libraries for plugins using this method.
-    # If RubyGems is not being used, then Rolls
+    # If RubyGems is not being used, then Realms
     # emulates it.
     #
     #  Gem.find_files('rdoc/discover')

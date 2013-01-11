@@ -4,17 +4,17 @@ require 'rbconfig'
 #require 'autoload'
 require 'versus'
 
-require 'rolls/index'
-require 'rolls/core_ext'
-require 'rolls/console'
-require 'rolls/utils'
-require 'rolls/errors'
-require 'rolls/library'
-require 'rolls/metadata'
-require 'rolls/version'
-require 'rolls/ledger'
+require 'realms/index'
+require 'realms/core_ext'
+require 'realms/console'
+require 'realms/utils'
+require 'realms/errors'
+require 'realms/library'
+require 'realms/metadata'
+require 'realms/version'
+require 'realms/ledger'
 
-#require 'rolls/shell'
+#require 'realms/shell'
 
 $LEDGER = Rolls::Ledger.new
 $LOAD_STACK = []
@@ -22,7 +22,7 @@ $LOAD_STACK = []
 $SCOPED_FEATURES = Hash.new{ |h,k| h[k] = [] }
 $HOLD_PATH = $LOAD_PATH.dup
 
-module Rolls
+module Realms
   extend Console
   # Should this be here? Or just in `olls.rb`?
   bootstrap!

@@ -1,4 +1,4 @@
-module Roll
+module Realms
 
   module Shell
 
@@ -16,11 +16,11 @@ module Roll
       parse
 
       if argv.size == 1
-        src = Roll.roll_file
-        dst = Roll.construct_roll_file(argv[0])
+        src = Realms.roll_file
+        dst = Realms.construct_roll_file(argv[0])
       else
-        src = Roll.construct_roll_file(argv[0])
-        dst = Roll.construct_roll_file(argv[1])
+        src = Realms.construct_roll_file(argv[0])
+        dst = Realms.construct_roll_file(argv[1])
       end
 
       safe_merge(src, dst)

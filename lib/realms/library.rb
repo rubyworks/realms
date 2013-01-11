@@ -1,4 +1,4 @@
-module Rolls
+module Realms
 
   # Library class encapsulates a location on disc that contains a Ruby
   # project, with loadable features, of course.
@@ -248,10 +248,10 @@ module Rolls
       $LOAD_STACK << self unless stacked
       $LOAD_PATH.replace(load_path)
       begin
-        success = load_without_rolls(pathname, options[:wrap])
+        success = load_without_realms(pathname, options[:wrap])
       rescue LoadError
         root, subpath = File.split_root(pathname)
-        success = load_without_rolls(subpath, options[:wrap])
+        success = load_without_realms(subpath, options[:wrap])
       ensure
         $LOAD_PATH.replace(stash_path)
         $LOAD_STACK.pop unless stacked
@@ -269,10 +269,10 @@ module Rolls
       $LOAD_STACK << self unless stacked
       $LOAD_PATH.replace(load_path)
       begin
-        success = require_without_rolls(pathname)
+        success = require_without_realms(pathname)
       rescue LoadError
         root, subpath = File.split_root(pathname)
-        success = require_without_rolls(subpath, options[:wrap])
+        success = require_without_realms(subpath, options[:wrap])
       ensure
         $LOAD_PATH.replace(stash_path)
         $LOAD_STACK.pop unless stacked
