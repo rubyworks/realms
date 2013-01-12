@@ -6,6 +6,7 @@ doc/rdoc
 log
 pkg
 tmp
+wiki
 man/man1
 site/doc
 site/rdoc

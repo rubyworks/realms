@@ -5,8 +5,6 @@
 ( )
 
 
-# REALMS
-
 ```
           <|
            A
@@ -34,6 +32,8 @@
   :' ::::8P::::::::::88aa.                   _ _- --  --_ --- __  --- __--
 .::  :::::::::::::::::::Y88as88a...s88aa.
 ```
+
+# REALMS
 
 REALMS is a library management system for Ruby. In fact, the name is
 an anacronym which stands for *Ruby Enhanced Library Management System*.
