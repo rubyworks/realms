@@ -1,12 +1,12 @@
-module Realms
+class Realms::Library
 
   module Shell
 
     #
-    #
+    # Display the absolute path of a feature.
     #
     def where
-      op.banner = "Usage: roll where <feature>"
+      op.banner = "Usage: realm where <feature>"
       op.separator "Display absolute path to a feature."
       #op.on('--all', '-a', "Search all rolls.") do
       #  opts[:all] = true

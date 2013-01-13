@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   # The Metadata class encapsulates a library's basic information, in particular
   # name, version and load path.

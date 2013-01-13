@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   # Library::LoadError is a subclass of Ruby's standard LoadError class,
   # modified slightly to provide better error messages.

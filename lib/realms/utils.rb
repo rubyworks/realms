@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   module Utils
     extend self
@@ -123,6 +123,13 @@ module Realms
       else
         false
       end
+    end
+
+    #
+    # State of monitoring setting. This is used for debugging.
+    #
+    def monitor?
+      ENV['monitor'] || ($MONITOR ||= false)
     end
 
   end

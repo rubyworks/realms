@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   # Ledger class track available libraries by library name.
   # It is essentially a hash object, but with a special way

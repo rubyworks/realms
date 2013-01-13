@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   # This module simply extends the Library class, giving it certain
   # convenience methods for interacting with the current Ledger.
@@ -8,13 +8,6 @@ module Realms
   module Console
 
     require 'tmpdir'
-
-    #
-    # State of monitoring setting. This is used for debugging.
-    #
-    def monitor?
-      ENV['monitor'] || ($MONITOR ||= false)
-    end
 
     #
     # Access to library ledger.
@@ -129,8 +122,8 @@ module Realms
     # This is the same as #find_any, but returns a list of matches rather
     # then the first matching feature found.
     #
-    # @param [String] path
-    #   path name for which to search
+    # @param [String] glob
+    #   Glob pattern for which to search.
     #
     # @param [Hash] options
     #   Search options.
@@ -146,10 +139,11 @@ module Realms
     #
     # @return [Feature,Array] Matching feature(s).
     #
-    def search(path, options={})
-      $LEDGER.search(path, options)
+    def search(glob, options={})
+      $LEDGER.search(glob, options)
     end
 
+=begin
     #
     # Search for all matching library files that match the given pattern.
     # This could be of useful for plugin loader.
@@ -168,13 +162,7 @@ module Realms
     def glob(match, options={})
       $LEDGER.glob(match, options)
     end
-
-    #
-    # @deprecated
-    #
-    def find_files(match, options={})
-      glob(match, options)
-    end
+=end
 
     #
     # Access to global load stack.
@@ -335,19 +323,19 @@ module Realms
     end
 
 =begin
-    #
-    # Check is `RUBY_LIBRARY_DEVELOPMENT` environment variable is set on.
-    #
-    # @return [Booelan] Using development mode?
-    #
-    def development?
-      case ENV['RUBY_LIBRARY_DEVELOPMENT'].to_s.downcase
-      when 'on', 'true', 'yes', 'y'
-        true
-      else
-        false
-      end
+  #
+  # Check is `RUBY_LIBRARY_DEVELOPMENT` environment variable is set on.
+  #
+  # @return [Booelan] Using development mode?
+  #
+  def development?
+    case ENV['RUBY_LIBRARY_DEVELOPMENT'].to_s.downcase
+    when 'on', 'true', 'yes', 'y'
+      true
+    else
+      false
     end
+  end
 =end
 
     #

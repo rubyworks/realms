@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   # Shell commands.
   #

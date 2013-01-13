@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   # Library ValidationError is raised when library metadata is not conforming.
   #

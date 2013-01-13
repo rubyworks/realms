@@ -1,4 +1,4 @@
-module Realms
+class Realms::Library
 
   module Shell
 
@@ -18,6 +18,7 @@ module Realms
       puts paths.join("\n")
       puts "  '-> #{roll_file}"
     end
+
   end
 
 end
