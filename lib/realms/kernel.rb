@@ -30,7 +30,7 @@ module ::Kernel
   # @return [Library] The Library instance.
   #
   def library(name, constraint=nil, &block) #:yield:
-    Library.activate(name, constraint, &block)
+    $LOAD_MANAGER.activate(name, constraint, &block)
   end
 
   module_function :library
@@ -58,7 +58,7 @@ module ::Kernel
     # @return [true, false] if feature was successfully loaded
     #
     def load(pathname, options={})
-      $LEDGER.load(pathname, options)
+      $LOAD_MANAGER.load(pathname, options)
     end
 
     module_function :load
@@ -75,7 +75,7 @@ module ::Kernel
     # @return [true,false] if feature was newly required
     #
     def require(pathname, options={})
-      $LEDGER.require(pathname, options)
+      $LOAD_MANAGER.require(pathname, options)
     end
 
     module_function :require
@@ -92,7 +92,7 @@ module ::Kernel
     #   Was the feature newly required.
     #
     def require_local(pathname, options={})
-      $LEDGER.require_relative(pathname, options)
+      $LOAD_MANAGER.require_relative(pathname, options)
     end
 
     module_function :require_local
@@ -122,7 +122,7 @@ class Module
   #   Was the feature newly acquired or not.
   #
   def acquire(pathname, options={}) #, &block)
-    $LEDGER.acquire(self, pathname, options) #, &block)
+    $LOAD_MANAGER.acquire(self, pathname, options) #, &block)
   end
 
 end

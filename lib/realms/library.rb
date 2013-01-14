@@ -49,12 +49,12 @@ module Realms
     def activate
       @active = true
 
-      #current = $LEDGER[name]
+      #current = $LOAD_MANAGER[name]
 
       #if Library === current
-      #  raise VersionConflict.new(self, current) if current != self
+      #  raise Version::Conflict.new(self, current) if current != self
       #else
-      #  $LEDGER[name] = self
+      #  $LOAD_MANAGER[name] = self
       #end
 
       ## TODO: activate runtime requirements?
@@ -83,7 +83,7 @@ module Realms
     #
     def active?
       @active
-      #$LEDGER[name] == self
+      #$LOAD_MANAGER[name] == self
     end
 
     #
@@ -115,7 +115,7 @@ module Realms
     #
     # Library's version number.
     #
-    # @return [VersionNumber] version number
+    # @return [Version::Number] version number
     #
     def version
       metadata.version
@@ -449,10 +449,10 @@ module Library
   # @return [true,false] Has the library has been activated?
   #
   def activate
-    current = $LEDGER[name]
+    current = $LOAD_MANAGER[name]
 
     if Library === current
-      raise VersionConflict.new(self, current) if current != self
+      raise Version::Conflict.new(self, current) if current != self
     else
       ## NOTE: we are only doing this for the sake of autoload
       ## which does not honor a customized require method.
@@ -461,7 +461,7 @@ module Library
       #    $LOAD_PATH.unshift(path)
       #  end
       #end
-      $LEDGER[name] = self
+      $LOAD_MANAGER[name] = self
     end
 
     # TODO: activate runtime requirements?
@@ -487,7 +487,7 @@ module Library
   # Is this library active in global ledger?
   #
   def active?
-    $LEDGER[name] == self
+    $LOAD_MANAGER[name] == self
   end
 
 end

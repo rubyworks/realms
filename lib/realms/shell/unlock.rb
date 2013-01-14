@@ -1,27 +1,29 @@
-class Realms::Library
+module Realms
+  class Library
 
-  module Shell
+    module Shell
 
-    # TODO: Ultimately allow for caching a different groups?
+      # TODO: Ultimately allow for caching a different groups?
 
-    #
-    def unlock
-      op.banner = "Usage: roll unlock"
-      op.separator "Clear current roll cache."
+      #
+      def unlock
+        op.banner = "Usage: roll unlock"
+        op.separator "Clear current roll cache."
 
-      parse
+        parse
 
-      name = argv.first
+        name = argv.first
 
-      file = Roll.unlock(name)
+        file = Roll.unlock(name)
 
-      if file
-        puts "Unlocked: #{file}"
-      else
-        puts "Not locked."
+        if file
+          puts "Unlocked: #{file}"
+        else
+          puts "Not locked."
+        end
       end
+
     end
 
   end
-
 end

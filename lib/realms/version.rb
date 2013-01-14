@@ -1,22 +1,13 @@
-class Realms::Library
+module Realms
+  class Library
 
-  # The Library::Version class is essentially a tuple (immutable array)
-  # with special comparision operators.
-  #
-  # TODO: Get rid of this!
-  #
-  class Version < ::Version::Number
-
+    # The Library::Version class is essentially a tuple (immutable array)
+    # with special comparision operators.
     #
-    # Does this version satisfy a given constraint?
+    # TODO: Get rid of this!
     #
-    # TODO: Support multiple constraints ?
-    #
-    def satisfy?(constraint)
-      c = ::Version::Constraint.parse(constraint)
-      send(c.operator, c.number)
+    class Version < ::Version::Number
     end
 
   end
-
 end

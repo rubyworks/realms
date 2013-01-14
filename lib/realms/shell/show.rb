@@ -1,36 +1,37 @@
-class Realms::Library
+module Realms
+  class Library
 
-  module Shell
+    module Shell
 
-    #
-    # Show roll.
-    #
-    def show
-      op.banner = "Usage: roll show [NAME]"
-      op.separator "Show roll paths."
+      #
+      # Show roll.
+      #
+      def show
+        op.banner = "Usage: roll show [NAME]"
+        op.separator "Show roll paths."
 
-      parse 
+        parse 
 
-      name = argv.first
+        name = argv.first
 
-      if name and !Roll.rolls.include?(name)
-        $stderr.puts "Roll not found."
-        return
-      end
-
-      if name 
-        if !Roll.rolls.include?(name)
+        if name and !Roll.rolls.include?(name)
           $stderr.puts "Roll not found."
-        else
-          # TODO: 
+          return
         end
-      else
-        puts "# #{Roll.rollname}"
-        puts File.read(Roll.roll_file)
+
+        if name 
+          if !Roll.rolls.include?(name)
+            $stderr.puts "Roll not found."
+          else
+            # TODO: 
+          end
+        else
+          puts "# #{Roll.rollname}"
+          puts File.read(Roll.roll_file)
+        end
       end
+
     end
 
   end
-
 end
-
