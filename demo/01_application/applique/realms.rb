@@ -1,4 +1,4 @@
-abort "Remove -roll from RUBYOPT before running these tests." if ENV['RUBYOPT'].index('-roll')
+abort "Remove -realms from RUBYOPT before running these tests." if ENV['RUBYOPT'].index('-realms')
 
 ENV['XDG_CONFIG_HOME'] = "tmp/config"
 ENV['XDG_CACHE_HOME']  = "tmp/cache"

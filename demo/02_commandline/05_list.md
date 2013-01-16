@@ -1,8 +1,8 @@
-= List Command
+# List Command
 
 To see a list of available projects use the `list` command.
 
-  `roll list`
+  `realm list`
 
 The standard output will look like:
 
