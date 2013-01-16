@@ -1,3 +1,9 @@
+# Realms 
+# Copyright (c) 2013 Rubyworks
+# BSD-2-Clause License
+#
+# encoding: utf-8
+
 module Realms
 
   # Library class encapsulates a location on disc that contains a Ruby
@@ -20,6 +26,7 @@ module Realms
     def initialize(location, metadata=nil)
       raise TypeError, "not a directory - #{location}" unless File.directory?(location)
 
+      # TODO: Use `File.expand_path` on location?
       @location = location.to_s
 
       if metadata
@@ -303,27 +310,28 @@ module Realms
     #   The absolute file path to the feature, if found.
     #
     def find(pathname, options={})
-      suffix = true
-      suffix = options.key?(:suffix) && options[:suffix]
-      suffix = false if SUFFIXES.include?(::File.extname(pathname))   # TODO: Why not just add '' to SUFFIXES?
+      suffix = options.key?(:suffix) ? options[:suffix] : true
+
+      # TODO: Why not just add '' to Utils.suffixes ?
+      suffix = false if Utils.suffixes.include?(::File.extname(pathname)) 
 
       inner  = options[:inner]
       outer  = options[:outer]
 
       raise ArgumentError, "nothing to search without inner or outer" if inner && outer
 
-      suffixes = suffix ? SUFFIXES : SUFFIXES_NOT
+      suffixes = suffix ? Utils.suffixes : ['']
 
       loadpath.each do |lpath|
         suffixes.each do |ext|
-          f = ::File.join(location, lpath, pathname + ext)
+          f = ::File.join(lpath, pathname + ext)
           return f if ::File.file?(f)
         end
       end unless inner
 
       inner_loadpath.each do |lpath|
         suffixes.each do |ext|
-          f = ::File.join(location, lpath, pathname + ext)
+          f = ::File.join(lpath, pathname + ext)
           return f if ::File.file?(f)
         end
       end unless outer
@@ -355,23 +363,23 @@ module Realms
     #
     #
     def legacy?
-      !legacy_loadpath.empty?
+      ! inner_loadpath.empty?
     end
 
     #
-    # What is `legacy_loadpath`? Well, library doesn't require you to put your
+    # What is `inner_loadpath`? Well, library doesn't require you to put your
     # library's scripts in a named lib path, e.g. `lib/foo/`. Instead one can
     # just put them in `lib/` b/c Library keeps things indexed by honest to
     # goodness library names. The `legacy_path` then is used to handle these
     # old style paths along with the new.
     #
-    def legacy_loadpath
-      @legacy_loadpath ||= (
+    def inner_loadpath
+      @inner_loadpath ||= (
         path = []
         loadpath.each do |lp|
-          llp = File.join(lp, name)
-          dir = File.join(location, llp)
-          path << llp if File.directory?(dir)
+          dir = File.join(lp, name)
+          #dir = File.join(location, llp)
+          path << dir if File.directory?(dir)
         end
         path
       )
@@ -420,16 +428,16 @@ module Realms
     #
     # Convert to hash.
     #
-    # @return [Hash] The library metadata in a hash.
+    # @return [Hash] The primary library metadata in a hash.
     #
     def to_h
       {
-        :location     => location,
-        :name         => name,
-        :version      => version.to_s,
-        :paths        => paths,
-        :date         => date.to_s,
-        :requirements => requirements
+        'location'     => location,
+        'name'         => name,
+        'version'      => version.to_s,
+        'paths'        => paths,
+        'date'         => date.to_s,
+        'requirements' => requirements
       }
     end
 
