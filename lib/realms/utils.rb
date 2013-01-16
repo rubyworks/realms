@@ -54,6 +54,8 @@ module Realms
           $LOAD_MANAGER = manager
         end
 
+        $LOAD_MANAGER << RubyLibrary.instance
+
         #if development?
           # find project root
           # if root
@@ -95,11 +97,23 @@ module Realms
       # @param [String] file
       #   File path.
       #
-      # @return nothing
+      # @return [String] The file's directory.
       #
       def ensure_filepath(file)
-        dir = File.dirname(file)
+        ensure_directory(File.dirname(file))
+      end
+
+      #
+      # Make sure a directory path exists.
+      #
+      # @param [String] dir
+      #   Directory path.
+      #
+      # @return [String] The directory.
+      #
+      def ensure_directory(dir)
         FileUtils.mkdir_p(dir) unless File.directory?(dir)
+        dir
       end
 
       #
@@ -154,7 +168,7 @@ module Realms
       def sync
         unlock if locked?
         lock
-        PATH()
+        $LOAD_MANAGER::PATH()
       end
 
       #
@@ -227,7 +241,11 @@ module Realms
       # A temporary directory in which the locked ledger can be stored.
       #
       def tmpdir
-        File.join(Dir.tmpdir, 'ruby')
+        @tmpdir = (
+          dir = ENV['XDG_CACHE_HOME'] || '~/.cache'
+          dir = File.expand_path(File.join(dir, 'ruby'))
+          ensure_directory(dir)  # TODO: do this here?
+        )
       end
 
       #
