@@ -1,6 +1,3 @@
-require 'rbconfig'
-require 'library'
-
 module Realms
 
   # RubyLibrary is a specialized subclass of Library specifically designed
@@ -17,7 +14,7 @@ module Realms
     include ::RbConfig
 
     #
-    def self.singleton
+    def self.instance
       @r ||= new
     end
 

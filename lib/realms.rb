@@ -1,5 +1,6 @@
+require 'fileutils'
 require 'rbconfig'
-require 'tmpdir'
+#require 'tmpdir'
 require 'yaml'
 require 'json'
 require 'versus'
@@ -13,6 +14,7 @@ require 'realms/library'
 require 'realms/interface'
 require 'realms/metadata'
 require 'realms/manager'
+require 'realms/rubylib'
 #require 'realms/shell'
 
 #
