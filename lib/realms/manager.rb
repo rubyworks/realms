@@ -1,12 +1,16 @@
+# Realms 
+# Copyright (c) 2013 Rubyworks
+# BSD-2-Clause License
+#
+# encoding: utf-8
+
 module Realms
   class Library
     # Manager class tracks available libraries by library name. It is essentially
     # a hash, but with a special way of storing libraries to track versions. Each
-    # have key is the name of a library, as a String, and each value is either
-    # a Library object, if that particular version is active, or an Array of
-    # available versions of the library if inactive.
-    #
-    # TODO: Use a second variable to track active libraries ?
+    # hash key is the name of a library and each value is either a Library object,
+    # if that particular version is active, or an Array of available versions of
+    # the library if inactive.
     #
     class Manager
       include Enumerable
@@ -17,11 +21,18 @@ module Realms
       LOAD_PATH = $LOAD_PATH.dup
 
       #
+      # Alternate constructor that primes the internal ledger given a list
+      # of lookup paths.
+      #
+      def self.prime(*lookup_paths)
+        new.prime(*lookup_paths)
+      end
+
+      #
       # Initialize Manager instance.
       #
       def initialize
         @ledger = {} #Hash.new(){ |h,k| h[k] = [] }
-        #@active = {}
       end
 
       #
@@ -96,8 +107,12 @@ module Realms
       #
       # Get the most current library by name. This does not activate!
       #
-      def current(name)
-        Array(@ledger[name.to_s]).max
+      def current(name, constraint=nil)
+        if constraint
+          Array(@ledger[name.to_s]).select{ |lib| lib.satisfy?(constraint) }.max
+        else
+          Array(@ledger[name.to_s]).max
+        end
       end
 
       #
@@ -200,9 +215,9 @@ module Realms
       end
 
       #
-      # Limit versions of a library to the given constraint.
-      # Unlike `#activate` this does not reduce the possible versions
-      # to a single library, but only reduces the number of possibilites.
+      # Limit versions of a library to the given constraint. Unlike `#activate`
+      # this does not reduce the possible versions to a single library,
+      # but only reduces the number of possibilites.
       #
       # @param [String] name
       #   Name of library.
@@ -220,17 +235,26 @@ module Realms
         case libraries
         when Library
           if libraries.version.satisfy?(constraint)
-            vers = [libraries]
+            #@ledger[name] = [libraries]
+            libraries
           else
-            vers = []
+            # TODO: should this raise an error?
+            @ledger[name] = []
           end
         else #Array
           vers = libraries.select do |library|
             library.version.satisfy?(constraint)
           end
+          @ledger[name] = vers
         end
+      end
 
-        @ledger[name] = vers  #self[name] = vers
+      #
+      #
+      #
+      def constrain_library(library)
+        add(library)
+        constrain(library.name, "= #{library.version}")
       end
 
       #
@@ -254,11 +278,9 @@ module Realms
       #
       # This method will raise a LoadError if the name is not found.
       #
-      # Note that activating all runtime requirements of a library being
-      # activated was considered, but decided against. There's no reason
-      # to activate a library until it is actually needed. However this is
-      # not so when testing, or verifying available requirements, so other
-      # methods are provided such as `#activate_requirements`.
+      # This does not activate runtime requirements of the library. There is
+      # no reason to activate a library until it is actually needed. But the
+      # requirements are constrained.
       #
       # @param [String] name
       #   Name of library.
@@ -267,15 +289,17 @@ module Realms
       #   Valid version constraint.
       #
       # @return [Library]
-      #   The activated Library object.
+      #   The activated Library instance.
       #
       # @todo Need more specific errors?
       #
       def activate(name, constraint=nil) #:yield:
+        raise ArgumentError, "not a valid name -- #{name.inspect}" unless String === name or Symbol === name
         raise LoadError, "no such library -- #{name}" unless key?(name)
 
         library = self[name]
 
+        # already activated?
         if Library === library
           if constraint
             unless library.version.satisfy?(constraint)
@@ -283,7 +307,7 @@ module Realms
               raise Version::Exception, "version conflict between #{library} and #{constraint}"
             end
           end
-        else # library is an array of versions
+        else # library is an array of library
           if constraint
             #verscon = Version::Constraint.parse(constraint)
             #library = library.select{ |lib| verscon.compare(lib.version) }.max
@@ -294,12 +318,21 @@ module Realms
           unless library
             raise Version::Exception, "no library version -- #{name} #{constraint}"
           end
-          self[name] = library #constrain(library)
+          self[name] = library
+          #constrain_requirements(library)
         end
 
         yield(library) if block_given?
 
         library
+      end
+
+      #
+      #
+      #
+      def activate_library(library)
+        add(library)
+        activate(library.name, "= #{library.version}")
       end
 
       #
@@ -602,8 +635,30 @@ module Realms
 
       matches.uniq
     end
-
 =end
+
+      # TODO: Instead of "verify" might we have an activation option, i.e. `:deep`
+      #       that would activate_requirements instead of constrain requirements?
+
+      #
+      # Take requirements and activate them. This will reveal any
+      # version conflicts or missing dependencies.
+      #
+      # @param [Boolean] development
+      #   Include development dependencies?
+      #
+      #def verify(name, constraint=nil, development=false)
+      #  library = activate(name, constraint)
+      #  activate_requirements(library, development)
+      #end
+
+      #
+      #
+      #
+      #def verify_library(library, development=false)
+      #  add(library)
+      #  verify(library.name, "= #{library.version}")
+      #end
 
       #
       # Go thru each library and collect bin paths.
@@ -612,7 +667,7 @@ module Realms
       #
       def PATH()
         path = []
-        list.each do |name|
+        names.each do |name|
           lib = current(name)
           path << lib.bindir if lib.bindir?
         end
@@ -651,12 +706,10 @@ module Realms
       # @option paths [Boolean] :expound
       #   Expound on path entires. See {#expound_paths}.
       #
-      # @return [Manager] The primed ledger.
+      # @return [Manager] The manager itself.
       #
       def loadup(*paths)
         options = Hash === paths.last ? paths.pop : {}
-
-        @ledger = {} #Hash.new(){ |h,k| h[k] = [] }
 
         paths = expound_paths(*paths) if options[:expound]
 
@@ -667,14 +720,6 @@ module Realms
             $stderr.puts err.message if Utils.monitor?
           end
         end
-
-        # We can not do this b/c it prevents gems from working
-        # when a file has the same name as something in the
-        # ruby lib or site locations. For example, if we intsll
-        # the test-unit gem and require `test/unit`. Of course,
-        # it Ruby ever adopted the "Realms Way" then this could
-        # be restored.
-        #add_library(RubyLibrary.new)
 
         self
       end
@@ -687,11 +732,21 @@ module Realms
       # @option paths [Boolean] :expound
       #   Expound on path entires. See {#expound_paths}.
       #
-      # @return [Manager] The primed ledger.
+      # @return [Manager] The manager itself.
       #
       def prime(*paths)
-        @ledger = Hash.new(){ |h,k| h[k] = [] }
+        @ledger = {} #Hash.new(){ |h,k| h[k] = [] }
         loadup(*paths)
+
+        # TODO: We can not do this b/c it prevents gems from working
+        # when a file has the same name as something in the
+        # ruby lib or site locations. For example, if we intsll
+        # the test-unit gem and require `test/unit`. Of course,
+        # it Ruby ever adopted the "Realms Way" then this could
+        # be restored.
+        #add_library(RubyLibrary.new)
+
+        self
       end
 
 =begin
@@ -726,7 +781,7 @@ module Realms
       # Add a library given it's path and reduce the ledger to just those libraries
       # the given library requires.
       #
-      # @param [String] name
+      # @param [Library,String] Library or root path of library.
       #   The name of the primary library.
       #
       # @param [String] constraint
@@ -734,19 +789,19 @@ module Realms
       #
       # @return [Manager] The ledger.
       #
-      def isolate_project(root)
-        # add location to ledger
-        library = add(root)
+      def isolate_library(library, development=true)
+        library = add(library)
 
         # make this library the active one
         #$LEDGER[library.name] = library
 
         resolver = ::Version::Resolver.new
 
-        $LEDGER.each do |name, libs|
+        each do |name, libs|
           Array(libs).reverse_each do |lib|
             reqs = {}
-            lib.requirements.each do |r|
+            requries = development ? lib.requirements : lib.runtime_requirements
+            requries.each do |r|
               next if r['optional'] || (r['groups'] || []).include?('optional')
               reqs[r['name']] = r['version']   #|| '>= 0'
             end
@@ -762,7 +817,7 @@ module Realms
           solution.each do |name, version|
             little_ledger[name] = constrain(name, "= #{version}").max
           end
-          $LEDGER.replace(little_ledger)
+          $LOAD_MANAGER.replace(little_ledger)
         else
           warn "Unresolved Requirements!"
           resolver.unresolved.each do |from, reqs|
@@ -898,10 +953,7 @@ module Realms
       #
       # Activate library requirements.
       #
-      # @todo: checklist is used to prevent possible infinite recursion, but
-      #   it might be better to put a flag in Library instead.
-      #
-      def acivate_requirements(library, development=false, checklist={})
+      def activate_requirements(library, development=false, checklist={})
         reqs = development ? library.requirements : library.runtime_requirements
 
         checklist[library] = true
@@ -915,7 +967,7 @@ module Realms
           activate_requirements(library, development, checklist) unless checklist[library]
         end
 
-        self
+        library
       end
 
       #
@@ -935,7 +987,7 @@ module Realms
           constrain_requirements(library, development, checklist) unless checklist[libr]
         end
 
-        return self
+        library
       end
 
       #
