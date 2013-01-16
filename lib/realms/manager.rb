@@ -291,8 +291,6 @@ module Realms
       # @return [Library]
       #   The activated Library instance.
       #
-      # @todo Need more specific errors?
-      #
       def activate(name, constraint=nil) #:yield:
         raise ArgumentError, "not a valid name -- #{name.inspect}" unless String === name or Symbol === name
         raise LoadError, "no such library -- #{name}" unless key?(name)
@@ -303,8 +301,7 @@ module Realms
         if Library === library
           if constraint
             unless library.version.satisfy?(constraint)
-              #raise VersionConflict, library ?
-              raise Version::Exception, "version conflict between #{library} and #{constraint}"
+              raise VersionConflict, "version conflict for #{library.name}-#{library.version} and #{constraint}"
             end
           end
         else # library is an array of library
@@ -316,10 +313,10 @@ module Realms
             library = library.max
           end
           unless library
-            raise Version::Exception, "no library version -- #{name} #{constraint}"
+            raise "no library version -- #{name} #{constraint}"  # LibraryNotFound
           end
           self[name] = library
-          #constrain_requirements(library)
+          #constrain_requirements(library)  # TODO
         end
 
         yield(library) if block_given?

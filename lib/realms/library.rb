@@ -59,7 +59,7 @@ module Realms
       #current = $LOAD_MANAGER[name]
 
       #if Library === current
-      #  raise Version::Conflict.new(self, current) if current != self
+      #  raise VersionConflict.new(self, current) if current != self
       #else
       #  $LOAD_MANAGER[name] = self
       #end
@@ -460,7 +460,7 @@ module Library
     current = $LOAD_MANAGER[name]
 
     if Library === current
-      raise Version::Conflict.new(self, current) if current != self
+      raise VersionConflict.new(self, current) if current != self
     else
       ## NOTE: we are only doing this for the sake of autoload
       ## which does not honor a customized require method.
