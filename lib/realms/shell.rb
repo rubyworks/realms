@@ -1,9 +1,24 @@
+require 'realms/shell/add'
+require 'realms/shell/dump'
+require 'realms/shell/gem'
+require 'realms/shell/help'
+require 'realms/shell/isolate'
+require 'realms/shell/list'
+require 'realms/shell/lock'
+require 'realms/shell/path'
+require 'realms/shell/remove'
+require 'realms/shell/show'
+require 'realms/shell/unlock'
+require 'realms/shell/verify'
+require 'realms/shell/where'
+
 module Realms
   class Library
 
-    # Shell commands.
+    # The Shell module encapsulates shell commands.
     #
-    # TODO: This should probably be a class.
+    # Each command is simply a method that has been registerd via
+    # the `register` dsl method.
     #
     module Shell
       extend self
@@ -21,12 +36,12 @@ module Realms
         idx = argv.index{ |e| e !~ /^\-/ }
         cmd = idx ? argv.delete_at(idx) : 'help'
 
-        begin
-          require "realms/shell/#{cmd}"
-        rescue LoadError
-          cmd = 'help'
-          require "realms/shell/#{cmd}"
-        end
+        #begin
+        #  require "realms/shell/#{cmd}"
+        #rescue LoadError
+        #  cmd = 'help'
+        #  require "realms/shell/#{cmd}"
+        #end
 
         @argv = argv
 
@@ -47,8 +62,8 @@ module Realms
       #
       # Available commands.
       #
-      def self.commands
-        @commands ||= []
+      def commands
+        @@commands ||= []
       end
 
       #
@@ -56,9 +71,14 @@ module Realms
       #
       def op
         @op ||= OptionParser.new do |opt|
+          op.on_tail("--warn", "-w", "Show warnings.") do
+            $VERBOSE = true
+          end
+
           opt.on_tail("--debug", "Run in debugging mode.") do
             $DEBUG = true
           end
+
           opt.on_tail("--help", "-h", "Show help for command.") do
             puts op
             exit
@@ -74,21 +94,24 @@ module Realms
       end
 
       #
-      # Execute the command.
+      # Parse the command line.
       #
       def parse(argv=nil)
         @argv = argv if argv
 
-        op.on_tail("--warn", "-w", "Show warnings.") do
-          $VERBOSE = true
-        end
-        op.on_tail("--debug", "Run in debugging mode.") do
-          $DEBUG   = true
-        end
-        op.on_tail("--help", "-h", "Display this help message.") do
-          puts op
-          exit
-        end
+        #op.on_tail("--warn", "-w", "Show warnings.") do
+        #  $VERBOSE = true
+        #end
+
+        #op.on_tail("--debug", "Run in debugging mode.") do
+        #  $DEBUG   = true
+        #end
+
+        #op.on_tail("--help", "-h", "Display this help message.") do
+        #  puts op
+        #  exit
+        #end
+
         op.parse!(@argv)
       end
 
@@ -97,23 +120,5 @@ module Realms
   end
 
 end
-
-#require 'realms/shell/copy'
-require 'realms/shell/gem'
-require 'realms/shell/help'
-require 'realms/shell/add'
-require 'realms/shell/dump'
-require 'realms/shell/isolate'
-require 'realms/shell/list'
-require 'realms/shell/lock'
-#require 'realms/shell/merge'
-require 'realms/shell/remove'
-require 'realms/shell/path'
-#require 'realms/shell/shells'
-require 'realms/shell/show'
-require 'realms/shell/unlock'
-#require 'realms/shell/use'
-require 'realms/shell/verify'
-require 'realms/shell/where'
 
 # Copyright (c)2013 Rubyworks (BSD-2-Clause License)

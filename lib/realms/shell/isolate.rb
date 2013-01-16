@@ -21,9 +21,9 @@ module Realms
           format = :gem
         end
 
-        #op.on('--yaml', '-y', "Generate a template in YAML format.") do
-        #  format = :yaml
-        #end
+        op.on('--lib', '-l', "Generate a template in YAML format.") do
+          format = :library
+        end
 
         parse
 
@@ -54,10 +54,12 @@ module Realms
           puts $LOAD_MANAGER.map{ |name, lib|
             { 'name'=>lib.name, 'version'=>lib.version.to_s }
           }.to_yaml
-        else
+        when :library
           $LOAD_MANAGER.each do |name, lib|
             puts "library '%s', '= %s'" % [lib.name, lib.version]
           end
+        else
+          JSON.pretty_generate($LOAD_MANAGER.to_h)
         end
       end
 
