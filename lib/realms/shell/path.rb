@@ -1,57 +1,30 @@
 module Realms
   class Library
-
     module Shell
+      register :path
 
-      # TODO: Would it be better to "install" executables
-      # to an appropriate bin dir, using links (soft if possible).
-      # There could go in ~/.bin or .config/roll/<ledger>.bin/
-
-      # This script builds a list of all roll-ready bin locations
-      # and writes that list as an environment setting shell script.
-      # On Linux, add a call to this in your .bashrc file, e.g.
+      # Build a list of all library bin locations and writes that list as a
+      # environment setting shell script. On Linux, add a call to this in your
+      # .bashrc file, e.g.
       #
-      #   export PATH="$(roll path):$PATH"
+      #     export PATH="$(realm path):$PATH"
       #
       # Or better, put this in a `.config/bashrc/ruby.sh` file. And then 
       # in your `.bashrc file:
       #
-      #   if [ -f ~/.config/bashrc/ruby.sh ]; then
-      #       . ~/.config/bashrc/ruby.sh
-      #   fi
-      #
-      # Currently this only supports bash.
+      #     if [ -f ~/.config/bashrc/ruby.sh ]; then
+      #         source ~/.config/bashrc/ruby.sh
+      #     fi
       #
       def path
-        op.banner = "Usage: roll path"
-        op.separator "Generate executable PATH list."
+        op.banner = "Usage: realm path"
+        op.separator "Generate list of executable paths usable in PATH environment variable."
 
         parse
 
-        case RUBY_PLATFORM
-        when /mswin/, /wince/
-          div = ';'
-        else
-          div = ':'
-        end
-
-        env_path = ENV['PATH'].split(/[#{div}]/)
-
-        # go thru each roll lib and make sure bin path is in path
-        binpaths = []
-        Library.list.each do |name|
-          lib = Library[name]
-          if lib.bindir?
-            binpaths << lib.bindir
-          end
-        end
-        #pathenv = (["$PATH"] + binpaths).join(div)
-        pathenv = binpaths.join(div)
-        #puts %{export PATH="#{pathenv}"}
-        puts pathenv
+        $stdout.puts $LOAD_MANAGER::PATH()
       end
 
     end
-
   end
 end

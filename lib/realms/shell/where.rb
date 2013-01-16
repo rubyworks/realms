@@ -1,7 +1,7 @@
 module Realms
   class Library
-
     module Shell
+      register :where
 
       #
       # Display the absolute path of a feature.
@@ -9,6 +9,7 @@ module Realms
       def where
         op.banner = "Usage: realm where <feature>"
         op.separator "Display absolute path to a feature."
+
         #op.on('--all', '-a', "Search all rolls.") do
         #  opts[:all] = true
         #end
@@ -17,7 +18,7 @@ module Realms
 
         feature = argv.first
 
-        if path = Library.find(feature)
+        if path = $LOAD_MANAGER.find(feature)
           $stdout.puts path
         else
           $stderr.puts "Not found."
@@ -25,6 +26,5 @@ module Realms
       end
 
     end
-
   end
 end

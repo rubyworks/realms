@@ -1,26 +1,48 @@
 module Realms
   class Library
-
     module Shell
+      register :remove
+      register :rm
 
       #
       # Remove path from current roll.
       #
-      def out
-        op.banner = "Usage: roll out [PATH ...]"
-        op.separator "Remove path(s) from current roll."
+      def remove
+        op.banner = "Usage: relam remove [PATH ...]"
+        op.separator "Remove library path(s) from load cache."
 
         parse
 
-        paths = argv || [Dir.pwd]
+        if argv.empty?
+          paths = [Dir.pwd]
+        else
+          paths = argv
+        end
 
-        roll_file = Roll.remove(*paths)
+        if Utils.locked?
+          find = []
 
-        puts paths.join("\n")
-        puts "  '-> #{roll_file} -> [x]"
+          $LOAD_MANAGER.each do |name, libs|
+            Array(libs).each do |lib|
+              find << [name, lib, path] if paths.any?{ |path| File.expand_path(lib.location) == File.expand_path(path) }
+            end
+          end
+
+          find.each do |name, lib, path|
+            puts path
+            $LOAD_MANAGER[name].delete(lib)
+          end
+
+          Utils.lock(:active=>true)
+
+          puts "  ^- #{Utils.lock_file}"
+        else
+          puts "Cannot remove paths unless load manager is locked."
+        end
       end
 
-    end
+      alias :rm :remove
 
+    end
   end
 end

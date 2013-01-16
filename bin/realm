@@ -1,10 +1,11 @@
 #!/usr/bin/env ruby
-require 'rolls' unless defined?(::Roll)
+require 'realms' unless defined?(::Realms)
+require 'realms/shell'
 
 ARGV.shift if ARGV.first == '-'
 
 begin
-  Roll::Shell.main(*ARGV)
+  Realms::Library::Shell.main(*ARGV)
 rescue => err
   raise err if $DEBUG
   $stderr.puts(err.message)

@@ -1,50 +1,32 @@
 module Realms
   class Library
-
     module Shell
-
-      # TODO: Ultimately allow for caching a different group
+      register :lock
+      register :cache
 
       #
-      # Lock current roll. This caches all the neccessary information
-      # about the current roll, so start-up times are much faster for
-      # subsequent start-ups.
+      # Lock load manager roll. This caches all the neccessary information
+      # about the current roll, so start-up times are much faster.
       #
       def lock
-        output = nil
+        stdout = nil
+        active = false
 
-        op.banner = "Usage: roll lock [ROLL]"
+        op.banner = "Usage: realm lock"
         op.separator "Serialize ledger and save."
-        #op.on('--check', '-c', "Check cache to see if it is current.") do
-        #  opts[:check] = true
-        #end
-        op.on('--output', '-o [FILE]', "save to alternate file") do |file|
-          output = file
+
+        op.on('--active', '-a', "include library activity") do |val|
+          active = val
         end
 
         parse
 
-        roll = argv.first
-
-        #if opts[:check]
-        #  check
-        #else
-          file = Roll.lock(roll, :output=>output)
-          $stdout.puts "Locked: #{file}"
-        #end
+        file = Utils.lock(:active=>active)
+        $stdout.puts "Locked at: #{Utils.lock_file}"
       end
 
-      # TODO: make sense any more?
-      #def check(name)
-      #  #result = Library::Environment.check(name)
-      #  if result
-      #    puts "Index for `#{name}` is in-sync."
-      #  else
-      #    puts "Index for `#{name}` is out-of-sync."
-      #  end      
-      #end
+      alias :cache :lock
 
     end
-
   end
 end

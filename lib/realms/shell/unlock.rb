@@ -1,29 +1,31 @@
 module Realms
   class Library
-
     module Shell
-
-      # TODO: Ultimately allow for caching a different groups?
+      register :unlock
+      register :clear
 
       #
+      # Delete load cache.
+      #
       def unlock
-        op.banner = "Usage: roll unlock"
+        op.banner = "Usage: relam unlock"
         op.separator "Clear current roll cache."
 
         parse
 
         name = argv.first
 
-        file = Roll.unlock(name)
-
-        if file
-          puts "Unlocked: #{file}"
+        if File.exist?(Utils.lock_file)
+          Utils.unlock
+          puts "Unlocked."
         else
           puts "Not locked."
         end
       end
 
-    end
+      # Alias for unlock.
+      alias :clear :unlock
 
+    end
   end
 end

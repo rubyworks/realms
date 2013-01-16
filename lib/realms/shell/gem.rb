@@ -1,7 +1,8 @@
 module Realms
   class Library
-
     module Shell
+
+      register :gem
 
       #
       # Run a gem command then re-lock any locked rolls that contain
@@ -14,21 +15,12 @@ module Realms
           opts[:sudo] = true
         end
 
-        op.on_tail("--debug", "Run in debugging mode.") do
-          $DEBUG   = true
-        end
-
-        op.on_tail("--help", "-h", "Display this help message.") do
-          puts op
-          exit
-        end
-
         op.order!(args)
 
         cmd = "gem "  + args.join(' ')
         cmd = "sudo " + cmd if opts[:sudo]
 
-        gem_rolls = Roll.lock_gem_rolls
+        gem_rolls = Realms.lock_gem_rolls
 
         if success = system(cmd)
           puts
@@ -44,6 +36,5 @@ module Realms
       end
 
     end
-
   end
 end

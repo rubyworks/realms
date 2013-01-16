@@ -30,23 +30,40 @@ module Realms
 
         @argv = argv
 
+        raise "unknown command" unless commands.include?(cmd)
+
         __send__(cmd)
       end
 
     private
 
       #
-      # Available commands are simply the plublic instance methods.
+      #
+      #
+      def self.register(command)
+        commands << command.to_s
+      end
+
+      #
+      # Available commands.
       #
       def self.commands
-        public_instance_metods(false)
+        @commands ||= []
       end
 
       #
       # Instance of OptionParser.
       #
       def op
-        @op ||= OptionParser.new
+        @op ||= OptionParser.new do |opt|
+          opt.on_tail("--debug", "Run in debugging mode.") do
+            $DEBUG = true
+          end
+          opt.on_tail("--help", "-h", "Show help for command.") do
+            puts op
+            exit
+          end
+        end
       end
 
       #
@@ -85,8 +102,8 @@ end
 require 'realms/shell/gem'
 require 'realms/shell/help'
 require 'realms/shell/add'
+require 'realms/shell/dump'
 require 'realms/shell/isolate'
-#require 'realms/shell/libs'
 require 'realms/shell/list'
 require 'realms/shell/lock'
 #require 'realms/shell/merge'
@@ -94,9 +111,9 @@ require 'realms/shell/remove'
 require 'realms/shell/path'
 #require 'realms/shell/shells'
 require 'realms/shell/show'
-require 'realms/shell/ledger'
 require 'realms/shell/unlock'
 #require 'realms/shell/use'
 require 'realms/shell/verify'
 require 'realms/shell/where'
 
+# Copyright (c)2013 Rubyworks (BSD-2-Clause License)

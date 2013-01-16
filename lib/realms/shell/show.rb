@@ -1,37 +1,41 @@
 module Realms
   class Library
-
     module Shell
+      register :show
 
       #
-      # Show roll.
+      # Show library details.
       #
       def show
-        op.banner = "Usage: roll show [NAME]"
-        op.separator "Show roll paths."
+        version = nil
 
-        parse 
+        op.banner = "Usage: realm show [name]"
+        op.separator "Show details about a library."
 
-        name = argv.first
-
-        if name and !Roll.rolls.include?(name)
-          $stderr.puts "Roll not found."
-          return
+        op.on('--version', '-v [VERSION]', "Show greater than or equal version.") do |val|
+          version = val
         end
 
-        if name 
-          if !Roll.rolls.include?(name)
-            $stderr.puts "Roll not found."
+        parse
+
+        name = argv.first || raise(ArgumentError, "name of library needed")
+
+        if $LOAD_MANAGER.key?(name)
+          if version
+            libs = $LOAD_MANAGER[name]
+            library = Array(libs).select{ |lib| lib.version.satisfy?(">= #{version}") }.min
           else
-            # TODO: 
+            library = $LOAD_MANAGER.current(name)
           end
+        end
+
+        if library
+          puts library.metadata.to_h.to_yaml
         else
-          puts "# #{Roll.rollname}"
-          puts File.read(Roll.roll_file)
+          $stderr.puts "Library not found."
         end
       end
 
     end
-
   end
 end

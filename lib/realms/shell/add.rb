@@ -1,26 +1,37 @@
-class Realms
+module Realms
   class Library
-
     module Shell
 
+      register :add
+
       #
-      # Insert paths into the roll call file.
+      # Add paths into the current libraries.
       #
       def add
-        op.banner = "Usage: roll in [PATH ...]"
-        op.separator "Insert path(s) into current environment."
+        op.banner = "Usage: realm add [PATH ...]"
+        op.separator "Add library path(s) into locked load environment."
 
         parse
 
-        paths     = argv || [Dir.pwd]
+        if argv.empty?
+          paths =  [Dir.pwd]
+        else
+          paths = argv
+        end
 
-        roll_file = Roll.insert(*paths)
-
-        puts paths.join("\n")
-        puts "  '-> #{roll_file}"
+        if Utils.locked?
+          paths.each do |path|
+            puts path
+            $LOAD_MANAGER.add(path)
+          end
+          Utils.lock(:active=>true)
+          puts "  '-> #{Utils.lock_file}"
+        else
+          puts "Cannot add paths unless load manager is locked."
+          puts "Export to RUBY_LIBRARY environment variable to add paths for live usage."
+        end
       end
 
     end
-
   end
 end
