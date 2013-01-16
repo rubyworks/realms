@@ -1,0 +1,4 @@
+
+
+TestCase = Test::Unit::TestCase
+
