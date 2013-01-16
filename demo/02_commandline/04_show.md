@@ -1,30 +1,13 @@
-= Show Command
+# Show Command
 
-As a developer managing load environments you want to be able to easily inspect
-the current environment.
+As a developer managing the load environment you want to be able to easily
+inspect libraries in the environment. A simply review of any library 
+can be obtained using `realm show`.
 
-We can get a reasonable overview of the current environment using `roll show`.
+    `realm show tryme`
 
-  `roll show`
-
-To get more select information, show supports special options such as 
-`--index` or `-i` which displays only the project names, locations and
+A specific version of a library can be specified with the `-v` option.
 loadpaths.
 
-  `roll show --index`
-
-There is also the `--lookup` or `-l` option which shows only the lookup
-directories, used to generate the index.
-
-  `roll show --lookup`
-
-Finally there is a `--yaml` or `-y` option for dumping the entire environment
-as a serialized YAML document.
-
-  `roll show --yaml`
-
-Roll can also test us if an environment index is out-of-sync with the
-actual projects in it's lookup table [pending]:
-
-  `roll show --status`
+  `realm show tryme -v 1.0`
 

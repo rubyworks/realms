@@ -1,0 +1,30 @@
+realm-gem(1) -- run a gem command then re-sync the load cache
+=============================================================
+
+## SYNOPSIS
+
+`realm gem` <gem-command-arguments>
+
+## DESCRIPTION
+
+`roll-gem` simply passes the arguments given on to the `gem` command.
+After successful completion of which Realms automatically re-syncs the
+load cache to make sure it is current.
+
+## EXAMPLES
+
+This is particularlly useful when installing a new gem when Realms is
+managing the gem paths.
+
+    $ realm gem install ansi
+
+This is effectively the same as doing:
+
+    $ gem install ansi
+    $ realm sync
+
+## SEE ALSO
+
+realm(1), realm-sync(1),
+<http://proutils.github.com/roll>
+

@@ -1,3 +1,4 @@
+=begin
 When '# Load and Require' do
   complete_setup
 end
@@ -13,4 +14,5 @@ end
 When '# Environment Class' do
   minimum_setup
 end
+=end
 

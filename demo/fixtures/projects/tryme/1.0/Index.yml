@@ -1,0 +1,11 @@
+---
+name: tryme
+version: "1.0"
+
+title: TryMe
+
+authors:
+- Thomas Sawyer
+
+resources:
+  homepage: http://tryme.foo

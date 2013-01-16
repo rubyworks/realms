@@ -1,0 +1,15 @@
+roll-rm(1) -- remove path from the environment's load cache
+===========================================================
+
+## SYNOPSIS
+
+`roll-rm` [<path>]
+
+## DESCRIPTION
+
+`roll-rm` removes a path from the load cache, re-syning it in the process.
+If no `<path>` is given the present working directory is used.
+
+## SEE ALSO
+
+realm(1), realm-add(1)

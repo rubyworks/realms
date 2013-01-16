@@ -1,14 +1,14 @@
 # List Command
 
-To see a list of available projects use the `list` command.
+To see a list of available libraries use the `list` command.
 
-  `realm list`
+    `realm list`
 
 The standard output will look like:
 
-  foo      ruby     tryme
+    foo      ruby     tryme
 
 Notice the entry for ruby. You won't find this project in our temporary
-projects location. It is a built-in "project" that represents Ruby's
-standard library.
+projects location. It is a built-in library that represents Ruby's standard
+library.
 

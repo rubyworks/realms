@@ -1,0 +1,23 @@
+relam-add(1) -- add path to current library cache
+=================================================
+
+## SYNOPSIS
+
+`realm add` [<path>]
+
+## DESCRIPTION
+
+`realm add` inserts a path into the load cache, re-syncing it in the process.
+If no cache exists the command aborts with an error.
+
+If no `<path>` is given the present working directory is used.
+
+The `add` command is only useful for temporary additions and when a load
+cache (aka called a locked ledger) is being used. To add locations more
+generally which can be used in locked more or live mode export to the
+`RUBY_LIBRARY` environment variable.
+
+## SEE ALSO
+
+realm(1), realm-rm(1)
+

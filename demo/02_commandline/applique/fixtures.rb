@@ -1,49 +1,42 @@
-When '= Use Command' do
+=begin
+When '# Use Command' do
   complete_setup
 end
 
-When '= Insert Command' do
-  FileUtils.rm_r('tmp') if File.exist?('tmp')
+When '# Insert Command' do
+  #FileUtils.rm_r('tmp') if File.exist?('tmp')
   copy_fixture('project_setup')
 end
 
-When '= Out Command' do
+When '# Out Command' do
   complete_setup
 end
 
-When '= Show Command' do
+When '# Show Command' do
   complete_setup
 end
 
-When '= Show List' do
+When '# Show List' do
   complete_setup
 end
 
-When '= List Command' do
+When '# List Command' do
   complete_setup
 end
 
-When '= Sync Command' do
+When '# Sync Command' do
   complete_setup
 end
 
-When '= Copy Command' do
+When '# Verify Command' do
   complete_setup
 end
 
-When '= Merge Command' do
+When '# Path Command' do
   complete_setup
 end
 
-When '= Verify Command' do
+When '# Where Command' do
   complete_setup
 end
-
-When '= Path Command' do
-  complete_setup
-end
-
-When '= Which Command' do
-  complete_setup
-end
-
+=end

@@ -1,0 +1,24 @@
+realm-show(1) -- show library details
+=====================================
+
+## SYNOPSIS
+
+`realm show` [<name>]
+
+## DESCRIPTION
+
+`realm-show` prints information about a library in the load environement. 
+If `<name>` is not given then the library at the current path is assumed.
+
+## OPTIONS
+
+  * `-j`, `--json`:
+    Dump the information in JSON format.
+
+  * `-y`, `--yaml`:
+    Dump the information in YAML format.
+
+## SEE ALSO
+
+realm(1), realm-list(1)
+

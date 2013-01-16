@@ -1,14 +1,14 @@
 # Load and Require
 
-The `library` method can be used to constrain a library to a particular
-version.
+The `library` method can be used to activate a library, constraining it to a
+particular version.
 
     library('tryme', '1.1')
 
-If we try to constrain a library to an incompatible version a VersionConflit
-will be raised.
+If we try to constrain a library to an incompatible version subsequent to this
+a `VersionConflict` exception will be raised.
 
-    expect Roll::VersionConflict do
+    expect Realms::Library::VersionConflict do
       library('tryme', '1.0')
     end
 

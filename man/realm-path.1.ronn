@@ -1,0 +1,17 @@
+realm-path(1) -- produce a unix-style path list
+===============================================
+
+## SYNOPSIS
+
+`realm path`
+
+## DESCRIPTION
+
+`realm-path` prints out a UNIX style path list suitable for appending to the
+system $PATH variable. This allows executables located in library bin
+directories to be available via the command-line.
+
+## SEE ALSO
+
+realm(1), realm-exec(1)
+

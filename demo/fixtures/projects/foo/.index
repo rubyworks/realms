@@ -1,0 +1,23 @@
+---
+type: ruby
+revision: 2013
+sources:
+- Index.yml
+authors:
+- name: Thomas Sawyer
+  email: transfire@gmail.com
+organizations: []
+requirements: []
+conflicts: []
+alternatives: []
+resources: []
+repositories: []
+categories: []
+paths:
+  load:
+  - lib
+copyrights: []
+name: foo
+title: Foo
+version: 0.8.2
+date: '2013-01-16'

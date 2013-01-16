@@ -1,0 +1,17 @@
+realm-verify(1) -- verify the availablity of a libraries dependencies
+=====================================================================
+
+## SYNOPSIS
+
+`realm verify`
+
+## DESCRIPTION
+
+`realm-verify` runs through each of a project depenedencies, and their
+subsequent dependencies, to make sure that they can be met by the load
+environment.
+
+## SEE ALSO
+
+realm(1), realm-isolate(1), realm-list(1)
+

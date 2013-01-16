@@ -1,4 +1,4 @@
-= Sync Command
+# Sync Command
 
 When we insert a new lookup location, the index is automatically regenerated.
 However when the situation on disc changes, our index can become out-of-sync

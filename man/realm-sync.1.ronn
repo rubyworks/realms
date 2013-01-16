@@ -1,0 +1,16 @@
+realm-sync(1) -- synchronize the load cache
+===========================================
+
+## SYNOPSIS
+
+`realm-sync` [<name>]
+
+## DESCRIPTION
+
+`realm-sync` synchronizes the load cache to the load environment setting given
+by the `RUBY_LIBRARY` environment variable.
+
+## SEE ALSO
+
+realm(1), realm-gem(1)
+

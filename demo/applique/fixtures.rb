@@ -1,18 +1,22 @@
 require 'erb'
 
-DEMO_DIR = File.dirname(File.dirname(__FILE__))
+$DEMO_DIR = File.dirname(File.dirname(__FILE__))
+
+# Link tmp/qed/projects to fixtures/projects.
+FileUtils.ln_s($DEMO_DIR + '/fixtures/projects', 'projects')
 
 #
 def complete_setup
-  copy_fixture('config_setup')
-  copy_fixture('project_setup')
+  #copy_fixture('config_setup')
+  #copy_fixture('project_setup')
 end
 
 #
 def minimum_setup
-  copy_fixture('project_setup')
+  #copy_fixture('project_setup')
 end
 
+=begin
 #
 def copy_fixture(name)
   srcdir = File.join(DEMO_DIR, 'fixtures', name)
@@ -30,4 +34,4 @@ def copy_fixture(name)
     end
   end
 end
-
+=end
