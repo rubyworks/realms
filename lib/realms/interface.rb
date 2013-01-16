@@ -97,9 +97,10 @@ module Realms
       # the various libraries and their load paths.
       #
       def find(path, options={})
-        $LOAD_MANAGER.find_feature(path, options)
+        $LOAD_MANAGER.find(path, options)
       end
 
+=begin
       #
       # Brute force variation of `#find` looks through all libraries for a 
       # matching features. This serves as the fallback method if `#find` comes
@@ -125,13 +126,14 @@ module Realms
       def find_any(path, options={})
         $LOAD_MANAGER.find_any(path, options)
       end
+=end
 
       #
       # Brute force search looks through all libraries for matching features.
       # This is the same as #find_any, but returns a list of matches rather
       # then the first matching feature found.
       #
-      # @param [String] glob
+      # @param [String] pattern
       #   Glob pattern for which to search.
       #
       # @param [Hash] options
@@ -148,8 +150,8 @@ module Realms
       #
       # @return [Feature,Array] Matching feature(s).
       #
-      def search(glob, options={})
-        $LOAD_MANAGER.search(glob, options)
+      def search(pattern, options={})
+        $LOAD_MANAGER.search(pattern, options)
       end
 
 =begin
