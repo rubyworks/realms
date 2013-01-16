@@ -1,35 +1,65 @@
 module Realms
   class Library
-
     module Shell
-
-      # TODO: lookup root by matching .index relative to path?
+      register :verify
 
       #
-      # Verify that a project's requirements are in the current roll call.
+      # Verify that a library's requirements are available.
+      #
+      # @return nothing
       #
       def verify
-        op.banner = "Usage: roll verify [path]"
-        op.separator "Verify dependencies in current roll."
+        version = nil
+        development = nil
+
+        op.banner = "Usage: realm verify [name]"
+        op.separator "Verify dependencies are available."
+
+        op.on('--version', '-v [VERSION]', "version constraint") do |val|
+          version = val
+        end
+
+        op.on('--development', '-d', "include development requirements") do |val|
+          development = val
+        end
 
         parse
 
-        location = argv.first || Dir.pwd
+        name = argv.first
 
-        library = Library.new(location)
+        if name
+          library = $LOAD_MANAGER.current(name, version)
+        else
+          root = Dir.pwd  # TODO: lookup root of project?
+          library = $LOAD_MANAGER.add(root)
+        end
 
         if library.requirements.empty?
           puts "Project #{library.name} has no requirements."
         else
-          library.requirements.verify(true) # verbose
+          verify_via_isolation(library, development)
         end
-
-        #list.each do |(name, constraint)|
-        #  puts "#{name} #{constraint}"
-        #end
       end
 
-    end
+      #
+      #
+      #
+      def verify_via_isolation(library, development)
+        $LOAD_MANAGER.isolate_library(library, development)
+        $LOAD_MANAGER.each do |name, lib|
+          puts "\u2713 %s %s" % ["#{lib.name}-#{lib.version}", lib.location]
+        end
+      end
 
+      #
+      #
+      #
+      #def verify_via_activation(library, development)
+      #  $LOAD_MANAGER.activate_library(library)
+      #  $LOAD_MANAGER.verify_library(library, development)
+      #  puts "#{library.name}-#{library.version} looks good"
+      #end
+
+    end
   end
 end
