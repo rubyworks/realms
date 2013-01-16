@@ -1,5 +1,12 @@
+# Realms 
+# Copyright (c) 2013 Rubyworks
+# BSD-2-Clause License
+#
+# encoding: utf-8
+
 module Realms
   class Library
+
     # Utils module provides general shared functions needed throughout the system,
     # but primarily at the toplevel to be used in bootstrapping the system.
     #
@@ -12,26 +19,122 @@ module Realms
       SUFFIXES = ['.rb', '.rbw', '.so', '.bundle', '.dll', '.sl', '.jar'] #, '']
 
       #
-      # The opposite of SUFFIXES. Using this helps DRY-up the find_feature code.
+      # List of suffixes.
       #
-      SUFFIXES_NOT = ['']
+      # @todo Dynamically determine suffixes by platform.
+      #
+      # @return [Array] List of suffixes.
+      #
+      def suffixes
+        SUFFIXES
+      end
 
       #
-      # Lock the load manager ledger, by saving it to the temporary lock file.
+      # Bootstap the system, which is to say hit `#reset!` and
+      # load the Kernel overrides.
       #
-      # @todo Should we update the ledger first?
+      def bootstrap!
+        reset!
+        require_relative 'kernel'
+      end
+
       #
-      def lock
-        output = lock_file
+      # Reset the load manager.
+      #
+      def reset!
+        #$LOAD_MANAGER = Manager.new
+        #$LOAD_STACK = []
 
-        dir = File.dirname(output)
-        FileUtils.mkdir_p(dir) unless File.directory?(dir)
-
-        File.open(output, 'w+') do |f|
-          #f << JSON.fast_generate($LOAD_MANAGER.to_h)
-          f << JSON.pretty_generate($LOAD_MANAGER.to_h)
-          #f << Marshal.dump($LOAD_MANAGER)
+        if manager = lock_load
+          $LOAD_MANAGER = manager
+        else
+          #$LOAD_MANAGER.prime(*lookup_paths, :expound=>true)
+          manager = Manager.new
+          manager.prime(*lookup_paths, :expound=>true)
+          $LOAD_MANAGER = manager
         end
+
+        #if development?
+          # find project root
+          # if root
+          #   $LOAD_MANAGER.isolate_project(root)
+          # end
+        #end
+      end
+
+      #
+      # Cache the available libraries in a temporary *lock* file. This will
+      # recreate the library list from scratch unless the `:active` option is
+      # used. The `:active` option not only locks the list of avaialable
+      # libraries, but also which versions are active.
+      #
+      # @param [Hash] options
+      #   Lock options.
+      #
+      # @option options [Boolean] :active
+      #
+      # @return nothing
+      #
+      def lock(options={})
+        if options[:active]
+          locked_manager = $LOAD_MANAGER
+        else
+          locked_manager = Manager.prime(*lookup_paths, :expound=>true)
+        end
+
+        ensure_filepath(lock_file)
+
+        File.open(lock_file, 'w+') do |f|
+          f << lock_dump(locked_manager)
+        end
+      end
+
+      #
+      # Make sure a file path's directory exists.
+      #
+      # @param [String] file
+      #   File path.
+      #
+      # @return nothing
+      #
+      def ensure_filepath(file)
+        dir = File.dirname(file)
+        FileUtils.mkdir_p(dir) unless File.directory?(dir)
+      end
+
+      #
+      # Load locked library ledger.
+      #
+      # @return [Manager,NilClass]
+      #
+      def lock_load
+        manager = nil
+
+        if File.exist?(lock_file) && ! live?
+          #content = Marshal.load(File.new(lock_file))
+          content = JSON.load(File.new(lock_file))
+
+          case content
+          when Manager
+            manager = content
+          when Hash
+            manager = Manager.new
+            manager.replace(content)
+          else
+            raise "realms: bad cache at #{lock_file}"
+          end
+        end
+
+        return manager
+      end
+
+      #
+      # TODO: Move to Manager class ?
+      #
+      def lock_dump(manager)
+        #Marshal.dump(manager)
+        #JSON.fast_generate(manager.to_h)
+        JSON.pretty_generate(manager.to_h)
       end
 
       #
@@ -121,51 +224,6 @@ module Realms
       end
 
       #
-      # Reset the load manager.
-      #
-      def reset!
-        #$LOAD_MANAGER = LoadManager.new
-        #$LOAD_STACK = []
-        $LOAD_CACHE = {}
-
-        if File.exist?(lock_file) && ! live?
-          ledger = JSON.load(File.new(lock_file))
-          #ledger = Marshal.load(File.new(lock_file))
-          case ledger
-          when Manager
-            $LOAD_MANAGER = ledger
-            return $LOAD_MANAGER
-          when Hash
-            $LOAD_MANAGER.replace(ledger)
-            return $LOAD_MANAGER
-          else
-            warn "Bad cached ledger at #{lock_file}"
-            #$LOAD_MANAGER = Manager.new
-          end
-        else
-          #$LOAD_MANAGER = Manager.new
-        end
-
-        $LOAD_MANAGER.prime(*lookup_paths, :expound=>true)
-
-        #if development?
-          # find project root
-          # if root
-          #   $LOAD_MANAGER.isolate_project(root)
-          # end
-        #end
-      end
-
-      #
-      # Bootstap the system, which is to say hit `#reset!` and
-      # load the Kernel overrides.
-      #
-      def bootstrap!
-        reset!
-        require_relative 'kernel'
-      end
-
-      #
       # A temporary directory in which the locked ledger can be stored.
       #
       def tmpdir
@@ -202,12 +260,13 @@ module Realms
       #
       # Lookup a path in locations that were added to $LOAD_PATH manually.
       # These include those added via `-I` command line option, the `RUBYLIB`
-      # environment variable and those add to $LOAD_PATH via code.
+      # environment variable and those added to $LOAD_PATH via code.
       #
       # This is a really throwback to the old load system. But it is necessary as
       # long as the old system is used, to ensure expected behavior.
       #
       # @return [String]
+      #
       def find_userpath(path, options)
         find_path(user_path, path, options)
       end
@@ -296,7 +355,7 @@ module Realms
       end
 
       #
-      #
+      # Is a path absolute?
       #
       def absolute_path?(path)
         case path[0,1]
@@ -314,7 +373,41 @@ module Realms
         ENV['monitor'] || ($MONITOR ||= false)
       end
 
+      #
+      # Produce a date string in "YYYY-MM-DD" format.
+      #
+      def iso_date(date)
+        case date
+        when Date, Time
+          date.strftime("%Y-%m-%d")
+        when String
+          return nil if date.empty?
+          date = Date.parse(date)
+          date.strftime("%Y-%m-%d")
+        else
+          nil
+        end
+      end
+
+      #
+      # Locate the root directory of a Ruby project.
+      #
+      def locate_root(dir=Dir.pwd)
+        dir  = File.expand_path(dir)
+        home = File.expand_path('~')
+        while dir != home && dir != '/'
+          return dir if Dir[File.join(dir, '{.git,.hg,.index,.gemspec,*.gemspec}')].first
+          dir = File.dirname(dir)
+        end
+        while dir != home && dir != '/'
+          return dir if Dir[File.join(dir, '{lib/}')].first
+          dir = File.dirname(dir)
+        end
+        nil
+      end
+
     end
 
   end
+
 end
