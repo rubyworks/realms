@@ -202,7 +202,7 @@ module Realms
       # TODO: Should we support +active+ setting?
 
       #
-      # Is the library active. If not it should be ignored.
+      # Is the library active? If not it should be ignored.
       #
       def active?
         @active
@@ -307,7 +307,7 @@ module Realms
           'date'         => date.to_s,
           'paths'        => { 'lib' => lib_paths },
           'requirements' => requirements,
-          'active'       => active
+          #'active'       => active?
         }
       end
 
@@ -341,12 +341,14 @@ module Realms
       # TODO: Deprecate YAML form of gemspec, RubyGems no longer supports it.
       #
       def load_gemspec
+
         text = File.read(gemspec_file)
         if text =~ /\A---/  
           require 'yaml'
           spec = YAML.load(text)
         else
-          spec = eval(text) #, gemspec_file)
+          #spec = eval(text) #, gemspec_file)
+          spec = ::Gem::Specification.load(gemspec_file)
         end
 
         data = {}
