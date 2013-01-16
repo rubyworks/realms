@@ -1,38 +1,68 @@
 module Realms
   class Library
-
     module Shell
+      register :isolate
 
       #
       # Create an isolation index.
       #
       def isolate
-        development=false
+        development = false
+        format = nil
 
-        op.banner = "Usage: roll isolate"
-        op.separator "Create an project isolation index."
-        #op.on('--all', '-a', "Search all rolls.") do
-        #  opts[:all] = true
-        #end
-        op.on('--development', '-d', "Include development dependencies.") do
+        op.banner = "Usage: realm isolate"
+        op.separator "Create an isolation template."
+
+        op.on('--development', '-d', "include development dependencies.") do
           development = true
+        end
+
+        op.on('--gem', '-g', "Generate a template for use via RubyGems.") do
+          format = :gem
+        end
+
+        op.on('--yaml', '-y', "Generate a template in YAML format.") do
+          format = :yaml
         end
 
         parse
 
-        location = argv.first || Dir.pwd
+        location = argv.first || Dir.pwd  # TODO: find root ?
 
-        if File.file?(File.join(location, '.index'))
-          generate_isolate_index(location, development)
-        else
-          $stderr.puts "Directory is not a Ruby project."
-        end
+        library = $LOAD_MANAGER.add(location)
+
+        generate_isolation_template(location, development, format)
       end
 
     private
 
-      # TODO: Load in all environments if +all+ option as resource for lookup.
       #
+      #
+      #
+      def generate_isolation_template(library, development, format=nil)
+        $LOAD_MANAGER.isolate_library(library, development)
+        case format
+        when :gem
+          $LOAD_MANAGER.each do |name, lib|
+            puts "gem '%s', '= %s'" % [lib.name, lib.version]
+          end
+        when :gemfile
+          $LOAD_MANAGER.each do |name, lib|
+            puts "gem '%s', '= %s'" % [lib.name, lib.version]
+          end
+        when :yaml
+          puts $LOAD_MANAGER.map{ |name, lib|
+            { 'name'=>lib.name, 'version'=>lib.version.to_s } #, 'groups'=>lib.groups, 'development'=>lib.development? }
+          }.to_yaml
+        else
+          $LOAD_MANAGER.each do |name, lib|
+            puts "library '%s', '= %s'" % [lib.name, lib.version]
+          end
+        end
+      end
+
+
+=begin
       # TODO: Move most of this code into library somewhere.
       def generate_isolate_index(location, development=nil)
         require 'fileutils'
@@ -44,7 +74,7 @@ module Realms
         #end
 
         library = Library.new(location)
-        ledger  = $LEDGER.dup
+        ledger  = $LOAD_MANAGER.dup
 
         results = ledger.activate_requirements(library, development)
 
@@ -60,7 +90,7 @@ module Realms
             out << "%-#{max_name}s  %-#{-max_path}s  %s\n" % [lib.name, lib.location, lib.loadpath.join(' ')]
           end
 
-          dir = Roll.config.local_environment_directory
+#          dir = Roll.config.local_environment_directory
 
           #FileUtils.mkdir_p(dir)
 
@@ -78,8 +108,8 @@ module Realms
           end
         end
       end
+=end
 
     end
-
   end
 end
