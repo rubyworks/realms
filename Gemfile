@@ -2,8 +2,9 @@
 # encoding: utf-8
 
 source "http://rubygems.org"
-#gemspec
+gemspec
 
+=begin
 gem "autoload"
 gem "versus"
 
@@ -15,10 +16,13 @@ group :development do
   end
 
   group :test do
-    gem "rubytest"
-    gem "lemon"
+    gem "qed"
     gem "ae"
+    gem "minitest"
+    gem "tapout"
+    gem "minitap"
   end
 
 end
+=end
 

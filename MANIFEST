@@ -50,7 +50,6 @@ man/realm.1.ronn
 script/install-0.2.0.sh
 script/install-current.sh
 script/install-master.sh
-script/rdoc
 script/setup
 HISTORY.md
 README.md
