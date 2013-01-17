@@ -1,4 +1,4 @@
-require 'erb'
+#require 'erb'
 
 $DEMO_DIR = File.dirname(File.dirname(__FILE__))
 
