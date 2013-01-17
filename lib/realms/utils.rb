@@ -42,7 +42,6 @@ module Realms
       # Reset the load manager.
       #
       def reset!
-        #$LOAD_MANAGER = Manager.new
         #$LOAD_STACK = []
 
         if manager = lock_load
@@ -86,9 +85,11 @@ module Realms
 
         ensure_filepath(lock_file)
 
-        File.open(lock_file, 'w+') do |f|
+        File.open(lock_file, 'w') do |f|
           f << lock_dump(locked_manager)
         end
+
+        $LOAD_MANAGER = locked_manager
       end
 
       #
@@ -159,17 +160,17 @@ module Realms
         reset!
       end
 
-      #
-      # Synchronize the ledger to the current system state and save.
-      # Also, returns the bin paths of all libraries.
-      #
-      # @return [Array<String>] List of bin paths.
-      #
-      def sync
-        unlock if locked?
-        lock
-        $LOAD_MANAGER::PATH()
-      end
+      ##
+      ## Synchronize the load cache with the RUBY_LIBRARY setting.
+      ## And returns the bin `PATH` for all libraries.
+      ##
+      ## @return [String] List of bin paths separated by colon (or semi-colon).
+      ##
+      #def sync
+      #  unlock if locked?
+      #  lock
+      #  $LOAD_MANAGER::PATH()
+      #end
 
       #
       # Library lock file.
@@ -231,10 +232,17 @@ module Realms
 =end
 
       #
-      # Is there a saved locked ledger?
+      # Is there a load cache?
       #
       def locked?
         File.exist?(lock_file)
+      end
+
+      #
+      # Is there not a load cache?
+      #
+      def unlocked?
+        ! File.exist?(lock_file)
       end
 
       #
