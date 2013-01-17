@@ -4,7 +4,7 @@ require 'rbconfig'
 require 'yaml'
 require 'json'
 require 'versus'
-#require 'autoload'
+require 'autoload'
 
 require 'realms/index'
 require 'realms/core_ext'
