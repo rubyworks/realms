@@ -29,7 +29,7 @@ module Realms
         #  require "realms/shell/#{cmd}"
         #end
 
-        @argv = argv
+        @arguments = argv
 
         raise "unknown command" unless commands.include?(cmd)
 
@@ -55,35 +55,43 @@ module Realms
       #
       # Instance of OptionParser.
       #
-      def op
-        @op ||= OptionParser.new do |opt|
-          op.on_tail("--warn", "-w", "Show warnings.") do
-            $VERBOSE = true
-          end
+      def options
+        @options ||= (
+          OptionParser.new do |opt|
+            opt.on_tail("--warn", "-w", "Show warnings.") do
+              $VERBOSE = true
+            end
 
-          opt.on_tail("--debug", "Run in debugging mode.") do
-            $DEBUG = true
-          end
+            opt.on_tail("--debug", "Run in debugging mode.") do
+              $DEBUG = true
+            end
 
-          opt.on_tail("--help", "-h", "Show help for command.") do
-            puts op
-            exit
+            opt.on_tail("--help", "-h", "Show help for command.") do
+              puts op
+              exit
+            end
           end
-        end
+        )
       end
+
+      # @deprecated
+      alias :op :options
 
       #
       # Command line arguments.
       #
-      def argv
-        @argv
+      def arguments
+        @arguments
       end
+
+      # @deprecated
+      alias :argv :arguments
 
       #
       # Parse the command line.
       #
       def parse(argv=nil)
-        @argv = argv if argv
+        @arguments = argv if argv
 
         #op.on_tail("--warn", "-w", "Show warnings.") do
         #  $VERBOSE = true
@@ -98,7 +106,7 @@ module Realms
         #  exit
         #end
 
-        op.parse!(@argv)
+        op.parse!(@arguments)
       end
 
     end
