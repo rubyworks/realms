@@ -1,3 +1,0 @@
-["tryme","1.1","<%= Dir.pwd %>/projects/tryme/1.1","lib"]
-["tryme","1.0","<%= Dir.pwd %>/projects/tryme/1.1","lib"]
-["foo","0.8.2","<%= Dir.pwd %>/projects/foo","lib"]

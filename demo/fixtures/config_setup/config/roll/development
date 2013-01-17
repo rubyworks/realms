@@ -1,1 +1,0 @@
-<%= Dir.pwd %>/projects/*/*
