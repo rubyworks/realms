@@ -16,6 +16,8 @@ Dir.chdir('tmp')
 # Make sure we use local version of files.
 $:.unshift('../lib')
 
+require 'minitap'
+
 require 'realms'
 #require 'realms/shell'
 
@@ -26,4 +28,5 @@ raise unless Realms::Library::Utils.tmpdir == File.join($realms_root, "tmp/cache
 include Realms
 
 require 'minitest/autorun'
+MiniTest::Unit.runner = MiniTest::TapY.new
 
