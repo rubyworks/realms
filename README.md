@@ -2,7 +2,7 @@
 [Documentation](http://wiki.github.com/rubyworks/realms) /
 [Report Issue](http://github.com/rubyworks/realms/issues) /
 [Source Code](http://github.com/rubyworks/realms)
-( )
+( [![Build Status](https://travis-ci.org/rubyworks/realms.png)](https://travis-ci.org/rubyworks/realms) )
 
 
 ```
