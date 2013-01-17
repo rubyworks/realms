@@ -6,15 +6,15 @@ $DEMO_DIR = File.dirname(File.dirname(__FILE__))
 FileUtils.ln_s($DEMO_DIR + '/fixtures/projects', 'projects')
 
 #
-def cached_setup
-  Realms::Library::Utils.sync
-end
+#def cached_setup
+#  Realms::Library::Utils.sync
+#end
 
 #
-def live_setup
-  ledger = Dir['cache/ruby/*.ledger'].first
-  FileUtils.rm(ledger) if ledger
-end
+#def live_setup
+#  ledger = Dir['cache/ruby/*.ledger'].first
+#  FileUtils.rm(ledger) if ledger
+#end
 
 
 =begin
