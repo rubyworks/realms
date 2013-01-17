@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 #require 'pom'
 #PROJECT = POM::Project.new(Dir.pwd)
 
@@ -21,5 +23,12 @@ task "man" do
   sh "mv man1/*.html web/manual/"
 
   sh "gzip -f man/man1/*.1"
+end
+
+
+desc "Generate Documentation"
+task "doc" do
+  # TODO: Switched to YARD
+  #system %[rdoc -o doc/rdoc -m README -t "Realms" README lib]
 end
 
