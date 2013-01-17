@@ -1,0 +1,25 @@
+---
+type: ruby
+revision: 2013
+sources:
+- Index.yml
+authors:
+- name: Thomas Sawyer
+organizations: []
+requirements: []
+conflicts: []
+alternatives: []
+resources:
+- type: homepage
+  uri: http://tryme.foo
+  label: Homepage
+repositories: []
+categories: []
+paths:
+  load:
+  - lib
+copyrights: []
+name: tryme
+title: TryMe
+version: '1.0'
+date: '2013-01-16'
