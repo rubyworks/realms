@@ -17,11 +17,19 @@ requirements:
 - groups:
   - test
   development: true
-  name: lemon
+  name: ae
 - groups:
   - test
   development: true
-  name: ae
+  name: minitest
+- groups:
+  - test
+  development: true
+  name: minitap
+- groups:
+  - test
+  development: true
+  name: tapout
 - groups:
   - build
   development: true
@@ -49,7 +57,7 @@ repositories:
   uri: git://github.com/rubyworks/roll.git
 categories: []
 paths:
-  lib:
+  load:
   - lib
 copyrights:
 - holder: Thomas Sawyer
@@ -66,4 +74,4 @@ description: ! 'Rolls is a library set manager for Ruby built on top of the Libr
   With Rolls, code repositories can be made visible to Ruby just by setting
 
   an environment variable.'
-date: '2013-01-15'
+date: '2013-01-17'

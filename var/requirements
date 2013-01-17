@@ -2,8 +2,10 @@
 - versus
 - autoload
 - qed          (test)
-- lemon        (test)
 - ae           (test)
+- minitest     (test)
+- minitap      (test)
+- tapout       (test)
 - detroit      (build)
 - setup 5.0+   (build)
 
