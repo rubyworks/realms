@@ -14,22 +14,21 @@ module Realms
         parse
 
         if argv.empty?
-          paths =  [Dir.pwd]
+          paths = [Dir.pwd]
         else
           paths = argv
         end
 
-        if Utils.locked?
-          paths.each do |path|
-            puts path
-            $LOAD_MANAGER.add(path)
-          end
-          Utils.lock(:active=>true)
-          puts "  '-> #{Utils.lock_file}"
-        else
-          puts "Cannot add paths unless load manager is locked."
-          puts "Export to RUBY_LIBRARY environment variable to add paths for live usage."
+        if !Utils.locked?
+          $LOAD_MANAGER = Manager.new
         end
+
+        paths.each do |path|
+          puts path
+          $LOAD_MANAGER.add(path)
+        end
+        Utils.lock(:active=>true)
+        puts "  '-> #{Utils.lock_file}"
       end
 
     end
