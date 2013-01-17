@@ -17,10 +17,18 @@ module Realms
       #     fi
       #
       def path
+        cache = false
+
         op.banner = "Usage: realm path"
         op.separator "Generate list of executable paths usable in PATH environment variable."
 
+        op.on('--cache', '-c', "Create/update the load cache first.") do |val|
+          cache = val
+        end
+
         parse
+
+        Utils.lock if cache
 
         $stdout.puts $LOAD_MANAGER::PATH()
       end
