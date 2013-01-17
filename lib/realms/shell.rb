@@ -1,17 +1,3 @@
-require 'realms/shell/add'
-require 'realms/shell/dump'
-require 'realms/shell/gem'
-require 'realms/shell/help'
-require 'realms/shell/isolate'
-require 'realms/shell/list'
-require 'realms/shell/lock'
-require 'realms/shell/path'
-require 'realms/shell/remove'
-require 'realms/shell/show'
-require 'realms/shell/unlock'
-require 'realms/shell/verify'
-require 'realms/shell/where'
-
 module Realms
   class Library
 
@@ -120,5 +106,19 @@ module Realms
   end
 
 end
+
+require 'realms/shell/add'
+require 'realms/shell/dump'
+require 'realms/shell/gem'
+require 'realms/shell/help'
+require 'realms/shell/isolate'
+require 'realms/shell/list'
+require 'realms/shell/lock'
+require 'realms/shell/path'
+require 'realms/shell/remove'
+require 'realms/shell/show'
+require 'realms/shell/unlock'
+require 'realms/shell/verify'
+require 'realms/shell/where'
 
 # Copyright (c)2013 Rubyworks (BSD-2-Clause License)
