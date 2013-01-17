@@ -391,7 +391,7 @@ module Realms
           success = library.require(pathname, options)
         else
           stash_path = $LOAD_PATH
-          #$LOAD_STACK << self
+          #$LOAD_STACK << self  # TODO: what to use?
           $LOAD_PATH.replace(LOAD_PATH)
           begin
             success = require_without_realms(pathname)

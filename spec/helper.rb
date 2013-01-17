@@ -6,9 +6,12 @@ $realms_root = File.expand_path(File.dirname(__FILE__) + '/..')
 ENV['XDG_CACHE_HOME'] = File.join($realms_root, "tmp/cache")
 ENV['RUBY_LIBRARY']   = File.join($realms_root, "spec/fixtures/projects/*")
 
-# Link tmp/projects to spec/fixtures/projects.
-require 'fileutils'
-FileUtils.ln_sf(File.join($realms_root, 'spec/fixtures/projects'), 'tmp/projects')
+# link tmp/projects to spec/fixtures/projects
+tmp_projects = File.join($realms_root, 'tmp/projects')
+unless File.exist?(tmp_projects)
+  require 'fileutils'
+  FileUtils.ln_s(File.join($realms_root, 'spec/fixtures/projects'), tmp_projects)
+end
 
 # test from within tmp directoy
 Dir.chdir('tmp')
