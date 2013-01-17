@@ -5,11 +5,11 @@ module Realms
       register :cache
 
       #
-      # Lock load manager roll. This caches all the neccessary information
-      # about the current roll, so start-up times are much faster.
+      # Synchronize the load cache to RUBY_LIBRARY setting. This caches all the
+      # neccessary information about the available libraries, so start-up times
+      # are faster.
       #
       def lock
-        stdout = nil
         active = false
 
         op.banner = "Usage: realm lock"
@@ -22,9 +22,11 @@ module Realms
         parse
 
         file = Utils.lock(:active=>active)
-        $stdout.puts "Locked at: #{Utils.lock_file}"
+
+        $stdout.puts "Cached at: #{Utils.lock_file}"
       end
 
+      # Alternate term for lock.
       alias :cache :lock
 
     end
