@@ -5,7 +5,7 @@ module Realms
       register :clear
 
       #
-      # Delete load cache.
+      # Remove the load cache.
       #
       def unlock
         op.banner = "Usage: relam unlock"
@@ -13,11 +13,11 @@ module Realms
 
         parse
 
-        name = argv.first
+        file = Utils.lock_file
 
-        if File.exist?(Utils.lock_file)
+        if File.exist?(file)
           Utils.unlock
-          puts "Unlocked."
+          puts "Removed load cache at #{file}."
         else
           puts "Not locked."
         end
